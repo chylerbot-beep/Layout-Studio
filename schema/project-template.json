@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "name": "New BTO project",
+    "brief": "",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "appVersion": "2.7"
+  },
+  "references": [],
+  "basemap": null,
+  "rooms": [],
+  "walls": [],
+  "openings": [],
+  "shell": [],
+  "clearances": [],
+  "furniture": [],
+  "settings": {
+    "ceilingVisible": false,
+    "ceilingHeight": 2600
+  },
+  "camera": null,
+  "plan": {
+    "width": 14775,
+    "depth": 9500,
+    "unit": "mm"
+  }
+}
