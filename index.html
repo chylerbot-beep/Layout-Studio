@@ -21,9 +21,9 @@
       <button id="saveJson">Save project</button>
       <button id="loadJson">Load project</button>
       <button id="capture" class="primary">Export PNG</button>
-      <input id="jsonFile" type="file" accept="application/json" />
+      <input id="jsonFile" type="file" accept="application/json,.json" />
       <input id="basemapFile" type="file" accept="image/png,image/jpeg,image/webp" />
-      <input id="packageFile" type="file" accept=".btozip,.zip,application/zip" />
+      <input id="packageFile" type="file" accept=".zip,.btozip,application/zip,application/x-zip-compressed" />
       <input id="referenceFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple />
     </header>
 
@@ -36,8 +36,8 @@
         </div>
         <div class="button-row" style="margin-top:10px">
           <button id="newBlankProject">New blank</button>
-          <button id="openPackage" class="primary">Open .btozip</button>
-          <button id="exportPackage">Export .btozip</button>
+          <button id="openPackage" class="primary">Open project ZIP</button>
+          <button id="exportPackage">Export project ZIP</button>
           <button id="addReferences">Add references</button>
         </div>
         <details class="toggle-group" style="margin-top:10px">
@@ -52,7 +52,7 @@
             <p class="small" id="libraryStatus">Projects listed in <code>projects/index.json</code> appear here.</p>
           </div>
         </details>
-        <p class="small package-status" id="packageStatus">A .btozip package keeps project JSON, the calibrated basemap, reference images and project notes together.</p>
+        <p class="small package-status" id="packageStatus">A normal ZIP file can keep project JSON, the calibrated basemap, reference images and project notes together. Older .btozip packages are also accepted.</p>
       </div>
       <div class="section">
         <h2>Floor-plan basemap</h2>
