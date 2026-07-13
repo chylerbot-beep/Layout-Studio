@@ -46,10 +46,43 @@ Use the reference design language, but never force furniture that violates real 
 3. Check entrance circulation, kitchen aisle, dining pull-back, bed access, wardrobe access, doors, windows and TV viewing.
 4. Keep object categories as `furniture`, `carpentry`, or `decorative`.
 5. Use `elevation` in millimetres for objects that sit above the finished floor.
-6. Add useful camera views.
-7. Report unresolved collisions or assumptions honestly.
+6. Add `placement` metadata so Layout Studio can conservatively realign furniture after walls are corrected.
+7. Add useful camera views.
+8. Report unresolved collisions or assumptions honestly.
 
 Approval Gate 2: Ask the user to approve zoning, furniture, carpentry and major decorative placement.
+
+## Furniture placement metadata
+
+Use the optional `placement` object whenever the intended relationship is known:
+
+```json
+{
+  "roomId": "room-living",
+  "mode": "wall",
+  "wallId": "wall-living-east",
+  "gap": 20,
+  "groupId": "living-tv-zone"
+}
+```
+
+Supported fields:
+
+- `roomId`: the intended room zone.
+- `mode`: `wall`, `free`, or `support`.
+- `wallId`: the wall an object should remain parallel and close to.
+- `gap`: clear distance in millimetres between the object and wall face.
+- `supportId`: the supporting object's ID for TVs, bowls, phones, flasks and similar raised objects.
+- `groupId`: objects that should preserve their relative arrangement when repositioned, such as a dining table and its chairs.
+
+Use these rules:
+
+- Wardrobes, kitchen cabinets, worktops and TV consoles should normally use `mode: "wall"` with a valid `wallId`.
+- Beds may use `mode: "wall"` when the intended headboard wall is known.
+- Dining tables and matching chairs should share a `groupId`, normally `dining-set`.
+- Freestanding sofas, lounge chairs and coffee tables normally use `mode: "free"` unless the design clearly anchors them to a wall.
+- Decorative objects on furniture should use `mode: "support"` with `supportId`.
+- Do not use placement metadata to force an invalid layout. Clearances and door access take priority.
 
 ## Supported Layout Studio catalogue
 Prefer these names and defaults when they fit the design. Dimensions remain editable.
@@ -105,7 +138,13 @@ Example tabletop object:
   "h": 190,
   "elevation": 760,
   "rotation": 0,
-  "color": 12095597
+  "color": 12095597,
+  "placement": {
+    "roomId": "room-dining",
+    "mode": "support",
+    "supportId": "dining-table",
+    "groupId": "dining-set"
+  }
 }
 ```
 
@@ -144,6 +183,8 @@ approved-bto-layout.zip
 - Openings must reference valid wall IDs.
 - A wall should contain start and end coordinates plus thickness and height.
 - Every furniture, carpentry and decorative object should include `x`, `y`, `w`, `d`, `h`, `rotation`, `category`, and `elevation` when it is not on the floor.
+- Add `placement.roomId` whenever the intended room is known.
+- Add valid `wallId`, `supportId` and shared `groupId` relationships when appropriate.
 - Use the supported `model` values for recognised decorative objects so Layout Studio renders them correctly.
 - Do not silently invent dimensions when the source is unclear; mark assumptions.
 - Avoid rebuilding an existing project from scratch when a project JSON, ZIP, or older `.btozip` is uploaded. Continue from its structured data.
