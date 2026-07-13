@@ -8,6 +8,18 @@
       ];
       const sectionCollapseStorageKey='bto-layout-studio:collapsed-sections:v1';
 
+      if(!document.getElementById('sectionCollapseStyles')){
+        const style=document.createElement('style');style.id='sectionCollapseStyles';style.textContent=`
+          .panel.left > .section[data-section-collapsible="true"] > h2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+          .panel.left > .section[data-section-collapsible="true"].section-collapsed{padding-top:11px;padding-bottom:11px}
+          .panel.left > .section[data-section-collapsible="true"].section-collapsed > h2{margin-bottom:0}
+          .section-collapse-toggle{flex:0 0 auto;padding:4px 8px;min-width:46px;border-radius:999px;font-size:9px;line-height:1.1;text-transform:none;letter-spacing:0;color:var(--muted);background:#292a25}
+          .section-collapse-toggle[aria-expanded="true"]::before{content:'▾ ';color:var(--sage)}
+          .section-collapse-toggle[aria-expanded="false"]::before{content:'▸ ';color:var(--sage)}
+          .section-collapse-body[hidden]{display:none!important}
+        `;document.head.appendChild(style);
+      }
+
       function readCollapsedSectionState(){
         try{return JSON.parse(localStorage.getItem(sectionCollapseStorageKey)||'{}')||{};}catch{return{};}
       }
