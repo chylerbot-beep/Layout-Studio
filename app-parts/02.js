@@ -57,6 +57,8 @@
       let ocrBusy = false;
       let tesseractLoader = null;
       let ocrCandidates = {horizontal:[],vertical:[]};
+      let projectLibraryItems = [];
+      let packageBusy = false;
       const undoStack = [];
       const redoStack = [];
 
