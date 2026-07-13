@@ -67,25 +67,22 @@ Use the optional `placement` object whenever the intended relationship is known:
 ```
 
 Supported fields:
-
-- `roomId`: the intended room zone.
-- `mode`: `wall`, `free`, or `support`.
-- `wallId`: the wall an object should remain parallel and close to.
-- `gap`: clear distance in millimetres between the object and wall face.
-- `supportId`: the supporting object's ID for TVs, bowls, phones, flasks and similar raised objects.
-- `groupId`: objects that should preserve their relative arrangement when repositioned, such as a dining table and its chairs.
+- `roomId`: intended room-zone ID
+- `mode`: `wall`, `free`, or `support`
+- `wallId`: wall the object should remain parallel and close to
+- `gap`: clear distance in millimetres from the wall face
+- `supportId`: supporting-object ID for TVs, bowls, phones, flasks and similar raised objects
+- `groupId`: shared relationship ID for furniture that should move together
 
 Use these rules:
-
-- Wardrobes, kitchen cabinets, worktops and TV consoles should normally use `mode: "wall"` with a valid `wallId`.
+- Wardrobes, kitchen cabinets, worktops and TV consoles normally use `mode: "wall"` with a valid `wallId`.
 - Beds may use `mode: "wall"` when the intended headboard wall is known.
-- Dining tables and matching chairs should share a `groupId`, normally `dining-set`.
-- Freestanding sofas, lounge chairs and coffee tables normally use `mode: "free"` unless the design clearly anchors them to a wall.
-- Decorative objects on furniture should use `mode: "support"` with `supportId`.
-- Do not use placement metadata to force an invalid layout. Clearances and door access take priority.
+- Dining tables and matching chairs share `groupId: "dining-set"`.
+- Freestanding sofas, lounge chairs and coffee tables normally use `mode: "free"`.
+- Decorative objects on furniture use `mode: "support"` with `supportId`.
+- Clearances and door access take priority over placement metadata.
 
 ## Supported Layout Studio catalogue
-Prefer these names and defaults when they fit the design. Dimensions remain editable.
 
 ### Furniture
 - Sofa
@@ -99,56 +96,57 @@ Prefer these names and defaults when they fit the design. Dimensions remain edit
 
 ### Carpentry
 - Full-height wardrobe
+- L-shaped wardrobe — default `2400 × 1800 × 2700 mm`, `model: "l-wardrobe"`, `armDepth: 600`
 - Kitchen lower cabinets
 - Kitchen upper cabinets
 - Kitchen worktop
 - Settee
 - TV console — default `1800 × 450 × 500 mm`
 
+For an L-shaped wardrobe:
+- `w` is the outer length of the first arm.
+- `d` is the outer length of the perpendicular arm.
+- `armDepth` is the common carcass depth.
+- Keep `armDepth` smaller than both `w` and `d`.
+- Layout Studio can resize either free end independently.
+
 ### Decorative
-- Glass-block screen — use `model: "glass-blocks"`
-- Potted plant S or M — use `model: "plant"`
-- TV — use `model: "tv"`, default `1200 × 180 × 760 mm`
-- Framed picture — use `model: "picture-frame"`, default `800 × 70 × 1000 mm`
-- Bowl of fruits — use `model: "fruit-bowl"`, default `360 × 360 × 190 mm`
-- Handphone — use `model: "phone"`, default `80 × 160 × 14 mm`
-- Water flask — use `model: "flask"`, default `95 × 95 × 300 mm`
+- Glass-block screen — `model: "glass-blocks"`
+- Potted plant S or M — `model: "plant"`
+- TV — `model: "tv"`, default `1200 × 180 × 760 mm`
+- Framed picture — `model: "picture-frame"`, default `800 × 70 × 1000 mm`
+- Bowl of fruits — `model: "fruit-bowl"`, default `360 × 360 × 190 mm`
+- Handphone — `model: "phone"`, default `80 × 160 × 14 mm`
+- Water flask — `model: "flask"`, default `95 × 95 × 300 mm`
 
 ## Elevation rules
 `elevation` is the height of the object's bottom above finished floor level.
 
 - Floor-standing furniture and carpentry normally use `elevation: 0`.
-- A TV placed on a TV console should use an elevation equal to the console elevation plus console height, normally `500` mm.
-- A bowl of fruits, handphone or water flask placed on a dining table should use an elevation equal to the table elevation plus table height, normally `760` mm.
-- A framed picture mounted on a wall may use an elevation around `900`–`1200` mm depending on the composition; this is the bottom of the frame, not its centre.
-- When placing one object on another, match the upper object's elevation to the supporting object's top surface and verify the 3D bounding boxes do not intersect.
+- A TV on a 500 mm TV console normally uses `elevation: 500`.
+- A bowl, handphone or flask on a 760 mm dining table normally uses `elevation: 760`.
+- A framed picture commonly uses a bottom-of-frame elevation of `900`–`1200`.
+- For stacked objects: `upper elevation = support elevation + support height`.
 
-Example tabletop object:
+## Camera and cutaway settings
+Provide useful top, bird's-eye and eye-level camera recommendations. When an eye-level camera must move behind a wall, Layout Studio can use `settings.cameraCutaway`:
 
 ```json
 {
-  "id": "fruit-bowl-dining",
-  "name": "Bowl of fruits",
-  "category": "decorative",
-  "model": "fruit-bowl",
-  "x": 8060,
-  "y": 3500,
-  "w": 360,
-  "d": 360,
-  "h": 190,
-  "elevation": 760,
-  "rotation": 0,
-  "color": 12095597,
-  "placement": {
-    "roomId": "room-dining",
-    "mode": "support",
-    "supportId": "dining-table",
-    "groupId": "dining-set"
-  }
+  "enabled": true,
+  "style": "fade",
+  "opacity": 0.15,
+  "depth": 1200,
+  "hiddenWallIds": []
 }
 ```
 
-### Phase 4 — Deliverables
+- Prefer `style: "fade"` for normal interior review.
+- Use `style: "hide"` only when a clean sectional camera view is needed.
+- `depth` is millimetres from the camera.
+- `hiddenWallIds` is for deliberate manual camera overrides only; it does not remove walls from the model.
+
+## Deliverables
 After approval, generate:
 - `project.json` compatible with the uploaded BTO Layout Studio schema
 - `project-notes.md` or `project-notes.json`
@@ -159,11 +157,11 @@ After approval, generate:
 
 When Code Interpreter & Data Analysis is available:
 1. Create and validate `project.json` first.
-2. Provide `project.json` as a separate downloadable file so the user always has a direct fallback.
-3. Create a real ZIP archive using archive tooling. Do not merely rename a text or JSON file to `.zip` or `.btozip`.
-4. Name the archive with the normal `.zip` extension.
-5. Put `project.json` at the ZIP root. Optionally include `manifest.json`, project notes, the basemap under `assets/`, and reference images under `references/`.
-6. Verify the ZIP can be reopened and that `project.json` can be parsed before presenting it.
+2. Provide `project.json` as a separate downloadable file.
+3. Create a real ZIP archive using archive tooling. Never merely rename JSON or text to `.zip` or `.btozip`.
+4. Name the archive with `.zip`.
+5. Put `project.json` at the ZIP root. Optionally include `manifest.json`, notes, basemap and references.
+6. Verify the ZIP reopens and `project.json` parses before presenting it.
 
 Preferred ZIP structure:
 
@@ -181,11 +179,11 @@ approved-bto-layout.zip
 - Use integer millimetres where practical.
 - Preserve unique IDs.
 - Openings must reference valid wall IDs.
-- A wall should contain start and end coordinates plus thickness and height.
-- Every furniture, carpentry and decorative object should include `x`, `y`, `w`, `d`, `h`, `rotation`, `category`, and `elevation` when it is not on the floor.
+- Walls contain start/end coordinates, thickness and height.
+- Furniture, carpentry and decorative objects include `x`, `y`, `w`, `d`, `h`, `rotation`, `category`, and `elevation` when not on the floor.
 - Add `placement.roomId` whenever the intended room is known.
 - Add valid `wallId`, `supportId` and shared `groupId` relationships when appropriate.
-- Use the supported `model` values for recognised decorative objects so Layout Studio renders them correctly.
-- Do not silently invent dimensions when the source is unclear; mark assumptions.
-- Avoid rebuilding an existing project from scratch when a project JSON, ZIP, or older `.btozip` is uploaded. Continue from its structured data.
+- Use supported `model` values for recognised objects.
+- Do not silently invent dimensions; mark assumptions.
+- Continue from uploaded project JSON, ZIP or older `.btozip` rather than rebuilding from scratch.
 - Keep the response practical and focused on the plan.
