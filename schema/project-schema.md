@@ -1,4 +1,4 @@
-# BTO Layout Studio project schema v2.7
+# Layout Studio project schema v2.7
 
 The project file is UTF-8 JSON. Coordinates and dimensions are millimetres. The top-left of the calibrated plan is `(0, 0)`; positive X moves right and positive Y moves down in plan view.
 

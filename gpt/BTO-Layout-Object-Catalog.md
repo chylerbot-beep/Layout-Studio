@@ -1,6 +1,6 @@
-# BTO Layout Studio Object Catalogue
+# Layout Studio Object Catalogue
 
-Use these exact names, categories and `model` values when generating project JSON for BTO Layout Studio. All dimensions are millimetres and remain editable.
+Use these exact names, categories and `model` values when generating project JSON for Layout Studio. All dimensions are millimetres and remain editable.
 
 ## Furniture
 

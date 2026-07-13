@@ -1,4 +1,4 @@
-# BTO Layout Studio Planning Workflow
+# Layout Studio Planning Workflow
 
 Use this Knowledge file whenever the user is reconstructing, planning, correcting or validating a Singapore HDB/BTO layout.
 

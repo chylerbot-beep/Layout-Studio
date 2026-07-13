@@ -1,4 +1,4 @@
-# BTO Layout Studio v2.7
+# Layout Studio
 
 A lightweight browser-based 2D/Three.js planning tool for Singapore BTO layouts. The authoritative model is structured project data in millimetres.
 

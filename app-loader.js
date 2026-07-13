@@ -12,6 +12,6 @@
     .catch(error => {
       console.error(error);
       const viewport = document.getElementById('viewport');
-      if (viewport) viewport.innerHTML = `<div style="padding:24px;color:#fff">Could not load BTO Layout Studio: ${error.message}</div>`;
+      if (viewport) viewport.innerHTML = `<div style="padding:24px;color:#fff">Could not load Layout Studio: ${error.message}</div>`;
     });
 })();

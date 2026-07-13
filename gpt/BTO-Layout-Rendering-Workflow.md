@@ -1,4 +1,4 @@
-# BTO Layout Studio Rendering Workflow
+# Layout Studio Rendering Workflow
 
 This file teaches the Custom GPT how to turn approved Layout Studio screenshots into photorealistic interior images without changing the approved layout.
 
