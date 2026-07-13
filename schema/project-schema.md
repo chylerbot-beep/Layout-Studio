@@ -60,6 +60,7 @@ The project file is UTF-8 JSON. Coordinates and dimensions are millimetres. The 
   "w": 2200,
   "d": 1000,
   "h": 760,
+  "elevation": 0,
   "rotation": 0,
   "shape": "rounded",
   "color": 12102304
@@ -68,11 +69,55 @@ The project file is UTF-8 JSON. Coordinates and dimensions are millimetres. The 
 
 `x` and `y` refer to the object's top-left unrotated bounding rectangle. Rotation is in degrees around the object centre.
 
+`elevation` is the height of the object's bottom above finished floor level. It defaults to `0`. For an object placed on top of another object, use the supporting object's `elevation + h` as the upper object's elevation.
+
+Example tabletop object:
+
+```json
+{
+  "id": "fruit-bowl-dining",
+  "name": "Bowl of fruits",
+  "category": "decorative",
+  "model": "fruit-bowl",
+  "x": 8060,
+  "y": 3500,
+  "w": 360,
+  "d": 360,
+  "h": 190,
+  "elevation": 760,
+  "rotation": 0,
+  "color": 12095597
+}
+```
+
+## Supported decorative models
+
+- `glass-blocks` — glass-block screen
+- `plant` — potted plant
+- `tv` — television with stand
+- `picture-frame` — framed picture
+- `fruit-bowl` — bowl with fruit
+- `phone` — handphone
+- `flask` — water flask
+
+Objects without a recognised `model` render as editable boxes. Carpentry such as `TV console`, wardrobes and kitchen cabinets does not require a `model` value.
+
+## Current catalogue defaults
+
+- TV console: `1800 × 450 × 500 mm`, category `carpentry`
+- TV: `1200 × 180 × 760 mm`, model `tv`
+- Framed picture: `800 × 70 × 1000 mm`, model `picture-frame`
+- Bowl of fruits: `360 × 360 × 190 mm`, model `fruit-bowl`
+- Handphone: `80 × 160 × 14 mm`, model `phone`
+- Water flask: `95 × 95 × 300 mm`, model `flask`
+
 ## Validation requirements
 
 - IDs must be unique within the project.
 - Every opening's `wallId` must exist.
 - Wall length must be at least 200 mm.
 - Dimensions must be positive.
+- Elevation must be zero or positive.
 - Ceiling height defaults to 2600 mm.
 - `category` is one of `furniture`, `carpentry`, or `decorative`.
+- Use a supported `model` value when a recognised decorative object should render with its custom geometry.
