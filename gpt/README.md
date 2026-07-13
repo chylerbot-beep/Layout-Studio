@@ -13,6 +13,8 @@ Upload:
 3. `BTO-Layout-Object-Catalog.md`
 4. Any company-specific HDB planning standards or furniture-clearance guide
 
-Enable **Code Interpreter & Data Analysis** so the GPT can inspect `.btozip` or JSON projects, validate data and generate a downloadable `project.json`. Enable **Web Search** only when current product dimensions, HDB rules or sourcing information are required.
+Replace the older object-catalogue Knowledge file whenever it changes. The current catalogue includes the L-shaped wardrobe model, `armDepth`, carpentry resize behaviour, TV console and decorative models.
 
-After replacing instructions or knowledge files, test the GPT in Preview with one existing project package and one new floor plan before selecting **Update**.
+Enable **Code Interpreter & Data Analysis** so the GPT can inspect ZIP or JSON projects, validate data and generate a downloadable `project.json`. Enable **Web Search** only when current product dimensions, HDB rules or sourcing information are required.
+
+After replacing instructions or knowledge files, test the GPT in Preview with one existing project ZIP and one new floor plan before selecting **Update**.
