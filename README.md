@@ -12,12 +12,22 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000` in a normal desktop browser.
 
+## Current interaction updates
+
+- Moved **Align all walls β** into the left basemap-tools section
+- Added **Align furniture β** with conservative room, wall, support and grouped-layout logic
+- Added a **Resize** button for selected carpentry
+- Straight carpentry can be extended or shortened from either end along its length only
+- Added an **L-shaped wardrobe** with one resize handle on each free end
+- Every resize is stored as one undoable action
+
 ## Current catalogue update
 
 - Added TV console under Carpentry
+- Added L-shaped wardrobe under Carpentry
 - Added custom decorative models for TV, framed picture, bowl of fruits, handphone and water flask
 - Added adjustable object elevation in millimetres for tabletop, console-top and wall-mounted objects
-- Furniture-to-furniture collision checks now account for vertical separation, so an object can sit on a support surface without being treated as a volume overlap
+- Furniture-to-furniture collision checks account for vertical separation, so an object can sit on a support surface without being treated as a volume overlap
 
 ## Project ZIP files
 
@@ -62,6 +72,8 @@ Use these files from `gpt/`:
 - `BTO-Layout-Object-Catalog.md` — upload as a Knowledge file
 
 Also upload `schema/project-schema.md` as Knowledge. The GPT should always provide a validated `project.json` separately and may also provide a real standard ZIP containing that file, notes, basemap and references. It must not merely rename a text file to `.zip`.
+
+The latest object catalogue includes the L-shaped wardrobe model and carpentry resize rules. Replace the older Knowledge file in the GPT editor after pulling this update.
 
 ## Browser dependencies
 
