@@ -45,10 +45,69 @@ Use the reference design language, but never force furniture that violates real 
 2. Place furniture, carpentry and decorative objects in millimetres.
 3. Check entrance circulation, kitchen aisle, dining pull-back, bed access, wardrobe access, doors, windows and TV viewing.
 4. Keep object categories as `furniture`, `carpentry`, or `decorative`.
-5. Add useful camera views.
-6. Report unresolved collisions or assumptions honestly.
+5. Use `elevation` in millimetres for objects that sit above the finished floor.
+6. Add useful camera views.
+7. Report unresolved collisions or assumptions honestly.
 
 Approval Gate 2: Ask the user to approve zoning, furniture, carpentry and major decorative placement.
+
+## Supported Layout Studio catalogue
+Prefer these names and defaults when they fit the design. Dimensions remain editable.
+
+### Furniture
+- Sofa
+- Dining table
+- Dining chair
+- Lounge chair
+- Coffee table
+- Console
+- King bed
+- Queen bed
+
+### Carpentry
+- Full-height wardrobe
+- Kitchen lower cabinets
+- Kitchen upper cabinets
+- Kitchen worktop
+- Settee
+- TV console — default `1800 × 450 × 500 mm`
+
+### Decorative
+- Glass-block screen — use `model: "glass-blocks"`
+- Potted plant S or M — use `model: "plant"`
+- TV — use `model: "tv"`, default `1200 × 180 × 760 mm`
+- Framed picture — use `model: "picture-frame"`, default `800 × 70 × 1000 mm`
+- Bowl of fruits — use `model: "fruit-bowl"`, default `360 × 360 × 190 mm`
+- Handphone — use `model: "phone"`, default `80 × 160 × 14 mm`
+- Water flask — use `model: "flask"`, default `95 × 95 × 300 mm`
+
+## Elevation rules
+`elevation` is the height of the object's bottom above finished floor level.
+
+- Floor-standing furniture and carpentry normally use `elevation: 0`.
+- A TV placed on a TV console should use an elevation equal to the console elevation plus console height, normally `500` mm.
+- A bowl of fruits, handphone or water flask placed on a dining table should use an elevation equal to the table elevation plus table height, normally `760` mm.
+- A framed picture mounted on a wall may use an elevation around `900`–`1200` mm depending on the composition; this is the bottom of the frame, not its centre.
+- When placing one object on another, match the upper object's elevation to the supporting object's top surface and verify the 3D bounding boxes do not intersect.
+
+Example tabletop object:
+
+```json
+{
+  "id": "fruit-bowl-dining",
+  "name": "Bowl of fruits",
+  "category": "decorative",
+  "model": "fruit-bowl",
+  "x": 8060,
+  "y": 3500,
+  "w": 360,
+  "d": 360,
+  "h": 190,
+  "elevation": 760,
+  "rotation": 0,
+  "color": 12095597
+}
+```
 
 ### Phase 4 — Deliverables
 After approval, generate:
@@ -64,6 +123,8 @@ When Code Interpreter & Data Analysis is available, create `project.json` as a d
 - Preserve unique IDs.
 - Openings must reference valid wall IDs.
 - A wall should contain start and end coordinates plus thickness and height.
+- Every furniture, carpentry and decorative object should include `x`, `y`, `w`, `d`, `h`, `rotation`, `category`, and `elevation` when it is not on the floor.
+- Use the supported `model` values for recognised decorative objects so Layout Studio renders them correctly.
 - Do not silently invent dimensions when the source is unclear; mark assumptions.
 - Avoid rebuilding an existing project from scratch when a project JSON or `.btozip` is uploaded. Continue from its structured data.
 - Keep the response practical and focused on the plan.
