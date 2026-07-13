@@ -14,6 +14,12 @@ Open `http://localhost:8000` in a normal desktop browser.
 
 ## Current interaction updates
 
+- Added an architecture-first startup workflow: review walls, confirm, then reveal and align furniture
+- Basemap drawings are auto-fitted when a new or legacy basemap project enters review
+- Auto-detect walls replaces matching wall geometry instead of stacking duplicate walls, and adds missing detected walls
+- Added best-effort door-symbol detection that realigns nearby existing doors or adds missing doors
+- Double-click aligned overlapping walls to merge them while preserving their openings
+- Reference-image and empty hosted-library controls are hidden from the planning interface; imported package data remains compatible
 - Moved **Align all walls β** into the left basemap-tools section
 - Added **Align furniture β** with conservative room, wall, support and grouped-layout logic
 - Added a **Resize** button for selected carpentry
@@ -49,7 +55,7 @@ The app imports and exports normal `.zip` files containing:
 - optional `manifest.json`
 - optional project notes
 - the calibrated basemap under `assets/`
-- reference images under `references/`
+- optional legacy/reference images under `references/`
 
 Older `.btozip` files remain accepted because they were ordinary ZIP archives with a custom extension.
 
@@ -61,9 +67,9 @@ The importer is tolerant of several handoff formats:
 
 The JSON project data remains authoritative; images are references.
 
-## Hosted project library
+## Hosted project packages
 
-Add package entries to `projects/index.json`. Each entry uses:
+The visible hosted-project picker has been removed from the planning interface. Existing `projects/index.json` packages and direct `?project=` or `?package=` links remain compatible. Each entry uses:
 
 ```json
 {

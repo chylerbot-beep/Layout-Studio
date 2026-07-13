@@ -10,6 +10,14 @@
       --danger: #df7468;
       --amber: #d8ad63;
     }
+
+    .wall-review-workflow { margin-top: 12px; padding: 12px; border: 1px solid rgba(146,165,139,.5); border-radius: 10px; background: rgba(107,127,94,.1); }
+    .wall-review-workflow[hidden] { display: none !important; }
+    .wall-review-workflow p { margin: 8px 0 10px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .wall-review-step { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; color: #dfe9da; font-size: 10px; }
+    .wall-review-step span { max-width: 62%; color: var(--muted); text-align: right; line-height: 1.35; }
+    .wall-review-workflow.review-complete { border-color: rgba(146,165,139,.28); background: rgba(107,127,94,.06); }
+    #addReferences, #referenceImagesSection, #projectLibrarySection, #autoFitBasemap, #clearDetected { display: none !important; }
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     button, input, select, textarea { font: inherit; }

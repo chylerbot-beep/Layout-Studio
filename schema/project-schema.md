@@ -219,6 +219,10 @@ Carpentry:
 
 Objects without a recognised `model` render as editable boxes.
 
+## Architecture review state
+
+`settings.architectureReviewConfirmed` is an optional boolean. Older projects without it remain valid and enter the architecture-first review when a basemap is available. After the user confirms the reviewed walls, Layout Studio sets it to `true`, reveals furniture and runs conservative furniture alignment.
+
 ## Current catalogue defaults
 
 - Full-height wardrobe: `2400 × 600 × 2700 mm`

@@ -38,13 +38,13 @@
           <button id="newBlankProject">New blank</button>
           <button id="openPackage" class="primary">Open project ZIP</button>
           <button id="exportPackage">Export project ZIP</button>
-          <button id="addReferences">Add references</button>
+          <button id="addReferences" hidden>Add references</button>
         </div>
-        <details class="toggle-group" style="margin-top:10px">
+        <details class="toggle-group" id="referenceImagesSection" style="margin-top:10px" hidden>
           <summary>Reference images <span class="toggle-count" id="referenceCount">0 images</span></summary>
           <div class="toggle-body"><div id="referenceList" class="reference-grid"></div></div>
         </details>
-        <details class="toggle-group" style="margin-top:8px">
+        <details class="toggle-group" id="projectLibrarySection" style="margin-top:8px" hidden>
           <summary>Project library <span class="toggle-count" id="libraryCount"></span></summary>
           <div class="toggle-body">
             <label class="wide">Hosted project<select id="projectLibrary"><option value="">No projects loaded</option></select></label>
@@ -52,7 +52,7 @@
             <p class="small" id="libraryStatus">Projects listed in <code>projects/index.json</code> appear here.</p>
           </div>
         </details>
-        <p class="small package-status" id="packageStatus">A normal ZIP file can keep project JSON, the calibrated basemap, reference images and project notes together. Older .btozip packages are also accepted.</p>
+        <p class="small package-status" id="packageStatus">A normal ZIP file keeps project JSON, the calibrated basemap and project notes together. Older .btozip packages are also accepted.</p>
       </div>
       <div class="section">
         <h2>Floor-plan basemap</h2>
@@ -70,11 +70,17 @@
           <label class="wide">Opacity<input id="basemapOpacity" type="range" min="0" max="100" value="48" /></label>
         </div>
         <div class="button-row" style="margin-top:10px">
-          <button id="autoFitBasemap">Auto-fit drawing β</button>
+          <button id="autoFitBasemap" hidden>Auto-fit drawing β</button>
           <button id="ocrDimensions">Read dimensions OCR β</button>
           <button id="resetBasemapCrop">Reset crop</button>
           <button id="autoTrace">Auto-detect walls β</button>
-          <button id="clearDetected">Clear detected</button>
+          <button id="autoDoors">Auto-detect doors β</button>
+          <button id="clearDetected" hidden>Clear detected</button>
+        </div>
+        <div class="wall-review-workflow" id="wallReviewWorkflow" hidden>
+          <div class="wall-review-step"><strong>1 · Review walls</strong><span id="wallReviewStatus">Checking the basemap…</span></div>
+          <p>Furniture is temporarily hidden. Check the yellow detected walls, doors and openings against the basemap. Double-click aligned overlapping walls to merge them.</p>
+          <button id="confirmWallReview" class="primary">Confirm walls · reveal and align furniture</button>
         </div>
         <div id="ocrPanel" class="ocr-results" hidden>
           <div class="field-grid">

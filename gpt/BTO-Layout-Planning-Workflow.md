@@ -38,6 +38,8 @@ Ask the user to approve:
 
 Do not add another approval step before furniture planning.
 
+When handing an unconfirmed project to Layout Studio, leave `settings.architectureReviewConfirmed` as `false`. Layout Studio will auto-fit the basemap, hide furniture and open wall review. The user confirms the reviewed walls in Layout Studio before furniture is revealed and conservatively aligned. Do not mark this field `true` merely because project JSON was generated successfully.
+
 ## 3. Design-language analysis
 
 Analyse the reference images for:

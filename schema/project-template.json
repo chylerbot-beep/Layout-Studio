@@ -15,6 +15,7 @@
   "clearances": [],
   "furniture": [],
   "settings": {
+    "architectureReviewConfirmed": false,
     "ceilingVisible": false,
     "ceilingHeight": 2600,
     "cameraCutaway": {
