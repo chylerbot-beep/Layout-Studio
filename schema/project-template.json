@@ -16,7 +16,14 @@
   "furniture": [],
   "settings": {
     "ceilingVisible": false,
-    "ceilingHeight": 2600
+    "ceilingHeight": 2600,
+    "cameraCutaway": {
+      "enabled": false,
+      "style": "fade",
+      "opacity": 0.15,
+      "depth": 1200,
+      "hiddenWallIds": []
+    }
   },
   "camera": null,
   "plan": {
