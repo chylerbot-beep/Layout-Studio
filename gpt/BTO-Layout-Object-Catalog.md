@@ -48,3 +48,60 @@ upper elevation = support elevation + support height
 ```
 
 Touching surfaces are valid. Do not embed the upper object inside the support object's volume.
+
+## Placement metadata for automatic alignment
+
+Add a `placement` object whenever the intended relationship is known.
+
+### Wall-anchored carpentry
+
+```json
+{
+  "roomId": "room-living",
+  "mode": "wall",
+  "wallId": "wall-living-east",
+  "gap": 20,
+  "groupId": "living-tv-zone"
+}
+```
+
+Use this for wardrobes, kitchen cabinets, worktops, TV consoles and beds with a known headboard wall.
+
+### Freestanding furniture
+
+```json
+{
+  "roomId": "room-living",
+  "mode": "free",
+  "groupId": "living-seating"
+}
+```
+
+Use this for sofas, lounge chairs and coffee tables unless the design explicitly anchors them to a wall.
+
+### Supported decorative object
+
+```json
+{
+  "roomId": "room-living",
+  "mode": "support",
+  "supportId": "tv-console",
+  "groupId": "living-tv-zone"
+}
+```
+
+Use this for a TV on a console and small decorative objects on tables. The upper object should use the support object's top elevation.
+
+### Dining group
+
+The table and all matching dining chairs should share:
+
+```json
+{
+  "roomId": "room-dining",
+  "mode": "free",
+  "groupId": "dining-set"
+}
+```
+
+This lets **Align furniture β** translate the dining arrangement as one unit instead of breaking the chair spacing.
