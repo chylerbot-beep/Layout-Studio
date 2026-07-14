@@ -115,7 +115,8 @@
           <div class="toggle-body" id="architectureRoomList"></div>
         </details>
       </div>
-      <div class="section">
+      <div class="section add-section">
+        <h2>Add</h2>
         <details class="toggle-group">
           <summary>Add furniture <span class="toggle-count" id="catalogCount"></span></summary>
           <div class="toggle-body"><div class="catalog" id="catalog"></div></div>
@@ -125,7 +126,7 @@
           <div class="toggle-body"><div class="catalog" id="carpentryCatalog"></div></div>
         </details>
         <details class="toggle-group">
-          <summary>Decorative <span class="toggle-count" id="decorativeCatalogCount"></span></summary>
+          <summary>Add Decorative <span class="toggle-count" id="decorativeCatalogCount"></span></summary>
           <div class="toggle-body"><div class="catalog" id="decorativeCatalog"></div></div>
         </details>
       </div>
@@ -310,10 +311,22 @@
     </div>
   </div>
 
+  <div class="modal" id="missingBasemapModal" role="dialog" aria-modal="true" aria-labelledby="missingBasemapTitle">
+    <div class="dialog">
+      <span class="scale-step-label">Step 1 of 3</span>
+      <h3 id="missingBasemapTitle">Add a floor-plan basemap</h3>
+      <p class="small">This ZIP contains Layout Studio project measurements but no floor-plan image. Upload the matching PNG, JPG or WebP to verify its scale, or continue using the millimetre measurements stored in the project JSON.</p>
+      <div class="dialog-actions">
+        <button id="missingBasemapContinue">Continue with JSON</button>
+        <button id="missingBasemapUpload" class="primary">Upload floor plan</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app-loader.js?v=20260714-auto-ruler-v40"></script>
+  <script src="app-loader.js?v=20260714-import-scale-add-v41"></script>
 </body>
 </html>

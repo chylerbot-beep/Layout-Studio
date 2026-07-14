@@ -4,6 +4,7 @@
         {key:'project-workspace',title:'Project workspace',selector:'.section.project-workspace'},
         {key:'floor-plan-basemap',title:'Floor-plan basemap'},
         {key:'architecture',title:'Architecture'},
+        {key:'add',title:'Add',selector:'.section.add-section'},
         {key:'display',title:'Display'}
       ];
       const sectionCollapseStorageKey='bto-layout-studio:collapsed-sections:v1';

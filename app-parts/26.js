@@ -10,6 +10,7 @@
         pendingCheck: false
       };
       const scaleCanvasV33 = $('scaleCanvas');
+      let scaleLaunchRequestV41 = 0;
 
       function calibratedBasemapSizeV33(){
         const basemap = project.basemap;
@@ -293,6 +294,50 @@
         scaleStateV33.drag = null;
       }
 
+      function scheduleScaleCalibrationV41(pendingCheck = true){
+        const request = ++scaleLaunchRequestV41;
+        let attempts = 0;
+        const tryOpen = () => {
+          if(request !== scaleLaunchRequestV41 || !project.settings?.scaleCalibrationRequired || !project.basemap)return;
+          if(basemapImage?.complete && basemapImage.naturalWidth){
+            if(!$('scaleModal').classList.contains('open'))openScaleCalibrationV33(pendingCheck);
+            return;
+          }
+          attempts++;
+          if(attempts < 120)setTimeout(tryOpen, 50);
+          else{
+            $('basemapStatus').textContent = 'The basemap image could not be opened. Upload the matching floor plan to verify the project scale.';
+            $('missingBasemapModal').classList.add('open');
+          }
+        };
+        basemapImage?.addEventListener('load', tryOpen, {once:true});
+        requestAnimationFrame(tryOpen);
+      }
+
+      function showMissingBasemapStepV41(){
+        closeScaleCalibrationV33();
+        $('missingBasemapModal').classList.add('open');
+        $('basemapStatus').textContent = 'This ZIP has no basemap image. Upload the matching floor plan to verify scale, or continue with its JSON measurements.';
+      }
+
+      function startImportedProjectReviewV41(){
+        scaleLaunchRequestV41++;
+        wallReviewActiveV32 = false;
+        wallReviewStartKeyV32 = '';
+        reviewWorkflowV36.hidden = true;
+        document.body.classList.remove('architecture-review-mode');
+        setFurnitureReviewVisibilityV32(true);
+        viewBird();
+        if(!project.basemap?.dataUrl){
+          project.settings.scaleCalibrationRequired = false;
+          showMissingBasemapStepV41();
+          return;
+        }
+        project.settings.scaleCalibrationRequired = true;
+        project.settings.architectureReviewConfirmed = false;
+        scheduleScaleCalibrationV41(true);
+      }
+
       function applyScaleCalibrationV33(){
         const knownMm = +$('scaleKnownMm').value;
         const pixels = scalePixelDistanceV33();
@@ -425,9 +470,7 @@
       const scheduleWallReviewBeforeScaleV33 = scheduleWallReviewV32;
       scheduleWallReviewV32 = function(force = false){
         if(project.settings?.scaleCalibrationRequired){
-          const openRuler = () => openScaleCalibrationV33(true);
-          if(basemapImage?.complete && basemapImage.naturalWidth)requestAnimationFrame(openRuler);
-          else basemapImage?.addEventListener('load', openRuler, {once:true});
+          scheduleScaleCalibrationV41(true);
           return;
         }
         scheduleWallReviewBeforeScaleV33(force);
@@ -435,8 +478,22 @@
 
       const loadBasemapBeforeScaleV33 = loadBasemap;
       loadBasemap = function(file){
+        $('missingBasemapModal').classList.remove('open');
         project.settings = project.settings || {};
         project.settings.scaleCalibrationRequired = true;
         project.settings.architectureReviewConfirmed = false;
         loadBasemapBeforeScaleV33(file);
+      };
+
+      $('missingBasemapUpload').onclick = () => {
+        $('missingBasemapModal').classList.remove('open');
+        $('basemapFile').click();
+      };
+      $('missingBasemapContinue').onclick = () => {
+        $('missingBasemapModal').classList.remove('open');
+        project.settings.scaleCalibrationRequired = false;
+        project.settings.architectureReviewConfirmed = true;
+        viewBird();
+        buildScene();
+        setPackageStatus('Project opened without a basemap. JSON millimetre measurements remain authoritative.','ok');
       };

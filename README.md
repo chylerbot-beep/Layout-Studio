@@ -22,7 +22,7 @@ Open `http://localhost:8000` in a desktop browser.
 5. Confirm architecture to reveal and conservatively align furniture.
 6. Validate, set a camera and export PNG or project files.
 
-For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. The correction and confirmation steps replace the normal left panel and provide:
+For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. A ZIP without a basemap opens a Step 1 choice to upload the matching floor plan or continue with its authoritative JSON measurements. The correction and confirmation steps replace the normal left panel and provide:
 
 - near-top-down Bird's-eye navigation
 - centred wall-band and door checking against the calibrated basemap
@@ -63,6 +63,7 @@ Ruler metadata and `settings.architectureReviewConfirmed` are optional, so older
 - Conservative alignment preserves rooms, wall intent, support relationships and grouped arrangements.
 - Validation reports physical furniture/furniture, furniture/wall and furniture/fixed-shell overlaps only.
 - The precision panel becomes a drawer below 900 px.
+- Furniture, carpentry and decorative catalogues are grouped inside the collapsible **Add** section.
 
 ## Camera and display
 

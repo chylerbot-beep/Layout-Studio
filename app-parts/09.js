@@ -100,8 +100,10 @@
           let next,detail='',loadedFromZip=false;
           try{const result=await readProjectFromZip(file);next=result.next;detail=` from ${result.projectFileName}`;loadedFromZip=true;}
           catch(error){zipError=error;next=await readProjectFromPlainJson(file);detail=' as a plain JSON project';}
-          if(loadedFromZip&&next.basemap){next.settings=next.settings||{};next.settings.scaleCalibrationRequired=true;}
-          applyProjectDataV27(next,'open project package');setPackageStatus(`Opened ${sourceLabel}${detail}.`,'ok');
+          if(loadedFromZip){next.settings=next.settings||{};next.settings.scaleCalibrationRequired=!!next.basemap;next.settings.architectureReviewConfirmed=false;}
+          applyProjectDataV27(next,'open project package');
+          if(loadedFromZip&&typeof startImportedProjectReviewV41==='function')startImportedProjectReviewV41();
+          setPackageStatus(`Opened ${sourceLabel}${detail}.`,'ok');
         }catch(error){
           console.error('ZIP read error:',zipError);console.error('Fallback read error:',error);
           const detail=zipError&&zipError.message!==error.message?`${zipError.message}; fallback: ${error.message}`:error.message;
