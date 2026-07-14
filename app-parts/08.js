@@ -5,7 +5,7 @@
 
       function saveProject(){
         syncSelectedFromMesh(); project.camera={position:camera.position.toArray(),target:orbit.target.toArray(),fov:camera.fov};
-        downloadBlob(new Blob([JSON.stringify(project,null,2)],{type:'application/json'}),'bto-layout-project.json');
+        downloadBlob(new Blob([JSON.stringify(project,null,2)],{type:'application/json'}),'layout-studio-project.json');
       }
       function normalizeProject(){
         project.rooms=project.rooms||[];project.walls=project.walls||[];project.openings=project.openings||[];project.shell=project.shell||[];project.clearances=project.clearances||[];project.furniture=project.furniture||[];
@@ -22,7 +22,7 @@
         if($('captureBackground').value==='transparent')scene.background=null; grid.visible=false;clearanceGroup.visible=false;transform.visible=false;
         renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.render(scene,camera);
         renderer.domElement.toBlob(blob=>{
-          downloadBlob(blob,'bto-camera-view.png');
+          downloadBlob(blob,projectDownloadName('png'));
           renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=oldSize.x/oldSize.y;camera.updateProjectionMatrix();scene.background=oldBg;grid.visible=oldGrid;clearanceGroup.visible=oldClear;transform.visible=oldTransform;$('captureModal').classList.remove('open');
         },'image/png');
       }
@@ -81,8 +81,6 @@
       $('fovField').onchange=()=>{camera.fov=+$('fovField').value;camera.updateProjectionMatrix();$('depthField').value=camera.fov;};
       $('depthField').oninput=()=>{camera.fov=+$('depthField').value;camera.updateProjectionMatrix();$('fovField').value=camera.fov;};
       $('cameraHeight').onchange=()=>{camera.position.y=mm(+$('cameraHeight').value);orbit.update();};
-      $('saveCamera').onclick=()=>{savedCamera={position:camera.position.clone(),target:orbit.target.clone(),fov:camera.fov};};
-      $('restoreCamera').onclick=()=>{if(!savedCamera)return;camera.position.copy(savedCamera.position);orbit.target.copy(savedCamera.target);camera.fov=savedCamera.fov;camera.updateProjectionMatrix();orbit.update();};
       $('capture').onclick=()=>$('captureModal').classList.add('open');$('captureCancel').onclick=()=>$('captureModal').classList.remove('open');$('captureConfirm').onclick=capturePng;
 
       $('undo').onclick=undoAction;$('redo').onclick=redoAction;$('undo').disabled=true;$('redo').disabled=true;

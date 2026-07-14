@@ -14,7 +14,7 @@
       };
 
       const initialScene = {
-        meta: {name:'Singapore 5-room BTO',brief:'Couple household. Open bedroom beside living room, open kitchen, king bed, queen bed, TV and dining for 6–8.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),appVersion:APP_VERSION},
+        meta: {name:'Example apartment',brief:'Couple household. Open bedroom beside living room, open kitchen, king bed, queen bed, TV and dining for 6–8.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),appVersion:APP_VERSION},
         references: [],
         basemap: null,
         rooms: [
@@ -112,4 +112,3 @@
         {category:'decorative',name:'Potted plant S',w:350,d:350,h:500,model:'plant',plantSize:'S',color:0x71866c},
         {category:'decorative',name:'Potted plant M',w:650,d:650,h:1200,model:'plant',plantSize:'M',color:0x71866c}
       ];
-

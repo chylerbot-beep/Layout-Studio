@@ -24,7 +24,7 @@
         return sprite;
       };
 
-      const eyeLabelHost=$('cameraCutawayControls')||$('saveCamera')?.closest('.section');
+      const eyeLabelHost=$('cameraCutawayControls')||$('fovField')?.closest('.section');
       if(eyeLabelHost&&!$('eyeLabelCleanupControls')){
         const panel=document.createElement('div');panel.id='eyeLabelCleanupControls';panel.style.marginTop='14px';
         panel.innerHTML=`
@@ -192,7 +192,7 @@
         renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
         if(typeof applyCameraCutaway==='function')applyCameraCutaway();updateEyeLevelLabelCleanup();renderer.render(scene,camera);
         renderer.domElement.toBlob(blob=>{
-          if(blob)downloadBlob(blob,'bto-camera-view.png');
+          if(blob)downloadBlob(blob,projectDownloadName('png'));
           renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=oldSize.x/oldSize.y;camera.updateProjectionMatrix();scene.background=oldBg;grid.visible=oldGrid;clearanceGroup.visible=oldClear;transform.visible=oldTransform;selectionOverlayGroup.visible=oldOverlay;if(oldResize!==null)carpentryResizeGroup.visible=oldResize;
           if(typeof applyCameraCutaway==='function')applyCameraCutaway();updateEyeLevelLabelCleanup();$('captureModal').classList.remove('open');
         },'image/png');

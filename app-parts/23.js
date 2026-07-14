@@ -82,7 +82,7 @@
       const rightPanelV31=document.querySelector('.panel.right');
       const furnitureSectionV31=$('selectionEmpty')?.closest('.section');
       const wallSectionV31=$('architectureEmpty')?.closest('.section');
-      const cameraSectionV31=$('saveCamera')?.closest('.section');
+      const cameraSectionV31=$('fovField')?.closest('.section');
       const validationSectionV31=$('warningList')?.closest('.section');
       let validationExpandedV31=false;
       const validationCompactV31=document.createElement('div');validationCompactV31.className='validation-compact';

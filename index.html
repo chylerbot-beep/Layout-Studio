@@ -17,6 +17,7 @@
       <button id="modeRotate">Rotate</button>
       <button id="undo" title="Undo (Ctrl/Cmd+Z)">Undo</button>
       <button id="redo" title="Redo (Ctrl/Cmd+Shift+Z)">Redo</button>
+      <button id="togglePrecisionPanel" aria-controls="precisionPanel" aria-expanded="false">Precision</button>
       <span class="spacer"></span>
       <button id="saveJson">Save project</button>
       <button id="loadJson">Load project</button>
@@ -31,7 +32,7 @@
       <div class="section project-workspace">
         <h2>Project workspace</h2>
         <div class="field-grid">
-          <label class="wide">Project name<input id="projectName" type="text" value="Singapore 5-room BTO" /></label>
+          <label class="wide">Project name<input id="projectName" type="text" value="Example apartment" /></label>
           <label class="wide">Household &amp; layout brief<textarea id="projectBrief" rows="4" placeholder="Occupants, hacked walls, beds, dining capacity, TV, kitchen, storage and design priorities"></textarea></label>
         </div>
         <div class="button-row" style="margin-top:10px">
@@ -78,18 +79,6 @@
           <button id="autoTrace" hidden>Auto-detect walls β</button>
           <button id="autoDoors" hidden>Auto-detect doors β</button>
           <button id="clearDetected" hidden>Clear detected</button>
-        </div>
-        <div class="wall-review-workflow" id="wallReviewWorkflow" hidden>
-          <div class="wall-review-step"><strong>1 · Review architecture</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
-          <p>Furniture is temporarily hidden. Compare the yellow suggestions with the basemap, correct any mistakes, then confirm the architecture.</p>
-          <div class="button-row wall-review-tools">
-            <button id="reviewRecheckArea">Re-check area</button>
-            <button id="reviewAlignSelected">Align selected</button>
-            <button id="reviewDeleteSelected" class="danger">Delete selected</button>
-            <button id="reviewOriginal">Hold original</button>
-          </div>
-          <p class="wall-review-instruction" id="wallReviewInstruction">Select a wall to align or delete. Double-click aligned overlapping walls to merge them.</p>
-          <button id="confirmWallReview" class="primary">Confirm architecture · reveal and align furniture</button>
         </div>
         <div id="ocrPanel" class="ocr-results" hidden>
           <div class="field-grid">
@@ -167,7 +156,7 @@
       <div id="help">Click an object to select · drag arrows to move · drag ring to rotate · select a wall for blue edit handles · right-click to deselect</div>
     </main>
 
-    <aside class="panel right">
+    <aside class="panel right" id="precisionPanel">
       <div class="section">
         <h2>Selected furniture</h2>
         <div id="selectionEmpty" class="empty">Select a furniture item in the scene.</div>
@@ -224,10 +213,6 @@
           <label>Height (mm)<input id="cameraHeight" type="number" min="500" max="12000" step="100" value="6500" /></label>
           <label class="wide">Perspective depth<input id="depthField" type="range" min="25" max="85" value="50" /></label>
         </div>
-        <div class="button-row" style="margin-top:12px">
-          <button id="saveCamera">Save view</button>
-          <button id="restoreCamera">Restore view</button>
-        </div>
       </div>
 
       <div class="section">
@@ -241,6 +226,53 @@
       </div>
     </aside>
   </div>
+
+  <button id="resumeReviewGuide" hidden>Resume architecture review</button>
+  <section class="wall-review-workflow review-guide" id="wallReviewWorkflow" role="dialog" aria-modal="false" aria-labelledby="reviewGuideTitle" hidden>
+    <div class="review-guide-header">
+      <div><span id="reviewStepLabel">Step 1 of 3</span><h3 id="reviewGuideTitle">Review and adjust floor plan</h3></div>
+      <button id="reviewGuideClose" title="Minimize review guide" aria-label="Minimize review guide">−</button>
+    </div>
+    <div class="review-guide-progress"><span id="reviewProgressBar"></span></div>
+    <div class="review-guide-status"><strong>Floor-plan check</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
+
+    <div class="review-guide-page" data-review-step="1">
+      <h4>Inspect detected architecture</h4>
+      <p>Furniture is hidden while you compare the yellow wall and opening suggestions with the basemap.</p>
+      <div class="review-navigation-help"><strong>Adjust the view</strong><span>Scroll to zoom. Drag to look around. Use these views whenever the plan is difficult to inspect.</span></div>
+      <div class="button-row review-view-tools">
+        <button id="reviewViewTop">Top</button>
+        <button id="reviewViewBird">Bird's eye</button>
+        <button id="reviewViewEye">Eye level</button>
+      </div>
+      <p class="wall-review-instruction">Inspect the full home, then continue to correction tools.</p>
+    </div>
+
+    <div class="review-guide-page" data-review-step="2" hidden>
+      <h4>Correct mismatches</h4>
+      <p>Use only the correction you need. You can continue zooming, panning and changing view while this guide remains open.</p>
+      <div class="button-row wall-review-tools">
+        <button id="reviewRecheckArea">Re-check area</button>
+        <button id="reviewAlignSelected">Align selected</button>
+        <button id="reviewDeleteSelected" class="danger">Delete selected</button>
+        <button id="reviewOriginal">Hold original</button>
+      </div>
+      <p class="wall-review-instruction" id="wallReviewInstruction">Select a wall to align or delete. Double-click aligned overlapping walls to merge them.</p>
+    </div>
+
+    <div class="review-guide-page" data-review-step="3" hidden>
+      <h4>Confirm architecture</h4>
+      <p>Make one last comparison with the basemap. Confirming keeps the reviewed walls, reveals furniture and runs conservative furniture alignment as one undoable operation.</p>
+      <button id="confirmWallReview" class="primary review-confirm-button">Confirm architecture · reveal and align furniture</button>
+    </div>
+
+    <div class="review-guide-actions">
+      <button id="reviewStepBack">Back</button>
+      <button id="reviewStepNext" class="primary">Next</button>
+    </div>
+  </section>
+
+  <div id="precisionPanelBackdrop"></div>
 
   <div class="modal" id="captureModal">
     <div class="dialog">
@@ -270,7 +302,7 @@
   <div class="modal scale-modal" id="scaleModal" role="dialog" aria-modal="true" aria-labelledby="scaleModalTitle">
     <div class="dialog scale-dialog">
       <div class="scale-dialog-heading">
-        <div><h3 id="scaleModalTitle">Set floor-plan scale</h3><p class="small">Drag both blue ruler ends onto a known printed dimension, then enter its length in millimetres.</p></div>
+        <div><h3 id="scaleModalTitle">Set floor-plan scale</h3><p class="small">Drag both blue ruler ends along one horizontal printed dimension, then enter its length in millimetres.</p></div>
         <button id="scaleCancel" aria-label="Close scale calibration">Close</button>
       </div>
       <div class="scale-canvas-wrap"><canvas id="scaleCanvas"></canvas></div>

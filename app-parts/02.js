@@ -43,7 +43,6 @@
       let selected = null;
       let selectedArchitecture = null;
       let grid = null;
-      let savedCamera = null;
       let labelVisible = true;
       let activeTool = 'select';
       let wallStart = null;

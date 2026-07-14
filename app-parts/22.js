@@ -41,7 +41,7 @@
 
       const selectedWallSectionV30=$('architectureEmpty')?.closest('.section');
       const selectedWallCollapseV30=makeRightSectionCollapsibleV30(selectedWallSectionV30,'selected-wall',false);
-      const cameraSectionV30=$('saveCamera')?.closest('.section');
+      const cameraSectionV30=$('fovField')?.closest('.section');
       makeRightSectionCollapsibleV30(cameraSectionV30,'camera',true);
 
       // Replace the large persistent blue note with a small question-mark tooltip.

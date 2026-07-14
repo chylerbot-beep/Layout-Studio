@@ -6,13 +6,13 @@
       function safeFileName(value,fallback='project'){
         return String(value||fallback).trim().replace(/[^a-z0-9._-]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||fallback;
       }
-      function projectDownloadName(extension){return `${safeFileName(project.meta?.name,'bto-layout-project')}.${extension}`;}
+      function projectDownloadName(extension){return `${safeFileName(project.meta?.name,'layout-studio-project')}.${extension}`;}
       function saveProjectV27(){
         syncProjectCameraV27();
         downloadBlob(new Blob([JSON.stringify(project,null,2)],{type:'application/json'}),projectDownloadName('json'));
       }
       function normalizeProjectV27(){
-        project.meta=project.meta||{};project.meta.name=project.meta.name||'Untitled BTO project';project.meta.brief=project.meta.brief||'';project.meta.createdAt=project.meta.createdAt||new Date().toISOString();project.meta.updatedAt=project.meta.updatedAt||new Date().toISOString();project.meta.appVersion=APP_VERSION;
+        project.meta=project.meta||{};project.meta.name=project.meta.name||'Untitled layout';project.meta.brief=project.meta.brief||'';project.meta.createdAt=project.meta.createdAt||new Date().toISOString();project.meta.updatedAt=project.meta.updatedAt||new Date().toISOString();project.meta.appVersion=APP_VERSION;
         project.references=Array.isArray(project.references)?project.references:[];
         project.rooms=project.rooms||[];project.walls=project.walls||[];project.openings=project.openings||[];project.shell=project.shell||[];project.clearances=project.clearances||[];project.furniture=project.furniture||[];
         project.settings=project.settings||{};if(project.settings.ceilingVisible===undefined)project.settings.ceilingVisible=false;project.settings.ceilingHeight=Math.max(2100,Math.min(5000,+project.settings.ceilingHeight||2600));
@@ -24,7 +24,7 @@
       }
       function createBlankProjectV27(){
         const width=Math.max(100,+$('planWidth').value||PLAN_W),depth=Math.max(100,+$('planDepth').value||PLAN_H),now=new Date().toISOString();
-        return {meta:{name:'Untitled BTO project',brief:'',createdAt:now,updatedAt:now,appVersion:APP_VERSION},references:[],basemap:null,rooms:[],walls:[],openings:[],shell:[],clearances:[],furniture:[],settings:{ceilingVisible:false,ceilingHeight:2600},camera:null,plan:{width,depth,unit:'mm'}};
+        return {meta:{name:'Untitled layout',brief:'',createdAt:now,updatedAt:now,appVersion:APP_VERSION},references:[],basemap:null,rooms:[],walls:[],openings:[],shell:[],clearances:[],furniture:[],settings:{ceilingVisible:false,ceilingHeight:2600},camera:null,plan:{width,depth,unit:'mm'}};
       }
       function applyProjectDataV27(nextProject,historyLabel='load project'){
         if(historyLabel)pushHistory(historyLabel);
@@ -45,7 +45,7 @@
       function setPackageStatus(message,state=''){$('packageStatus').textContent=message;$('packageStatus').className=`small package-status ${state}`.trim();}
       function setPackageBusy(busy,message){packageBusy=busy;['newBlankProject','openPackage','exportPackage','addReferences','openLibraryProject'].forEach(id=>$(id).disabled=busy);if(message)setPackageStatus(message,busy?'busy':'');}
       function updateProjectWorkspace(){
-        if(!$('projectName'))return;$('projectName').value=project.meta?.name||'Untitled BTO project';$('projectBrief').value=project.meta?.brief||'';renderReferenceList();
+        if(!$('projectName'))return;$('projectName').value=project.meta?.name||'Untitled layout';$('projectBrief').value=project.meta?.brief||'';renderReferenceList();
       }
       function renderReferenceList(){
         const refs=project.references||[],container=$('referenceList');$('referenceCount').textContent=`${refs.length} image${refs.length===1?'':'s'}`;container.innerHTML='';
@@ -60,7 +60,7 @@
         if(packageBusy)return;if(typeof JSZip==='undefined'){setPackageStatus('JSZip did not load. Check the internet connection and reload.','error');return;}
         syncProjectCameraV27();setPackageBusy(true,'Preparing standard ZIP project package…');
         try{
-          const zip=new JSZip(),portable=JSON.parse(JSON.stringify(project)),manifest={format:PROJECT_PACKAGE_FORMAT,formatVersion:1,appVersion:APP_VERSION,name:portable.meta?.name||'Untitled BTO project',createdAt:new Date().toISOString(),projectFile:'project.json',notesFile:'project-notes.json',basemap:null,references:[]};
+          const zip=new JSZip(),portable=JSON.parse(JSON.stringify(project)),manifest={format:PROJECT_PACKAGE_FORMAT,formatVersion:1,appVersion:APP_VERSION,name:portable.meta?.name||'Untitled layout',createdAt:new Date().toISOString(),projectFile:'project.json',notesFile:'project-notes.json',basemap:null,references:[]};
           if(portable.basemap?.dataUrl){const payload=dataUrlPayload(portable.basemap.dataUrl);if(payload){const ext=extensionForMime(portable.basemap.mimeType||payload.mimeType,portable.basemap.sourceName),path=`assets/basemap.${ext}`;zip.file(path,payload.base64,{base64:true});portable.basemap.assetPath=path;delete portable.basemap.dataUrl;manifest.basemap={path,mimeType:portable.basemap.mimeType||payload.mimeType,sourceName:portable.basemap.sourceName};}}
           portable.references=(portable.references||[]).map((ref,index)=>{const payload=dataUrlPayload(ref.dataUrl),ext=extensionForMime(ref.mimeType||payload?.mimeType,ref.name),path=`references/${String(index+1).padStart(2,'0')}-${safeFileName(ref.name||`reference-${index+1}.${ext}`)}`;if(payload)zip.file(path,payload.base64,{base64:true});const metadata={...ref,assetPath:path};delete metadata.dataUrl;manifest.references.push({path,name:metadata.name,mimeType:metadata.mimeType});return metadata;});
           zip.file('manifest.json',JSON.stringify(manifest,null,2));zip.file('project.json',JSON.stringify(portable,null,2));zip.file('project-notes.json',JSON.stringify(portable.meta||{},null,2));
@@ -129,7 +129,7 @@
         $('saveJson').onclick=saveProjectV27;$('jsonFile').onchange=e=>e.target.files[0]&&loadProjectV27(e.target.files[0]);
         $('newBlankProject').onclick=newBlankProject;$('openPackage').onclick=()=>$('packageFile').click();$('packageFile').onchange=e=>e.target.files[0]&&importProjectPackage(e.target.files[0]);$('exportPackage').onclick=exportProjectPackage;
         $('addReferences').onclick=()=>$('referenceFiles').click();$('referenceFiles').onchange=e=>addReferenceFiles(e.target.files);
-        $('projectName').onchange=()=>{pushHistory('rename project');project.meta=project.meta||{};project.meta.name=$('projectName').value.trim()||'Untitled BTO project';project.meta.updatedAt=new Date().toISOString();};
+        $('projectName').onchange=()=>{pushHistory('rename project');project.meta=project.meta||{};project.meta.name=$('projectName').value.trim()||'Untitled layout';project.meta.updatedAt=new Date().toISOString();};
         $('projectBrief').onchange=()=>{pushHistory('edit project brief');project.meta=project.meta||{};project.meta.brief=$('projectBrief').value;project.meta.updatedAt=new Date().toISOString();};
         $('refreshLibrary').onclick=refreshProjectLibrary;$('openLibraryProject').onclick=openSelectedLibraryProject;
         normalizeProjectV27();updateProjectWorkspace();refreshProjectLibrary();

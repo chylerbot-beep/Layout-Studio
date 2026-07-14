@@ -15,7 +15,7 @@
         return settings;
       }
 
-      const cameraSection=$('saveCamera')?.closest('.section');
+      const cameraSection=$('fovField')?.closest('.section');
       if(cameraSection&&!$('cameraCutawayControls')){
         const controls=document.createElement('div');controls.id='cameraCutawayControls';controls.style.marginTop='14px';
         controls.innerHTML=`

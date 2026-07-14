@@ -17,7 +17,11 @@ Open `http://localhost:8000` in a normal desktop browser.
 - Added draggable ruler calibration: place both endpoints on a reliable printed dimension and enter its length in millimetres
 - Added **Check floor plan β**, which runs the existing browser-only wall and door recognition without a paid AI service
 - Added guided architecture review tools: re-check a selected area, align or delete the selected item, temporarily show the original basemap, and merge aligned overlapping walls by double-clicking
+- Architecture review now opens as a three-step floating guide while the viewport remains interactive for zooming, panning and camera changes
 - New basemap uploads now follow **Set scale → Check floor plan → Review architecture → Confirm → Reveal and align furniture**
+- Scale calibration is constrained to a horizontal ruler while still allowing the ruler to move vertically over the drawing
+- Added a **Precision** drawer below 900 px so numeric object, wall, camera and validation controls remain accessible
+- Removed the visible Save view / Restore view controls; PNG exports use the current project name instead of `bto-camera-view.png`
 - Auto-detect replaces matching wall geometry instead of stacking duplicate walls and adds missing suggestions
 - Best-effort door-symbol detection realigns nearby doors or adds missing doors
 - Existing JSON, ZIP and `.btozip` projects remain compatible; ruler metadata is optional
