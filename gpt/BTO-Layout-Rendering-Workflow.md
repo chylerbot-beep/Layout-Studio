@@ -91,7 +91,7 @@ Small changes to upholstery thickness, legs and edge profiles are acceptable. Ch
 Remove or ignore:
 - labels
 - red validation outlines
-- yellow detected-wall outlines
+- red architecture-review outlines
 - blue wall-selection overlays
 - transform arrows and rotation rings
 - resize handles

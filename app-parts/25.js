@@ -59,7 +59,7 @@
           else{wall={id:`detected-${stamp}-${index}`,name:`Detected wall ${index+1}`,h:wh,detected:true,autoDetected:true};if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);project.walls.push(wall);kept.add(wall.id);added++;}
         });
         const removedIds=new Set(candidates.filter(wall=>wall.detected&&!kept.has(wall.id)).map(wall=>wall.id));project.walls=project.walls.filter(wall=>!removedIds.has(wall.id));project.openings=(project.openings||[]).filter(opening=>!removedIds.has(opening.wallId));const merged=mergeAllWallOverlapsV32();
-        buildScene();setWallReviewStatusV32(`${replaced} walls replaced · ${added} missing walls added${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup replaced ${replaced} matching walls and added ${added} missing walls without stacking duplicates. Review yellow walls before confirming.`;
+        buildScene();setWallReviewStatusV32(`${replaced} walls replaced · ${added} missing walls added${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup replaced ${replaced} matching walls and added ${added} missing walls without stacking duplicates. Review the red unconfirmed-wall outlines before confirming.`;
       };
 
       function sampleDoorGapsForWallV32(wall,analysis,gray){
@@ -101,7 +101,7 @@
 
       function beginWallReviewV32(force=false){
         if(!project.basemap||!basemapImage?.complete||!basemapImage.naturalWidth)return;if(project.settings?.architectureReviewConfirmed===true&&!force){wallReviewActiveV32=false;$('wallReviewWorkflow').hidden=true;setFurnitureReviewVisibilityV32(true);return;}
-        const key=`${project.basemap.sourceName||''}:${project.basemap.dataUrl?.length||0}:${project.meta?.updatedAt||''}`;if(!force&&wallReviewStartKeyV32===key)return;wallReviewStartKeyV32=key;project.settings=project.settings||{};project.settings.architectureReviewConfirmed=false;wallReviewActiveV32=true;$('wallReviewWorkflow').hidden=false;$('confirmWallReview').hidden=false;setFurnitureReviewVisibilityV32(false);expandArchitectureReviewV32();viewTop();setWallReviewStatusV32('Auto-fitting basemap and checking walls…');
+        const key=`${project.basemap.sourceName||''}:${project.basemap.dataUrl?.length||0}:${project.meta?.updatedAt||''}`;if(!force&&wallReviewStartKeyV32===key)return;wallReviewStartKeyV32=key;project.settings=project.settings||{};project.settings.architectureReviewConfirmed=false;wallReviewActiveV32=true;$('wallReviewWorkflow').hidden=false;$('confirmWallReview').hidden=false;setFurnitureReviewVisibilityV32(false);expandArchitectureReviewV32();viewBird();setWallReviewStatusV32('Auto-fitting basemap and checking walls…');
         autoFitBasemap();detectWalls();detectDoorsV32();setFurnitureReviewVisibilityV32(false);
       }
       function scheduleWallReviewV32(force=false){

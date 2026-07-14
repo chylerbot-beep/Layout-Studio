@@ -16,8 +16,11 @@ Open `http://localhost:8000` in a normal desktop browser.
 
 - Added draggable ruler calibration: place both endpoints on a reliable printed dimension and enter its length in millimetres
 - Added **Check floor plan β**, which runs the existing browser-only wall and door recognition without a paid AI service
-- Added guided architecture review tools: re-check a selected area, align or delete the selected item, temporarily show the original basemap, and merge aligned overlapping walls by double-clicking
-- Architecture review temporarily replaces the normal left panel with a three-step guide, leaving the full viewport interactive for zooming, panning and camera changes
+- Layout Studio now opens as a new blank project instead of loading the example apartment
+- Architecture review opens directly in a two-step **Correct architecture → Confirm** workflow
+- Review starts in a near-top-down Bird's-eye view with orbit, pan and zoom restored; drawing a wall, door or window switches to Top view
+- Added one full-plan **Auto-fix walls + doors** action plus manual add, align and delete tools; aligned overlapping walls still merge by double-clicking
+- Red outlines are review-only unconfirmed-wall markers and can be toggled; furniture validation overlays are hidden throughout architecture review
 - **Exit and discard** restores the project, undo/redo history and camera to their exact pre-review state; confirmation keeps the reviewed architecture
 - New basemap uploads now follow **Set scale → Check floor plan → Review architecture → Confirm → Reveal and align furniture**
 - Scale calibration is constrained to a horizontal ruler while still allowing the ruler to move vertically over the drawing
@@ -25,6 +28,7 @@ Open `http://localhost:8000` in a normal desktop browser.
 - Removed the visible Save view / Restore view controls; PNG exports use the current project name instead of `bto-camera-view.png`
 - Auto-detect replaces matching wall geometry instead of stacking duplicate walls and adds missing suggestions
 - Best-effort door-symbol detection realigns nearby doors or adds missing doors
+- Missing windows remain a manual review action because generic PNG linework does not identify window symbols reliably enough for safe automatic insertion
 - Existing JSON, ZIP and `.btozip` projects remain compatible; ruler metadata is optional
 - Reference-image and hosted-library controls are hidden from the planning interface while legacy package data remains import-compatible
 - Moved **Align all walls β** into the left basemap-tools section

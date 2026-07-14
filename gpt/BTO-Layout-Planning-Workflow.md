@@ -38,7 +38,7 @@ Ask the user to approve:
 
 Do not add another approval step before furniture planning.
 
-The Layout Studio import review is a verification step, not a third planning approval gate. For every generated or handed-off project, set `settings.architectureReviewConfirmed` to `false`. On opening the project, Layout Studio hides furniture, checks the basemap, lets the user re-check an area, align or delete incorrect architecture, and requires **Confirm architecture** before furniture is revealed and conservatively aligned.
+The Layout Studio import review is a verification step, not a third planning approval gate. For every generated or handed-off project, set `settings.architectureReviewConfirmed` to `false`. On opening the project, Layout Studio hides furniture and furniture-validation overlays, checks the full basemap, and opens directly in **Correct architecture**. The user can rerun the conservative full-plan wall-and-door pass, toggle red unconfirmed-wall outlines, add missing walls/doors/windows, and align or delete incorrect architecture. **Confirm architecture** then reveals and conservatively aligns furniture.
 
 Do not invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values describe actual source-image pixel measurements. If the user uploads a new basemap directly in Layout Studio, the app asks them to drag a ruler over a known printed dimension and enter its millimetre value before checking the plan. Existing projects with validated `basemap.width` and `basemap.depth` remain compatible.
 

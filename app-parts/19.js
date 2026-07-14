@@ -83,8 +83,8 @@
         return split.filter(segment=>detectionSegmentLengthV28(segment)>=450);
       };
 
-      // Detected suggestions use the normal wall material. Their beta status is shown by
-      // a yellow wireframe outline only while Architecture > Walls is expanded.
+      // Detected suggestions use normal wall material. During architecture review their
+      // unconfirmed state can be shown with a red wireframe outline.
       const buildWallBeforeDetectedOutline=buildWall;
       buildWall=function(wall){
         if(!wall.detected){buildWallBeforeDetectedOutline(wall);return;}
@@ -92,7 +92,7 @@
       };
       const detectedWallHighlightGroupV28=new THREE.Group();detectedWallHighlightGroupV28.renderOrder=935;scene.add(detectedWallHighlightGroupV28);
       function detectedWallOutlineV28(wall){
-        const material=new THREE.MeshBasicMaterial({color:0xffc928,wireframe:true,transparent:true,opacity:.96,depthTest:false,depthWrite:false}),mesh=makeWallPrism(wall,material,.035,wall.h);mesh.renderOrder=935;mesh.userData={detectedWallHighlight:true,wallId:wall.id};return mesh;
+        const material=new THREE.MeshBasicMaterial({color:0xff3b30,wireframe:true,transparent:true,opacity:.96,depthTest:false,depthWrite:false}),mesh=makeWallPrism(wall,material,.035,wall.h);mesh.renderOrder=935;mesh.userData={detectedWallHighlight:true,wallId:wall.id};return mesh;
       }
       function architectureWallsDetailsV28(){return $('architectureList')?.querySelector(':scope > details.subgroup:first-child')||null;}
       function detectedHighlightShouldShowV28(){const details=architectureWallsDetailsV28(),section=$('architectureList')?.closest('.section');return !!details?.open&&!section?.classList.contains('section-collapsed');}

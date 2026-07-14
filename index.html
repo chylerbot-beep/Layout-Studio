@@ -229,31 +229,30 @@
 
   <section class="wall-review-workflow review-guide" id="wallReviewWorkflow" aria-labelledby="reviewGuideTitle" hidden>
     <div class="review-guide-header">
-      <div><span id="reviewStepLabel">Step 1 of 3</span><h3 id="reviewGuideTitle">Review and adjust floor plan</h3></div>
+      <div><span id="reviewStepLabel">Step 1 of 2</span><h3 id="reviewGuideTitle">Correct architecture</h3></div>
     </div>
     <div class="review-guide-progress"><span id="reviewProgressBar"></span></div>
     <div class="review-guide-status"><strong>Floor-plan check</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
 
     <div class="review-guide-page" data-review-step="1">
-      <h4>Inspect detected architecture</h4>
-      <p>Furniture is hidden while you compare the yellow wall and opening suggestions with the basemap.</p>
-      <div class="review-navigation-help"><strong>Adjust the view</strong><span>Use the Top, Bird’s-eye and Eye-level buttons in the header. Scroll to zoom and drag the viewport to look around.</span></div>
-      <p class="wall-review-instruction">Inspect the full home, then continue to correction tools.</p>
-    </div>
-
-    <div class="review-guide-page" data-review-step="2" hidden>
       <h4>Correct mismatches</h4>
-      <p>Use only the correction you need. You can continue zooming, panning and changing view while this guide remains open.</p>
+      <p>Furniture and its validation errors are hidden. Red outlines mark unconfirmed walls; switch them off whenever they obscure the basemap.</p>
+      <div class="review-navigation-help"><strong>Move around the plan</strong><span>Bird’s-eye starts near top-down. Scroll to zoom, drag to orbit, and right-drag to pan. Drawing a new item switches to Top view.</span></div>
+      <div class="review-suggestion-counts" id="reviewSuggestionCounts">Checking architecture…</div>
       <div class="button-row wall-review-tools">
-        <button id="reviewRecheckArea">Re-check area</button>
+        <button id="reviewAutoFix" class="primary">Auto-fix walls + doors</button>
+        <button id="reviewToggleHighlights" class="active">Red highlights: on</button>
+        <button id="reviewAddWall">Add wall</button>
+        <button id="reviewAddDoor">Add door</button>
+        <button id="reviewAddWindow">Add window</button>
         <button id="reviewAlignSelected">Align selected</button>
         <button id="reviewDeleteSelected" class="danger">Delete selected</button>
         <button id="reviewOriginal">Hold original</button>
       </div>
-      <p class="wall-review-instruction" id="wallReviewInstruction">Select a wall to align or delete. Double-click aligned overlapping walls to merge them.</p>
+      <p class="wall-review-instruction" id="wallReviewInstruction">Add missing architecture, or select an incorrect wall, door or window to align or delete it. Double-click aligned overlapping walls to merge them.</p>
     </div>
 
-    <div class="review-guide-page" data-review-step="3" hidden>
+    <div class="review-guide-page" data-review-step="2" hidden>
       <h4>Confirm architecture</h4>
       <p>Make one last comparison with the basemap. Confirming keeps the reviewed walls, reveals furniture and runs conservative furniture alignment as one undoable operation.</p>
       <button id="confirmWallReview" class="primary review-confirm-button">Confirm architecture · reveal and align furniture</button>
@@ -309,8 +308,6 @@
       <div class="dialog-actions"><button id="scaleCancelBottom">Cancel</button><button id="scaleApply" class="primary">Apply scale</button></div>
     </div>
   </div>
-
-  <div id="reviewAreaBox" aria-hidden="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>

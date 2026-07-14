@@ -104,7 +104,7 @@
     .review-guide-header h3 { margin: 3px 0 0; font-size: 15px; }
     .review-guide-header span { color: #bfcdb9; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
     .review-guide-progress { height: 4px; margin: 12px 0; overflow: hidden; border-radius: 999px; background: #41423b; }
-    .review-guide-progress span { display: block; width: 33.333%; height: 100%; background: var(--sage); transition: width .18s ease; }
+    .review-guide-progress span { display: block; width: 50%; height: 100%; background: var(--sage); transition: width .18s ease; }
     .review-guide-status { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 9px 10px; border-radius: 8px; background: rgba(146,165,139,.09); font-size: 10px; line-height: 1.35; }
     .review-guide-status span { color: var(--muted); text-align: right; }
     .review-guide-page { padding: 12px 0 2px; }
@@ -112,13 +112,15 @@
     .review-guide-page h4 { margin: 0; font-size: 13px; }
     .review-navigation-help { display: grid; gap: 4px; margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--muted); font-size: 10px; line-height: 1.45; }
     .review-navigation-help strong { color: var(--text); }
+    .review-suggestion-counts { margin: 0 0 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: #d6ddd1; background: rgba(0,0,0,.1); font-size: 10px; line-height: 1.45; }
     .wall-review-tools button { flex: 1 1 92px; }
     .wall-review-instruction { min-height: 28px; }
     .review-confirm-button { width: 100%; padding: 11px; }
     .review-guide-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
     .review-guide-actions .spacer { flex: 1; }
     #precisionPanelBackdrop { display: none; position: fixed; inset: 58px 0 0; z-index: 59; background: rgba(0,0,0,.46); }
-    #addReferences, #referenceImagesSection, #projectLibrarySection, #autoFitBasemap, #autoTrace, #autoDoors, #clearDetected { display: none !important; }
+    #addReferences, #referenceImagesSection, #projectLibrarySection, #autoFitBasemap, #autoTrace, #autoDoors, #clearDetected, #toggleAutoWalls { display: none !important; }
+    body.architecture-review-mode .validation-compact { display: none !important; }
 
     .scale-modal { z-index: 40; padding: 16px; }
     .scale-dialog { width: min(1040px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px; }
@@ -130,9 +132,6 @@
     .scale-controls { display: grid; grid-template-columns: minmax(180px, 240px) 1fr auto; align-items: end; gap: 14px; margin-top: 12px; }
     .scale-reading { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
     .scale-reading strong { color: var(--text); font-size: 12px; font-weight: 600; }
-    #reviewAreaBox { position: fixed; display: none; z-index: 35; border: 2px solid #2f80ff; background: rgba(47,128,255,.12); pointer-events: none; }
-    body.review-area-active #viewport canvas { cursor: crosshair !important; }
-
     .project-workspace code { color: #d4dfcf; font-size: 10px; }
     .package-status { margin: 10px 0 0; padding: 8px 9px; border-radius: 8px; background: rgba(146,165,139,.07); border: 1px solid rgba(146,165,139,.25); }
     .package-status.busy { color: #f0d49b; border-color: rgba(216,173,99,.5); }

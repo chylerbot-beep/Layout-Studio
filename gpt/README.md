@@ -47,6 +47,6 @@ Before selecting **Update**, test:
 3. An approved eye-level screenshot plus project JSON and reference images
 4. A render revision asking only for materials and lighting changes
 5. A spatial change that should be sent back to Layout Studio instead of painted into the render
-6. A generated project opening with `architectureReviewConfirmed: false`, followed by wall review and furniture reveal
+6. A generated project opening with `architectureReviewConfirmed: false`, followed by correction-first architecture review, confirmation and furniture reveal
 
 The GPT should stay in Planning Mode for layout work and enter Rendering Mode only for approved camera screenshots or explicit render requests.

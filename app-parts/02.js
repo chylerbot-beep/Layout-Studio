@@ -39,7 +39,15 @@
       const selectionOverlayGroup = new THREE.Group();
       selectionOverlayGroup.renderOrder = 950;
       scene.add(basemapGroup, roomGroup, shellGroup, openingGroup, clearanceGroup, furnitureGroup, labelGroup, architectureLabelGroup, ceilingGroup, selectionOverlayGroup);
-      let project = JSON.parse(JSON.stringify(initialScene));
+      // Start in a clean workspace. The example scene remains available as catalogue
+      // and development data, but it is no longer loaded into a user's new session.
+      const blankStartedAt = new Date().toISOString();
+      let project = {
+        meta:{name:'Untitled layout',brief:'',createdAt:blankStartedAt,updatedAt:blankStartedAt,appVersion:APP_VERSION},
+        references:[],basemap:null,rooms:[],walls:[],openings:[],shell:[],clearances:[],furniture:[],
+        settings:{ceilingVisible:false,ceilingHeight:2600},camera:null,
+        plan:{width:PLAN_W,depth:PLAN_H,unit:'mm'}
+      };
       let selected = null;
       let selectedArchitecture = null;
       let grid = null;

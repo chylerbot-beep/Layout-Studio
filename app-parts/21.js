@@ -81,8 +81,8 @@
         const id=selected.userData.id;project.furniture=project.furniture.filter(item=>item.id!==id);select(null);buildScene();
       },true);
 
-      // Add a Display toggle for the yellow detected-wall outlines. The outline remains
-      // conditional on Architecture > Walls being expanded.
+      // Legacy Display toggle retained for project/UI compatibility. Architecture review
+      // now owns the visible red unconfirmed-wall outline toggle.
       let autoWallsHighlightEnabledV29=true;
       try{autoWallsHighlightEnabledV29=localStorage.getItem('bto-layout-studio:auto-walls-highlight')!=='off';}catch{}
       const displaySectionV29=[...document.querySelectorAll('.panel.left > .section')].find(section=>section.querySelector(':scope > h2')?.textContent.trim()==='Display');
@@ -90,7 +90,7 @@
       if(displayButtonsV29&&!$('toggleAutoWalls')){
         const button=document.createElement('button');button.id='toggleAutoWalls';button.textContent='Auto walls';displayButtonsV29.appendChild(button);
       }
-      function syncAutoWallsToggleV29(){const button=$('toggleAutoWalls');if(button){button.classList.toggle('active',autoWallsHighlightEnabledV29);button.title=autoWallsHighlightEnabledV29?'Hide yellow auto-detected wall outlines':'Show yellow auto-detected wall outlines';}}
+      function syncAutoWallsToggleV29(){const button=$('toggleAutoWalls');if(button){button.classList.toggle('active',autoWallsHighlightEnabledV29);button.title=autoWallsHighlightEnabledV29?'Hide auto-detected wall outlines':'Show auto-detected wall outlines';}}
       if(typeof detectedHighlightShouldShowV28==='function'){
         const detectedHighlightShouldShowBeforeV29=detectedHighlightShouldShowV28;
         detectedHighlightShouldShowV28=function(){return autoWallsHighlightEnabledV29&&detectedHighlightShouldShowBeforeV29();};
@@ -120,6 +120,9 @@
 
       // Camera defaults. Top view retains its orthographic-like 35° lens; normal bird's-eye
       // and eye-level views use 52°, with Eye level at 1,300 mm.
-      viewBird=function(){camera.up.set(0,1,0);camera.fov=52;camera.updateProjectionMatrix();camera.position.set(19,13,15);orbit.target.set(8,0,4.8);orbit.update();setViewButton('viewBird');};
+      viewBird=function(){
+        const basemap=project.basemap||{},width=+(basemap.width||project.plan?.width||PLAN_W),depth=+(basemap.depth||project.plan?.depth||PLAN_H),offsetX=+(basemap.offsetX||0),offsetY=+(basemap.offsetY||0),cx=mm(offsetX+width/2),cz=mm(offsetY+depth/2),span=mm(Math.max(width,depth)),height=Math.max(8,span*1.02);
+        camera.up.set(0,1,0);camera.fov=52;camera.updateProjectionMatrix();camera.position.set(cx+.01,height,cz+height*.18);orbit.target.set(cx,0,cz);orbit.enabled=true;orbit.enableRotate=true;orbit.enablePan=true;orbit.enableZoom=true;orbit.update();setViewButton('viewBird');
+      };
       viewEye=function(){camera.up.set(0,1,0);camera.fov=52;camera.updateProjectionMatrix();camera.position.set(mm(11200),1.3,mm(8500));orbit.target.set(mm(9000),1.1,mm(3200));orbit.update();setViewButton('viewEye');};
       if($('fovField'))$('fovField').value='52';if($('depthField'))$('depthField').value='52';if($('cameraHeight'))$('cameraHeight').value='1300';
