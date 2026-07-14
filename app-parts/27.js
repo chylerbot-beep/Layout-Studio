@@ -114,29 +114,6 @@
         $('basemapStatus').textContent = 'Architecture review discarded. The project has been restored to its state before floor-plan checking.';
       }
 
-      function groupAutomaticFixHistoryV36(projectBefore, undoBefore){
-        if(JSON.stringify(project) === projectBefore)return;
-        undoStack.splice(0, undoStack.length, ...undoBefore, projectBefore);
-        if(undoStack.length > 60)undoStack.splice(0, undoStack.length - 60);
-        redoStack.length = 0;
-        $('undo').disabled = false;
-        $('redo').disabled = true;
-        $('undo').title = 'Undo automatic architecture fix';
-      }
-
-      function runAutomaticArchitectureFixV36(){
-        if(!project.basemap || !basemapImage?.complete)return;
-        const projectBefore = JSON.stringify(project);
-        const undoBefore = [...undoStack];
-        setReviewInstructionV36('Checking the full basemap for wall bands and door symbols…');
-        detectWalls();
-        detectDoorsV32();
-        groupAutomaticFixHistoryV36(projectBefore, undoBefore);
-        setFurnitureReviewVisibilityV32(false);
-        syncArchitectureReviewUiV36();
-        setReviewInstructionV36('Automatic pass complete. Check red wall suggestions, then add or remove any remaining architecture manually.');
-      }
-
       function selectReviewToolV36(tool, instruction){
         setTool(tool);
         setReviewInstructionV36(instruction);
@@ -191,7 +168,6 @@
 
       $('reviewStepBack').onclick = () => setReviewStepV36(reviewStepV36 - 1);
       $('reviewStepNext').onclick = () => setReviewStepV36(reviewStepV36 + 1);
-      $('reviewAutoFix').onclick = runAutomaticArchitectureFixV36;
       $('reviewToggleHighlights').onclick = () => {
         reviewHighlightsVisibleV36 = !reviewHighlightsVisibleV36;
         syncReviewHighlightsV36();

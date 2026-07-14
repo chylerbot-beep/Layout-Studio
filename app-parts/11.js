@@ -94,7 +94,7 @@
         const warnings=[],meshes=furnitureGroup.children;meshes.forEach(m=>setObjectTint(m,m.userData.color||palette.furniture,selected===m?0x263225:0x000000));
         for(let i=0;i<meshes.length;i++)for(let j=i+1;j<meshes.length;j++)if(intersects3D(objectBox3D(meshes[i]),objectBox3D(meshes[j]))){warnings.push(`${meshes[i].userData.name} overlaps ${meshes[j].userData.name}`);setObjectTint(meshes[i],palette.collision);setObjectTint(meshes[j],palette.collision);}
         project.clearances.forEach(zone=>{const z={minX:mm(zone.x),minZ:mm(zone.y),maxX:mm(zone.x+zone.w),maxZ:mm(zone.y+zone.d)};meshes.forEach(m=>{if(intersect(rect2D(m),z)){warnings.push(`${m.userData.name} blocks ${zone.name}`);setObjectTint(m,palette.collision);}});});
-        const fixedObstacles=[...project.shell.filter(x=>(x.h||0)>500),...(project.walls||[])];
+        const fixedObstacles=[...physicalShellItemsV42().filter(x=>(x.h||0)>500),...(project.walls||[])];
         fixedObstacles.forEach(item=>{const z={minX:mm(item.x),minZ:mm(item.y),maxX:mm(item.x+item.w),maxZ:mm(item.y+item.d)};meshes.forEach(m=>{if(intersect(rect2D(m),z)){warnings.push(`${m.userData.name} intersects ${item.name}`);setObjectTint(m,palette.collision);}});});
         const entranceBlocked=warnings.some(x=>x.includes('Entrance route')),kitchenBlocked=warnings.some(x=>x.includes('Kitchen working aisle')),overlaps=warnings.some(x=>x.includes('overlaps'));
         $('entranceCheck').textContent=entranceBlocked?'Blocked':'Clear';$('kitchenCheck').textContent=kitchenBlocked?'Blocked':'Clear';$('overlapCheck').textContent=overlaps?'Review':'No overlaps';

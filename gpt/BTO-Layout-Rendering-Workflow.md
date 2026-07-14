@@ -22,7 +22,7 @@ Geometry always overrides aesthetics.
 
 ## Prepare the source view
 
-Before export, prefer Eye level with a believable interior lens. Hide only genuinely blocking foreground walls. Turn off labels, validation, grid, clearances, basemap, selection handles and transform controls when possible.
+Before export, prefer Eye level with a believable interior lens. Photo mode keeps the Camera panel available for FOV/lens, height, blocking-wall and furniture-visibility adjustments. Hide only genuinely blocking foreground walls or furniture. Turn off labels, validation, grid, clearances, basemap, selection handles and transform controls when possible.
 
 The rendering step must remove any UI remnants that remain.
 
@@ -54,7 +54,7 @@ Do not show:
 - transform or resize handles
 - grids, clearances or basemap graphics
 
-A hidden blocking wall is a camera aid. Do not interpret it as a hacked wall unless the project or brief confirms that change.
+A hidden blocking wall or furniture object is a camera aid. Do not interpret it as deleted or hacked unless the project or brief confirms that change.
 
 ## Compact prompt recipe
 

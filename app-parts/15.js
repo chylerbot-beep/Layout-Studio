@@ -31,7 +31,8 @@
             <button id="showAllCameraWalls">Show all walls</button>
           </div>
           <p class="small" id="cameraCutawayStatus">Cutaway is off. Walls remain part of the model and validation.</p>`;
-        cameraSection.insertBefore(controls,cameraSection.lastElementChild);
+        // Keep FOV/lens and camera height first; visibility controls follow them.
+        cameraSection.appendChild(controls);
       }
 
       function syncCameraCutawayControls(){

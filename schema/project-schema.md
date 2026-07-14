@@ -54,6 +54,8 @@ Rooms, shell items and clearances use plan rectangles:
 
 Shell items may also include `h`, `elevation`, `rotation`, `color` and `type`.
 
+Use shell rectangles only for genuinely solid fixed obstacles. A household/bomb shelter is represented by its enclosing walls and openings; do not add a solid room-sized shell rectangle over the same footprint. Advisory allowances may remain in project data with `fixed: false` and are not treated as physical blocks.
+
 ## Wall
 
 ```json

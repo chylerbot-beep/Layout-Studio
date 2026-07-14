@@ -17,9 +17,11 @@
       }
       function reliableDetectedSegment(segment,segments){
         const length=detectedSegmentLength(segment);
-        if(length>=600)return true;
-        if(length<350)return false;
-        return segments.some(other=>other!==segment&&detectedSegmentLength(other)>=600&&detectedSegmentsMeet(segment,other));
+        if(length>=1250)return true;
+        if(length<450)return false;
+        // Short isolated bands are commonly room-name glyphs or dimension marks.
+        // Keep them only when they terminate at a substantial perpendicular wall.
+        return segments.some(other=>other!==segment&&detectedSegmentLength(other)>=1100&&detectedSegmentsMeet(segment,other,220));
       }
       function snapDetectedSegmentEnds(segments,tolerance=240){
         return segments.map(segment=>{
@@ -82,7 +84,9 @@
       }
       function alignWallToSegment(wall,segment){
         const e=wallMetrics(wall),wlen=e.length,slen=segment.b-segment.a,ratio=slen/wlen,t=e.thickness;let a=segment.a,b=segment.b;
-        if(ratio>1.7||ratio<.55){const oldA=e.horizontal?Math.min(e.x1,e.x2):Math.min(e.y1,e.y2),oldB=e.horizontal?Math.max(e.x1,e.x2):Math.max(e.y1,e.y2),center=(oldA+oldB)/2;a=Math.max(segment.a,center-wlen/2);b=Math.min(segment.b,a+wlen);if(b-a<wlen*.75){a=center-wlen/2;b=center+wlen/2;}}
+        const authored=!wall.detected&&!wall.autoDetected,hasOpening=(project.openings||[]).some(opening=>opening.wallId===wall.id);
+        if(authored||hasOpening){a=e.horizontal?Math.min(e.x1,e.x2):Math.min(e.y1,e.y2);b=e.horizontal?Math.max(e.x1,e.x2):Math.max(e.y1,e.y2);}
+        else if(ratio>1.7||ratio<.55){const oldA=e.horizontal?Math.min(e.x1,e.x2):Math.min(e.y1,e.y2),oldB=e.horizontal?Math.max(e.x1,e.x2):Math.max(e.y1,e.y2),center=(oldA+oldB)/2;a=Math.max(segment.a,center-wlen/2);b=Math.min(segment.b,a+wlen);if(b-a<wlen*.75){a=center-wlen/2;b=center+wlen/2;}}
         if(e.horizontal)setWallFromEndpoints(wall,a,segment.p,b,segment.p,t);else setWallFromEndpoints(wall,segment.p,a,segment.p,b,t);
       }
       function alignSelectedWallToBasemap(){
@@ -132,7 +136,7 @@
         const warnings=[],meshes=furnitureGroup.children;meshes.forEach(m=>setObjectTint(m,m.userData.color||palette.furniture,selected===m?0x263225:0x000000));
         for(let i=0;i<meshes.length;i++)for(let j=i+1;j<meshes.length;j++)if(intersect(rect2D(meshes[i]),rect2D(meshes[j]))){warnings.push(`${meshes[i].userData.name} overlaps ${meshes[j].userData.name}`);setObjectTint(meshes[i],palette.collision);setObjectTint(meshes[j],palette.collision);}
         project.clearances.forEach(zone=>{const z={minX:mm(zone.x),minZ:mm(zone.y),maxX:mm(zone.x+zone.w),maxZ:mm(zone.y+zone.d)};meshes.forEach(m=>{if(intersect(rect2D(m),z)){warnings.push(`${m.userData.name} blocks ${zone.name}`);setObjectTint(m,palette.collision);}});});
-        const fixedObstacles=[...project.shell.filter(x=>(x.h||0)>500),...(project.walls||[])];
+        const fixedObstacles=[...physicalShellItemsV42().filter(x=>(x.h||0)>500),...(project.walls||[])];
         fixedObstacles.forEach(item=>{const z={minX:mm(item.x),minZ:mm(item.y),maxX:mm(item.x+item.w),maxZ:mm(item.y+item.d)};meshes.forEach(m=>{if(intersect(rect2D(m),z)){warnings.push(`${m.userData.name} intersects ${item.name}`);setObjectTint(m,palette.collision);}});});
         const entranceBlocked=warnings.some(x=>x.includes('Entrance route')); const kitchenBlocked=warnings.some(x=>x.includes('Kitchen working aisle')); const overlaps=warnings.some(x=>x.includes('overlaps'));
         $('entranceCheck').textContent=entranceBlocked?'Blocked':'Clear'; $('kitchenCheck').textContent=kitchenBlocked?'Blocked':'Clear'; $('overlapCheck').textContent=overlaps?'Review':'No overlaps';

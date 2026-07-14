@@ -42,6 +42,8 @@ Planning rules:
 - Use `elevation` for raised objects and `placement` for known room, wall, support or group relationships.
 - Preserve grouped layouts such as dining sets.
 - Check physical overlaps, door access, circulation, beds, wardrobes and kitchen access.
+- Model a household/bomb shelter as its enclosing walls and openings. Do not also add a room-sized solid `shell` block over the same footprint.
+- Use `shell` only for genuinely solid fixed obstacles. Advisory allowances must use `fixed: false` and are not physical collision objects.
 - Set `settings.architectureReviewConfirmed` to `false` for every generated handoff.
 - Do not invent basemap ruler calibration values.
 

@@ -19,7 +19,7 @@ Use printed dimensions and project data. Do not derive authoritative millimetres
 1. Confirm orientation and scale. If Layout Studio will calibrate a new basemap, identify one clear horizontal printed dimension for its ruler.
 2. Reconstruct walls in millimetres.
 3. Add doors and windows with valid `wallId` and `offset` values.
-4. Preserve the household shelter and other fixed or non-hackable elements.
+4. Preserve the household shelter and other fixed or non-hackable elements. Represent a shelter with walls and openings, not a second room-sized solid shell block.
 5. Mark assumptions and distinguish retained, proposed and uncertain work.
 6. Check endpoints, thicknesses, opening offsets and room adjacency.
 7. Present one top-down architecture review.
@@ -39,7 +39,9 @@ When imported, Layout Studio:
 - requires the ZIP scale to be applied again before detection
 - asks for the matching floor-plan image when an imported ZIP contains JSON but no basemap; continuing without it keeps the JSON millimetres authoritative
 - hides furniture and furniture-validation overlays
-- detects centred wall bands from the calibrated basemap and checks likely doors
+- crops detected page margins before applying the ruler's millimetres-per-pixel value
+- detects centred wall bands from the calibrated basemap, rejects isolated text/dimension strokes and checks likely doors
+- preserves authored wall lengths and walls that own openings when a detected band is only partial
 - opens **Correct architecture** with optional wall highlights
 - lets the user align all walls or add, align and delete individual walls, doors and windows
 - reveals and conservatively aligns furniture after confirmation
@@ -111,6 +113,8 @@ Recommend:
 - Eye level for rendering
 
 Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation.
+
+Photo mode keeps a floating Camera panel available. Nearby furniture can be hidden automatically by camera distance, or selected furniture can be hidden and shown manually. Camera visibility settings never delete or resize project objects.
 
 ## 5. Create the handoff
 

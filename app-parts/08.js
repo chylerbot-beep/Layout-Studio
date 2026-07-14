@@ -55,7 +55,7 @@
         if(activeTool!=='select'){const point=planPoint(e);if(!point)return;if(activeTool==='wall')drawWallAt(point);else addOpeningAt(point,activeTool);return;}
         const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);
         const controlHits=raycaster.intersectObjects(selectionOverlayGroup.children,false).filter(h=>h.object.userData?.wallControl);if(controlHits.length&&beginWallDrag(controlHits[0].object.userData.wallControl,e)){e.preventDefault();e.stopPropagation();return;}
-        const furnitureHits=raycaster.intersectObjects(furnitureGroup.children,true);if(furnitureHits.length){const object=sceneObjectFromHit(furnitureHits[0].object);if(object){select(object);return;}}
+        const furnitureHits=raycaster.intersectObjects(furnitureGroup.children.filter(item=>item.visible),true);if(furnitureHits.length){const object=sceneObjectFromHit(furnitureHits[0].object);if(object){select(object);return;}}
         const openingHits=raycaster.intersectObjects(openingGroup.children,false).filter(h=>h.object.userData?.opening);if(openingHits.length){selectArchitecture('opening',openingHits[0].object.userData.id);return;}
         const wallHits=raycaster.intersectObjects(shellGroup.children,false).filter(h=>h.object.userData?.wall);if(wallHits.length){selectArchitecture('wall',wallHits[0].object.userData.id);return;}
       });

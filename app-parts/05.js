@@ -1,7 +1,7 @@
         clearGroup(shellGroup);clearGroup(openingGroup);clearGroup(architectureLabelGroup);
         const floor=new THREE.Mesh(new THREE.PlaneGeometry(mm(PLAN_W),mm(PLAN_H)),new THREE.MeshStandardMaterial({color:palette.floor,roughness:.9}));
         floor.rotation.x=-Math.PI/2;floor.position.set(mm(PLAN_W)/2,-.015,mm(PLAN_H)/2);floor.receiveShadow=true;shellGroup.add(floor);
-        project.shell.forEach(item=>{const h=item.h||100,mat=new THREE.MeshStandardMaterial({color:item.color||palette.fixed,roughness:.88,transparent:true,opacity:.88}),mesh=makeBox({...item,h},mat);mesh.userData={...item,fixed:true};shellGroup.add(mesh);});
+        physicalShellItemsV42().forEach(item=>{const h=item.h||100,mat=new THREE.MeshStandardMaterial({color:item.color||palette.fixed,roughness:.88,transparent:true,opacity:.88}),mesh=makeBox({...item,h},mat);mesh.userData={...item,fixed:true};shellGroup.add(mesh);});
         (project.walls||[]).forEach(buildWall);
       }
       function buildCeiling(){

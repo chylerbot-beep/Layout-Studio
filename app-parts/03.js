@@ -24,6 +24,16 @@
         const list=selectedArchitecture.kind==='wall'?project.walls:project.openings;
         return list.find(x=>x.id===selectedArchitecture.id)||null;
       }
+      function physicalShellItemsV42(){
+        return (project.shell||[]).filter(item=>{
+          if(item.fixed===false||(+item.h||0)<=0)return false;
+          const name=String(item.name||'').toLowerCase();
+          // A shelter is a room enclosed by authoritative walls, not a solid room-size
+          // block. Older handoffs sometimes included both representations.
+          const redundantShelter=/\b(household|bomb)\s+shelter\b/.test(name)&&(+item.w||0)>=800&&(+item.d||0)>=800&&(+item.h||0)>=1800;
+          return !redundantShelter;
+        });
+      }
       function makeWallPrism(wall,material,yBase=0,height=wall.h,from=0,to=null){
         const e=wallMetrics(wall),end=to==null?e.length:to,length=Math.max(1,end-from),mid=from+length/2;
         const mesh=new THREE.Mesh(new THREE.BoxGeometry(mm(length),mm(height),mm(e.thickness)),material);

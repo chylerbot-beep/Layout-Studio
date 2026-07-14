@@ -127,7 +127,7 @@
       function autoAlignFurniture(){
         if(!(project.furniture||[]).length){$('furnitureAlignStatus').textContent='No furniture is available to align.';return;}
         const working=JSON.parse(JSON.stringify(project.furniture)),before=JSON.stringify(working),supportLinks=inferSupportLinks(working),planWidth=project.basemap?.width||project.plan?.width||PLAN_W,planDepth=project.basemap?.depth||project.plan?.depth||PLAN_H;
-        const context={planWidth,planDepth,walls:(project.walls||[]).filter(w=>!w.detected),shell:(project.shell||[]).filter(x=>(x.h||0)>80),doors:doorClearanceBoxes(),clearances:project.clearances||[]};
+        const context={planWidth,planDepth,walls:(project.walls||[]).filter(w=>!w.detected),shell:physicalShellItemsV42().filter(x=>(x.h||0)>80),doors:doorClearanceBoxes(),clearances:project.clearances||[]};
         let moved=0,rotated=0,unresolved=0;
         const grouped=new Map();working.forEach(item=>{const groupId=inferredGroupId(item);if(!groupId||(+item.elevation||0)>25)return;if(!grouped.has(groupId))grouped.set(groupId,[]);grouped.get(groupId).push(item);});
         const groupedIds=new Set();grouped.forEach(group=>{if(group.length<2)return;group.forEach(item=>groupedIds.add(item.id));const result=alignFurnitureGroup(group,working,context);moved+=result.moved;unresolved+=result.unresolved;});

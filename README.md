@@ -22,7 +22,7 @@ Open `http://localhost:8000` in a desktop browser.
 5. Confirm architecture to reveal and conservatively align furniture.
 6. Validate, set a camera and export PNG or project files.
 
-For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. A ZIP without a basemap opens a Step 1 choice to upload the matching floor plan or continue with its authoritative JSON measurements. The correction and confirmation steps replace the normal left panel and provide:
+For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. A ZIP without a basemap opens a Step 1 choice to upload the matching floor plan or continue with its authoritative JSON measurements. The automatic wall-and-door pass runs immediately after scale is applied. The correction and confirmation steps replace the normal left panel and provide:
 
 - near-top-down Bird's-eye navigation
 - centred wall-band and door checking against the calibrated basemap
@@ -33,7 +33,9 @@ For a new PNG or any imported ZIP containing a basemap, the guided review is **S
 - temporary full-opacity basemap comparison
 - Exit and discard, which restores the pre-review project and camera
 
-Furniture and furniture-validation overlays remain hidden until architecture is confirmed. Automatic window insertion is intentionally omitted because generic floor-plan symbols are not reliable enough.
+Scale calibration crops detected page margins before converting pixels to millimetres. The architecture scan ignores isolated text and dimension strokes, centres authored walls without changing their authoritative length, and protects walls that own doors or windows from partial detections. Furniture and furniture-validation overlays remain hidden until architecture is confirmed. Automatic window insertion is intentionally omitted because generic floor-plan symbols are not reliable enough.
+
+Legacy handoffs that contain both shelter walls and a room-sized solid shelter shell are rendered from the walls only. Advisory shell allowances marked `fixed: false` remain in project data but are not rendered or treated as physical collision blocks.
 
 ## Project compatibility
 
@@ -70,10 +72,11 @@ Ruler metadata and `settings.architectureReviewConfirmed` are optional, so older
 - Top, Bird's-eye and Eye-level views
 - 52° default perspective lens and 1300 mm default eye height
 - blocking-wall hiding without deleting geometry
-- Photo mode for clean screenshots
+- Photo mode with a floating Camera panel for clean screenshots
+- automatic nearby-furniture hiding by camera distance, plus per-object hide/show and Show all furniture
 - project-name-based PNG filenames
 
-Hidden walls remain in project data, collision checks and validation.
+Hidden walls and furniture remain in project data, collision checks and validation.
 
 ## Code structure
 
@@ -82,6 +85,7 @@ Hidden walls remain in project data, collision checks and validation.
 - `app-parts/25.js` owns architecture detection and review state.
 - `app-parts/26.js` owns ruler calibration.
 - `app-parts/27.js` owns review and responsive precision UI.
+- `app-parts/28.js` owns Photo-mode camera and furniture visibility controls.
 - `app-parts/08.js` starts the app after all overrides load.
 
 Keep this order intact. Do not convert the project to another framework without a separate migration plan.

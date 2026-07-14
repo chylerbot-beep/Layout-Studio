@@ -353,7 +353,11 @@
           a: {...scaleStateV33.a},
           b: {...scaleStateV33.b}
         };
-        project.basemap.crop = {left:0, top:0, right:1, bottom:1};
+        // Calibrate the detected plan drawing, not the white page margins. Applying
+        // mm/pixel to the full source image enlarged and shifted later wall scans.
+        project.basemap.crop = typeof detectedBasemapCropV42 === 'function'
+          ? (detectedBasemapCropV42() || {left:0, top:0, right:1, bottom:1})
+          : {left:0, top:0, right:1, bottom:1};
         project.settings = project.settings || {};
         project.settings.scaleCalibrationRequired = false;
         applyCalibratedBasemapSizeV33();

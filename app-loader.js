@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-import-scale-add-v41';
+  const moduleVersion = '20260714-photo-furniture-detection-v43';
   const parts = [
     'app-parts/01.js', 'app-parts/02.js', 'app-parts/03.js', 'app-parts/04.js',
     'app-parts/05.js', 'app-parts/06.js', 'app-parts/07.js', 'app-parts/09.js',
@@ -7,7 +7,7 @@
     'app-parts/15.js', 'app-parts/16.js', 'app-parts/17.js', 'app-parts/18.js',
     'app-parts/19.js', 'app-parts/20.js', 'app-parts/21.js', 'app-parts/22.js',
     'app-parts/23.js', 'app-parts/24.js', 'app-parts/25.js', 'app-parts/26.js',
-    'app-parts/27.js',
+    'app-parts/27.js', 'app-parts/28.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];

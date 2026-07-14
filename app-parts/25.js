@@ -33,6 +33,43 @@
         if(perp>Math.max(750,(e.thickness+(segment.thickness||120))*1.8)||overlap/shorter<.28&&gap>220)return null;
         return{score:perp*2+gap+Math.abs((b-a)-(segment.b-segment.a))*.08-overlap*.03,overlap};
       }
+      function applyDetectedLineToWallV42(wall,line,thickness,height){
+        const current=wallMetrics(wall),oldWall={...wall},lineLength=Math.max(1,line.b-line.a);
+        const hasOpening=(project.openings||[]).some(opening=>opening.wallId===wall.id);
+        // Imported/authored millimetre geometry remains authoritative. Detection may
+        // centre it on the basemap, but only a previously generated wall may inherit
+        // new scan extents. This prevents a partial band from removing a window wall.
+        const authored=!wall.detected&&!wall.autoDetected;
+        const preserveExtent=authored||hasOpening||lineLength<current.length*.72||lineLength>current.length*1.4;
+        let a=line.a,b=line.b;
+        if(preserveExtent){
+          a=current.horizontal?current.x1:current.y1;
+          b=current.horizontal?current.x2:current.y2;
+        }else if((current.horizontal?current.x2-current.x1:current.y2-current.y1)<0){
+          a=line.b;b=line.a;
+        }
+        if(current.horizontal)setWallFromEndpoints(wall,a,line.p,b,line.p,thickness);
+        else setWallFromEndpoints(wall,line.p,a,line.p,b,thickness);
+        wall.h=height;
+        (project.openings||[]).filter(opening=>opening.wallId===wall.id).forEach(opening=>remapOpeningToWallV32(opening,oldWall,wall));
+        return preserveExtent;
+      }
+      function credibleMissingWallLineV42(line,lines){
+        const length=Math.max(0,line.b-line.a);if(length<650)return false;
+        const endpoints=new Set();
+        lines.forEach(other=>{
+          if(other===line||other.horizontal===line.horizontal||Math.max(0,other.b-other.a)<1100)return;
+          const along=other.p,cross=line.p;
+          if(cross<other.a-220||cross>other.b+220)return;
+          if(Math.abs(along-line.a)<=220)endpoints.add('a');
+          if(Math.abs(along-line.b)<=220)endpoints.add('b');
+        });
+        // Long isolated strokes can still be room names or dimension ticks. Require
+        // structural contact unless the band is both very long and wall-thickness.
+        if(length>=2500&&(+line.thickness||0)>=90)return true;
+        if(length>=1250)return endpoints.size>=1;
+        return endpoints.size===2;
+      }
       function remapOpeningToWallV32(opening,oldWall,newWall){
         const old=wallMetrics(oldWall),next=wallMetrics(newWall),cx=old.x1+old.ux*(+opening.offset||0),cy=old.y1+old.uy*(+opening.offset||0);
         opening.wallId=newWall.id;opening.offset=Math.max((+opening.width||750)/2+25,Math.min(next.length-(+opening.width||750)/2-25,(cx-next.x1)*next.ux+(cy-next.y1)*next.uy));
@@ -54,11 +91,11 @@
       detectWalls=function(){
         if(!basemapImage){alert('Upload a floor-plan image first.');return;}
         const lines=getDetectedWallSegments(true);if(!lines.length){$('toolHint').textContent='No reliable wall bands were found. Confirm the plan dimensions or edit the walls manually.';setWallReviewStatusV32('No reliable wall bands found · manual review required');return;}
-        pushHistory('replace walls from basemap');const candidates=[...(project.walls||[])],used=new Set(),kept=new Set(),wh=+$('wallHeight').value||2700,stamp=Date.now();let replaced=0,added=0;
+        pushHistory('replace walls from basemap');const candidates=[...(project.walls||[])],used=new Set(),kept=new Set(),wh=+$('wallHeight').value||2700,stamp=Date.now();let replaced=0,preserved=0,added=0,rejected=0;
         lines.slice(0,60).forEach((line,index)=>{let best=null;candidates.forEach(wall=>{if(used.has(wall.id))return;const match=wallLineMatchV32(wall,line);if(match&&(!best||match.score<best.score))best={wall,...match};});
           const thickness=line.thickness||Math.max(80,+$('wallThickness').value||120);let wall;
-          if(best){wall=best.wall;used.add(wall.id);kept.add(wall.id);const name=wall.name,id=wall.id,h=wall.h||wh;if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);wall.id=id;wall.name=name;wall.h=h;wall.detected=true;wall.autoDetected=true;replaced++;}
-          else{wall={id:`detected-${stamp}-${index}`,name:`Detected wall ${index+1}`,h:wh,detected:true,autoDetected:true};if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);project.walls.push(wall);kept.add(wall.id);added++;}
+          if(best){wall=best.wall;used.add(wall.id);kept.add(wall.id);const name=wall.name,id=wall.id,h=wall.h||wh;if(applyDetectedLineToWallV42(wall,line,thickness,h))preserved++;wall.id=id;wall.name=name;wall.detected=true;wall.autoDetected=true;replaced++;}
+          else{if(!credibleMissingWallLineV42(line,lines)){rejected++;return;}wall={id:`detected-${stamp}-${index}`,name:`Detected wall ${index+1}`,h:wh,detected:true,autoDetected:true};if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);project.walls.push(wall);kept.add(wall.id);added++;}
         });
         let locallyAligned=0;
         candidates.forEach(wall=>{
@@ -68,7 +105,7 @@
           alignWallToSegment(wall,match.segment);wall.detected=true;wall.autoDetected=true;used.add(wall.id);kept.add(wall.id);locallyAligned++;
         });
         const removedIds=new Set(candidates.filter(wall=>wall.detected&&!kept.has(wall.id)).map(wall=>wall.id));project.walls=project.walls.filter(wall=>!removedIds.has(wall.id));project.openings=(project.openings||[]).filter(opening=>!removedIds.has(opening.wallId));const merged=mergeAllWallOverlapsV32();
-        buildScene();setWallReviewStatusV32(`${replaced} walls replaced · ${locallyAligned} nearby walls centred · ${added} missing walls added${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup replaced ${replaced} matching walls, centred ${locallyAligned} nearby walls and added ${added} missing walls without stacking duplicates. Review the highlighted walls before confirming.`;
+        buildScene();setWallReviewStatusV32(`${replaced} walls aligned · ${preserved} protected extents · ${locallyAligned} nearby walls centred · ${added} missing walls added · ${rejected} isolated marks ignored${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup aligned ${replaced} matching walls, preserved ${preserved} wall extents with openings or partial detections, centred ${locallyAligned} nearby walls and added ${added} missing walls. ${rejected} isolated short marks were ignored as likely text or dimensions. Review the highlighted walls before confirming.`;
       };
 
       function sampleDoorGapsForWallV32(wall,analysis,gray){
