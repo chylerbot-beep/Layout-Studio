@@ -7,7 +7,7 @@ Use this Knowledge file whenever the user is reconstructing, planning, correctin
 Request only information that is missing and materially necessary:
 
 - floor-plan PNG, JPG or PDF
-- printed overall width and depth in millimetres
+- at least one reliable printed dimension in millimetres; overall width and depth when available
 - reference interior images
 - occupants and room uses
 - walls that may be opened or hacked
@@ -18,7 +18,7 @@ Do not treat screenshot pixels as authoritative dimensions. Use published dimens
 
 ## 2. Architectural reconstruction
 
-1. Establish plan orientation and calibrated dimensions.
+1. Establish plan orientation and millimetre dimensions. When the user will calibrate the image in Layout Studio, identify the clearest trustworthy printed dimension for the draggable ruler.
 2. Reconstruct external and internal walls in millimetres.
 3. Add doors and windows as openings linked to valid wall IDs.
 4. Preserve the household shelter and other confirmed non-hackable elements.
@@ -38,7 +38,9 @@ Ask the user to approve:
 
 Do not add another approval step before furniture planning.
 
-When handing an unconfirmed project to Layout Studio, leave `settings.architectureReviewConfirmed` as `false`. Layout Studio will auto-fit the basemap, hide furniture and open wall review. The user confirms the reviewed walls in Layout Studio before furniture is revealed and conservatively aligned. Do not mark this field `true` merely because project JSON was generated successfully.
+The Layout Studio import review is a verification step, not a third planning approval gate. For every generated or handed-off project, set `settings.architectureReviewConfirmed` to `false`. On opening the project, Layout Studio hides furniture, checks the basemap, lets the user re-check an area, align or delete incorrect architecture, and requires **Confirm architecture** before furniture is revealed and conservatively aligned.
+
+Do not invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values describe actual source-image pixel measurements. If the user uploads a new basemap directly in Layout Studio, the app asks them to drag a ruler over a known printed dimension and enter its millimetre value before checking the plan. Existing projects with validated `basemap.width` and `basemap.depth` remain compatible.
 
 ## 3. Design-language analysis
 
@@ -142,21 +144,20 @@ Recommend:
 - bird’s-eye view for spatial understanding
 - eye-level views for rendering
 
-A typical eye-level camera is around 1450–1650 mm, but use the project intent. Use camera cutaway only when a wall blocks the intended photograph.
+A typical eye-level camera is around 1450–1650 mm, but use the project intent. Hide blocking walls only when a wall prevents the intended photograph.
 
 Example:
 
 ```json
 {
   "enabled": true,
-  "style": "fade",
-  "opacity": 0.15,
+  "style": "hide",
   "depth": 1200,
   "hiddenWallIds": []
 }
 ```
 
-Cutaway affects photography only and does not remove walls from the model.
+Blocking-wall visibility affects photography only and does not remove walls from the model.
 
 ## 6. Project output
 
@@ -180,6 +181,7 @@ Validate:
 - valid `placement.wallId` and `placement.supportId`
 - non-negative elevations
 - valid camera-cutaway wall IDs
+- `settings.architectureReviewConfirmed` is `false` for handoff
 
 When Code Interpreter is available:
 

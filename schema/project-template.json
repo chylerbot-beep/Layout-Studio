@@ -16,12 +16,12 @@
   "furniture": [],
   "settings": {
     "architectureReviewConfirmed": false,
+    "scaleCalibrationRequired": false,
     "ceilingVisible": false,
     "ceilingHeight": 2600,
     "cameraCutaway": {
       "enabled": false,
-      "style": "fade",
-      "opacity": 0.15,
+      "style": "hide",
       "depth": 1200,
       "hiddenWallIds": []
     }

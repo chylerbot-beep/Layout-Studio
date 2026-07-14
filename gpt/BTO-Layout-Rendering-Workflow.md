@@ -21,7 +21,7 @@ Before exporting from Layout Studio:
 - use Eye level view
 - position camera around 1450–1650 mm unless another viewpoint is intended
 - set a believable interior FOV, usually around 50–70 degrees
-- use camera cutaway only when a wall blocks the desired photograph
+- hide blocking walls only when a wall blocks the desired photograph
 - turn off validation outlines
 - turn off labels for the cleanest source image, or use eye-level label cleanup
 - hide grids, clearance zones, selection handles and transform controls
@@ -62,12 +62,12 @@ Use them for:
 
 Never let an inspiration image change the approved floor-plan geometry.
 
-## Camera-cutaway interpretation
+## Blocking-wall interpretation
 
-A hidden or faded foreground wall is a camera aid. It does not automatically mean the wall was hacked.
+A hidden foreground wall is a camera aid. It does not automatically mean the wall was hacked.
 
 For the final image:
-- keep the photographic view opened by the cutaway
+- keep the photographic view opened by the hidden blocking wall
 - do not show a translucent construction wall in the final render
 - do not invent a permanent opening unless the project or brief confirms one
 - do not alter other walls to compensate

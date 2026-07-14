@@ -14,12 +14,14 @@ Open `http://localhost:8000` in a normal desktop browser.
 
 ## Current interaction updates
 
-- Added an architecture-first startup workflow: review walls, confirm, then reveal and align furniture
-- Basemap drawings are auto-fitted when a new or legacy basemap project enters review
-- Auto-detect walls replaces matching wall geometry instead of stacking duplicate walls, and adds missing detected walls
-- Added best-effort door-symbol detection that realigns nearby existing doors or adds missing doors
-- Double-click aligned overlapping walls to merge them while preserving their openings
-- Reference-image and empty hosted-library controls are hidden from the planning interface; imported package data remains compatible
+- Added draggable ruler calibration: place both endpoints on a reliable printed dimension and enter its length in millimetres
+- Added **Check floor plan β**, which runs the existing browser-only wall and door recognition without a paid AI service
+- Added guided architecture review tools: re-check a selected area, align or delete the selected item, temporarily show the original basemap, and merge aligned overlapping walls by double-clicking
+- New basemap uploads now follow **Set scale → Check floor plan → Review architecture → Confirm → Reveal and align furniture**
+- Auto-detect replaces matching wall geometry instead of stacking duplicate walls and adds missing suggestions
+- Best-effort door-symbol detection realigns nearby doors or adds missing doors
+- Existing JSON, ZIP and `.btozip` projects remain compatible; ruler metadata is optional
+- Reference-image and hosted-library controls are hidden from the planning interface while legacy package data remains import-compatible
 - Moved **Align all walls β** into the left basemap-tools section
 - Added **Align furniture β** with conservative room, wall, support and grouped-layout logic
 - Added a **Resize** button for selected carpentry
@@ -27,15 +29,13 @@ Open `http://localhost:8000` in a normal desktop browser.
 - Added an **L-shaped wardrobe** with one resize handle on each free end
 - Every resize is stored as one undoable action
 
-## Camera visibility and cutaway
+## Camera visibility and blocking walls
 
-- Added **Auto-hide blocking walls** under Camera visibility
-- Automatic cutaway only operates at eye-level or other low camera heights; top and bird's-eye views remain intact
-- Cutaway style can be **Fade** or **Hide**
-- Fade opacity and cutaway depth are adjustable
+- **Blocking walls** can automatically hide foreground walls at eye level; top and bird's-eye views remain intact
+- Hide distance controls how far from the camera a blocking wall may be hidden
 - A selected wall can be manually hidden for a camera view
 - **Show all walls** restores every manually hidden wall
-- Cutaway affects only viewport and PNG rendering; walls remain in project data, wall editing, collisions and validation
+- Camera visibility affects only viewport and PNG rendering; walls remain in project data, wall editing, collisions and validation
 - Opening objects and labels attached to a hidden wall follow that wall's camera visibility
 - Camera visibility settings are saved in project JSON and ZIP packages
 
@@ -69,7 +69,7 @@ The JSON project data remains authoritative; images are references.
 
 ## Hosted project packages
 
-The visible hosted-project picker has been removed from the planning interface. Existing `projects/index.json` packages and direct `?project=` or `?package=` links remain compatible. Each entry uses:
+The visible hosted-project picker is hidden. Existing `projects/index.json` entries and direct package links remain compatible. Each entry uses:
 
 ```json
 {
@@ -84,19 +84,22 @@ The package path is resolved relative to `projects/index.json`.
 
 ## Custom GPT handoff
 
-Use these files from `gpt/`:
+Use these files from `gpt/` and `schema/`:
 
 - `BTO-Layout-Planner-Instructions.md` — paste into the GPT Instructions field
-- `BTO-Layout-Object-Catalog.md` — upload as a Knowledge file
+- `BTO-Layout-Planning-Workflow.md`
+- `BTO-Layout-Rendering-Workflow.md`
+- `BTO-Layout-Object-Catalog.md`
+- `schema/project-schema.md`
+- `schema/project-template.json`
 
-Also upload `schema/project-schema.md` as Knowledge. The GPT should always provide a validated `project.json` separately and may also provide a real standard ZIP containing that file, notes, basemap and references. It must not merely rename a text file to `.zip`.
+The GPT should always provide a validated `project.json` separately and may also provide a real standard ZIP containing that file, notes, basemap and references. It must not merely rename a text file to `.zip`. Generated projects leave `settings.architectureReviewConfirmed` false so Layout Studio performs architecture review before revealing furniture.
 
 The latest object catalogue includes the L-shaped wardrobe model, carpentry resize rules and furniture-placement metadata used by **Align furniture β**. Replace the older Knowledge file in the GPT editor after pulling this update.
 
 ## Browser dependencies
 
 - Three.js for 3D
-- Tesseract.js for optional in-browser OCR
 - JSZip for project ZIP import/export
 
-No OCR service API is required.
+Ruler calibration and floor-plan checking run locally in the browser. No OCR or AI service API is required.

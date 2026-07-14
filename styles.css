@@ -93,6 +93,29 @@
     .dialog h3 { margin: 0 0 8px; }
     .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
+    .wall-review-workflow { margin-top: 12px; padding: 12px; border: 1px solid rgba(146,165,139,.5); border-radius: 10px; background: rgba(107,127,94,.1); }
+    .wall-review-workflow[hidden] { display: none !important; }
+    .wall-review-workflow p { margin: 8px 0 10px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .wall-review-step { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; color: #dfe9da; font-size: 10px; }
+    .wall-review-step span { max-width: 62%; color: var(--muted); text-align: right; line-height: 1.35; }
+    .wall-review-workflow.review-complete { border-color: rgba(146,165,139,.28); background: rgba(107,127,94,.06); }
+    .wall-review-tools button { flex: 1 1 92px; }
+    .wall-review-instruction { min-height: 28px; }
+    #addReferences, #referenceImagesSection, #projectLibrarySection, #autoFitBasemap, #autoTrace, #autoDoors, #clearDetected { display: none !important; }
+
+    .scale-modal { z-index: 40; padding: 16px; }
+    .scale-dialog { width: min(1040px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px; }
+    .scale-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .scale-dialog-heading h3 { margin-bottom: 4px; }
+    .scale-dialog-heading p { margin: 0; }
+    .scale-canvas-wrap { height: min(64vh, 620px); min-height: 320px; margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #e5e5e3; }
+    #scaleCanvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+    .scale-controls { display: grid; grid-template-columns: minmax(180px, 240px) 1fr auto; align-items: end; gap: 14px; margin-top: 12px; }
+    .scale-reading { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+    .scale-reading strong { color: var(--text); font-size: 12px; font-weight: 600; }
+    #reviewAreaBox { position: fixed; display: none; z-index: 35; border: 2px solid #2f80ff; background: rgba(47,128,255,.12); pointer-events: none; }
+    body.review-area-active #viewport canvas { cursor: crosshair !important; }
+
     .project-workspace code { color: #d4dfcf; font-size: 10px; }
     .package-status { margin: 10px 0 0; padding: 8px 9px; border-radius: 8px; background: rgba(146,165,139,.07); border: 1px solid rgba(146,165,139,.25); }
     .package-status.busy { color: #f0d49b; border-color: rgba(216,173,99,.5); }
@@ -109,4 +132,6 @@
       .app { grid-template-columns: 210px 1fr; }
       .right { display: none; }
       header h1 { display: none; }
+      .scale-controls { grid-template-columns: 1fr; align-items: stretch; }
+      .scale-canvas-wrap { min-height: 260px; height: 52vh; }
     }

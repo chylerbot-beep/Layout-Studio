@@ -70,17 +70,26 @@
           <label class="wide">Opacity<input id="basemapOpacity" type="range" min="0" max="100" value="48" /></label>
         </div>
         <div class="button-row" style="margin-top:10px">
+          <button id="setScaleBasemap" class="primary">Set scale</button>
+          <button id="checkFloorPlan">Check floor plan β</button>
           <button id="autoFitBasemap" hidden>Auto-fit drawing β</button>
           <button id="ocrDimensions">Read dimensions OCR β</button>
           <button id="resetBasemapCrop">Reset crop</button>
-          <button id="autoTrace">Auto-detect walls β</button>
-          <button id="autoDoors">Auto-detect doors β</button>
+          <button id="autoTrace" hidden>Auto-detect walls β</button>
+          <button id="autoDoors" hidden>Auto-detect doors β</button>
           <button id="clearDetected" hidden>Clear detected</button>
         </div>
         <div class="wall-review-workflow" id="wallReviewWorkflow" hidden>
-          <div class="wall-review-step"><strong>1 · Review walls</strong><span id="wallReviewStatus">Checking the basemap…</span></div>
-          <p>Furniture is temporarily hidden. Check the yellow detected walls, doors and openings against the basemap. Double-click aligned overlapping walls to merge them.</p>
-          <button id="confirmWallReview" class="primary">Confirm walls · reveal and align furniture</button>
+          <div class="wall-review-step"><strong>1 · Review architecture</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
+          <p>Furniture is temporarily hidden. Compare the yellow suggestions with the basemap, correct any mistakes, then confirm the architecture.</p>
+          <div class="button-row wall-review-tools">
+            <button id="reviewRecheckArea">Re-check area</button>
+            <button id="reviewAlignSelected">Align selected</button>
+            <button id="reviewDeleteSelected" class="danger">Delete selected</button>
+            <button id="reviewOriginal">Hold original</button>
+          </div>
+          <p class="wall-review-instruction" id="wallReviewInstruction">Select a wall to align or delete. Double-click aligned overlapping walls to merge them.</p>
+          <button id="confirmWallReview" class="primary">Confirm architecture · reveal and align furniture</button>
         </div>
         <div id="ocrPanel" class="ocr-results" hidden>
           <div class="field-grid">
@@ -91,7 +100,7 @@
           <div class="ocr-progress"><span id="ocrProgressBar"></span></div>
           <div class="small" id="ocrStatus">OCR suggestions require confirmation before the basemap is resized.</div>
         </div>
-        <p class="small" id="basemapStatus">Enter the published overall dimensions shown on the plan. Auto-fit removes white margins and thin dimension-line areas before tracing.</p>
+        <p class="small" id="basemapStatus">Upload a floor plan, drag the ruler across a printed dimension and enter its millimetre value. Then check and review the detected architecture.</p>
       </div>
       <div class="section">
         <h2>Architecture</h2>
@@ -257,6 +266,24 @@
       <div class="dialog-actions"><button id="captureCancel">Cancel</button><button id="captureConfirm" class="primary">Download PNG</button></div>
     </div>
   </div>
+
+  <div class="modal scale-modal" id="scaleModal" role="dialog" aria-modal="true" aria-labelledby="scaleModalTitle">
+    <div class="dialog scale-dialog">
+      <div class="scale-dialog-heading">
+        <div><h3 id="scaleModalTitle">Set floor-plan scale</h3><p class="small">Drag both blue ruler ends onto a known printed dimension, then enter its length in millimetres.</p></div>
+        <button id="scaleCancel" aria-label="Close scale calibration">Close</button>
+      </div>
+      <div class="scale-canvas-wrap"><canvas id="scaleCanvas"></canvas></div>
+      <div class="scale-controls">
+        <label>Known length (mm)<input id="scaleKnownMm" type="number" value="12600" min="100" step="5" inputmode="numeric" /></label>
+        <div class="scale-reading"><span id="scalePixelReading">Move the ruler ends</span><strong id="scaleResultReading">Scale not set</strong></div>
+        <div class="button-row"><button id="scaleZoomOut" title="Zoom out">−</button><button id="scaleZoomIn" title="Zoom in">+</button><button id="scaleResetRuler">Reset ruler</button></div>
+      </div>
+      <div class="dialog-actions"><button id="scaleCancelBottom">Cancel</button><button id="scaleApply" class="primary">Apply scale</button></div>
+    </div>
+  </div>
+
+  <div id="reviewAreaBox" aria-hidden="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>

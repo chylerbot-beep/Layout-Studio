@@ -13,8 +13,29 @@ The project file is UTF-8 JSON. Coordinates and dimensions are millimetres. The 
 - `shell`: fixed rectangular architecture or existing built-ins
 - `clearances`: rectangular circulation zones
 - `furniture`: furniture, carpentry and decorative objects
-- `settings`: ceiling and camera-cutaway settings
+- `settings`: ceiling, blocking-wall and architecture-review settings
 - `camera`: Three.js camera position, target and FOV
+
+## Optional basemap scale calibration
+
+Layout Studio can calculate the basemap dimensions from a draggable ruler. These fields are optional and additive; older projects containing only `basemap.width` and `basemap.depth` remain valid.
+
+```json
+{
+  "basemap": {
+    "width": 12600,
+    "depth": 9400,
+    "scaleMmPerPixel": 12.3046875,
+    "scaleCalibration": {
+      "knownMm": 12600,
+      "a": { "u": 0.12, "v": 0.16 },
+      "b": { "u": 0.88, "v": 0.16 }
+    }
+  }
+}
+```
+
+`a` and `b` are normalized source-image coordinates. The structured millimetre geometry remains authoritative; calibration metadata only helps display and analyse the visual basemap.
 
 ## Wall
 
@@ -164,9 +185,9 @@ Placement metadata is advisory. Collision, circulation and door-clearance checks
 }
 ```
 
-## Camera cutaway settings
+## Blocking-wall settings
 
-Camera cutaway changes only viewport and PNG rendering. It does not delete walls or remove them from validation.
+Blocking-wall visibility changes only viewport and PNG rendering. It does not delete walls or remove them from validation.
 
 ```json
 {
@@ -175,8 +196,7 @@ Camera cutaway changes only viewport and PNG rendering. It does not delete walls
     "ceilingHeight": 2600,
     "cameraCutaway": {
       "enabled": false,
-      "style": "fade",
-      "opacity": 0.15,
+      "style": "hide",
       "depth": 1200,
       "hiddenWallIds": []
     }
@@ -184,9 +204,8 @@ Camera cutaway changes only viewport and PNG rendering. It does not delete walls
 }
 ```
 
-- `enabled`: automatically fade or hide blocking walls at low camera heights
-- `style`: `fade` or `hide`
-- `opacity`: fade opacity from `0.03` to `0.60`
+- `enabled`: automatically hide blocking walls at low camera heights
+- `style`: use `hide`; older `fade` values remain accepted for compatibility but are treated as hidden by the current interface
 - `depth`: maximum cutaway distance from the camera in millimetres
 - `hiddenWallIds`: walls manually hidden for camera views; all IDs must refer to valid walls
 
@@ -246,5 +265,6 @@ Objects without a recognised `model` render as editable boxes.
 - Ceiling height defaults to 2600 mm.
 - `category` is one of `furniture`, `carpentry`, or `decorative`.
 - `placement.mode`, when supplied, is one of `wall`, `free`, or `support`.
-- `settings.cameraCutaway.style` is `fade` or `hide`.
+- `settings.architectureReviewConfirmed` is boolean when supplied. Use `false` for a generated or newly handed-off project so the user reviews architecture before furniture is revealed.
+- `settings.cameraCutaway.style` should be `hide`; legacy `fade` values remain import-compatible.
 - Use a supported `model` value when custom geometry is required.
