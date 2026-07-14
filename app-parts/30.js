@@ -1,26 +1,30 @@
-// Basemap registration, label-follow, photo-label and camera-preset refinements.
+// Guided basemap registration, label-follow, photo-label and camera-preset refinements.
 //
 // Loads after app-parts/29.js and before app-parts/08.js.
-// - Adds Adjust basemap between Set scale and Align furniture.
-// - Moves the basemap only; authored wall geometry and calibrated size stay unchanged.
+// - Changes the guided import workflow to:
+//     Step 1 — Set scale
+//     Step 2 — Adjust basemap
+//     Step 3 — Correct architecture
+// - Lets the user drag or best-fit the basemap without moving authored walls.
+// - Removes Adjust basemap from the normal Floor-plan basemap section.
 // - Keeps labels visible in Photo mode.
 // - Keeps furniture labels attached to their objects and hides them with hidden furniture.
 // - Preserves the current plan focus when switching Top, Bird's-eye and Eye-level views.
 
-const layoutRefinementVersionV60 = '20260714-v60';
+const layoutRefinementVersionV61 = '20260714-guided-basemap-v61';
 
 // -----------------------------------------------------------------------------
-// Adjust basemap
+// Step 2 of 3 — Adjust basemap
 // -----------------------------------------------------------------------------
 
-let basemapAdjustActiveV60 = false;
-let basemapAdjustSessionV60 = null;
-let basemapAdjustDragV60 = null;
-const basemapAdjustRaycasterV60 = new THREE.Raycaster();
-const basemapAdjustPointerV60 = new THREE.Vector2();
-const basemapAdjustPlaneV60 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+let basemapAdjustActiveV61 = false;
+let basemapAdjustSessionV61 = null;
+let basemapAdjustDragV61 = null;
+const basemapAdjustRaycasterV61 = new THREE.Raycaster();
+const basemapAdjustPointerV61 = new THREE.Vector2();
+const basemapAdjustPlaneV61 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-function cloneBasemapRegistrationV60() {
+function cloneBasemapRegistrationV61() {
   if (!project.basemap) return null;
   return {
     offsetX: Number(project.basemap.offsetX) || 0,
@@ -30,13 +34,22 @@ function cloneBasemapRegistrationV60() {
   };
 }
 
-function syncBasemapOffsetFieldsV60() {
+function syncBasemapAdjustReadoutV61() {
   if (!project.basemap) return;
-  if ($('basemapOffsetX')) $('basemapOffsetX').value = Math.round(Number(project.basemap.offsetX) || 0);
-  if ($('basemapOffsetY')) $('basemapOffsetY').value = Math.round(Number(project.basemap.offsetY) || 0);
-  if ($('planWidth')) $('planWidth').value = Math.round(Number(project.basemap.width) || PLAN_W);
-  if ($('planDepth')) $('planDepth').value = Math.round(Number(project.basemap.depth) || PLAN_H);
-  const readout = $('basemapAdjustReadoutV60');
+  if ($('basemapOffsetX')) {
+    $('basemapOffsetX').value = Math.round(Number(project.basemap.offsetX) || 0);
+  }
+  if ($('basemapOffsetY')) {
+    $('basemapOffsetY').value = Math.round(Number(project.basemap.offsetY) || 0);
+  }
+  if ($('planWidth')) {
+    $('planWidth').value = Math.round(Number(project.basemap.width) || PLAN_W);
+  }
+  if ($('planDepth')) {
+    $('planDepth').value = Math.round(Number(project.basemap.depth) || PLAN_H);
+  }
+
+  const readout = $('reviewBasemapReadoutV61');
   if (readout) {
     readout.textContent =
       `Offset X ${Math.round(Number(project.basemap.offsetX) || 0).toLocaleString()} mm · ` +
@@ -44,18 +57,22 @@ function syncBasemapOffsetFieldsV60() {
   }
 }
 
-function invalidateBasemapComparisonV60(rebuild = true) {
+function invalidateBasemapComparisonV61(rebuild = true) {
   wallDetectionCache = null;
   basemapRenderSignature = '';
+
   if (typeof architectureSuggestionsV50 !== 'undefined') {
     architectureSuggestionsV50 = [];
     architectureSuggestionIndexV50 = 0;
   }
+
   if (rebuild) {
-    buildBasemap(true);
-    renderArchitectureHighlight();
+    if (typeof buildBasemap === 'function') buildBasemap(true);
+    if (typeof renderArchitectureHighlight === 'function') renderArchitectureHighlight();
   }
-  syncBasemapOffsetFieldsV60();
+
+  syncBasemapAdjustReadoutV61();
+
   if (typeof renderArchitectureAuthorityStatusV50 === 'function') {
     renderArchitectureAuthorityStatusV50();
   }
@@ -64,29 +81,39 @@ function invalidateBasemapComparisonV60(rebuild = true) {
   }
 }
 
-function basemapAdjustPlanPointV60(event) {
+function ensureBasemapAdjustHistoryV61() {
+  if (!basemapAdjustSessionV61 || basemapAdjustSessionV61.historyPushed) return;
+  pushHistory('adjust basemap position');
+  basemapAdjustSessionV61.historyPushed = true;
+}
+
+function basemapAdjustPlanPointV61(event) {
   const rect = renderer.domElement.getBoundingClientRect();
   if (!rect.width || !rect.height) return null;
-  basemapAdjustPointerV60.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  basemapAdjustPointerV60.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  basemapAdjustRaycasterV60.setFromCamera(basemapAdjustPointerV60, camera);
+
+  basemapAdjustPointerV61.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  basemapAdjustPointerV61.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  basemapAdjustRaycasterV61.setFromCamera(basemapAdjustPointerV61, camera);
+
   const point = new THREE.Vector3();
-  if (!basemapAdjustRaycasterV60.ray.intersectPlane(basemapAdjustPlaneV60, point)) return null;
+  if (!basemapAdjustRaycasterV61.ray.intersectPlane(basemapAdjustPlaneV61, point)) return null;
   return { x: point.x / MM, y: point.z / MM };
 }
 
-function setBasemapOffsetV60(x, y, rebuild = true) {
+function setBasemapOffsetV61(x, y, rebuild = true) {
   if (!project.basemap) return;
   project.basemap.offsetX = Math.round(x);
   project.basemap.offsetY = Math.round(y);
-  invalidateBasemapComparisonV60(rebuild);
+  invalidateBasemapComparisonV61(rebuild);
 }
 
-function weightedMedianV60(entries) {
+function weightedMedianV61(entries) {
   const values = entries
     .filter(entry => Number.isFinite(entry.value) && entry.weight > 0)
     .sort((a, b) => a.value - b.value);
+
   if (!values.length) return null;
+
   const total = values.reduce((sum, entry) => sum + entry.weight, 0);
   let running = 0;
   for (const entry of values) {
@@ -96,7 +123,7 @@ function weightedMedianV60(entries) {
   return values[values.length - 1].value;
 }
 
-function bestFitBasemapDeltaV60() {
+function bestFitBasemapDeltaV61() {
   if (!project.basemap || typeof getDetectedWallSegments !== 'function') {
     return { dx: null, dy: null, matchesX: 0, matchesY: 0 };
   }
@@ -133,39 +160,48 @@ function bestFitBasemapDeltaV60() {
         Math.min(900, overlap) * 0.16 -
         Math.min(0.8, overlapRatio) * 180;
 
-      if (!best || score < best.score) best = { delta, overlap, overlapRatio, score };
+      if (!best || score < best.score) {
+        best = { delta, overlap, overlapRatio, score };
+      }
     });
 
     if (!best) return;
+
     const entry = {
       value: best.delta,
       weight: Math.max(1, Math.min(metrics.length, best.overlap)) * (0.5 + best.overlapRatio)
     };
+
     if (metrics.horizontal) yDeltas.push(entry);
     else xDeltas.push(entry);
   });
 
   return {
-    dx: weightedMedianV60(xDeltas),
-    dy: weightedMedianV60(yDeltas),
+    dx: weightedMedianV61(xDeltas),
+    dy: weightedMedianV61(yDeltas),
     matchesX: xDeltas.length,
     matchesY: yDeltas.length
   };
 }
 
-function bestFitBasemapPositionV60() {
+function bestFitBasemapPositionV61() {
   if (!project.basemap) return;
+
   let totalDx = 0;
   let totalDy = 0;
   let last = null;
+  let changed = false;
 
-  // Re-evaluate after each translation because detected line coordinates change
-  // with the basemap offset. Translation only: width, depth, crop and scale remain.
+  // Translation only. Re-evaluate after each pass because detected wall
+  // coordinates move with the basemap offset.
   for (let pass = 0; pass < 3; pass += 1) {
-    last = bestFitBasemapDeltaV60();
+    last = bestFitBasemapDeltaV61();
     const dx = Number.isFinite(last.dx) ? Math.round(last.dx) : 0;
     const dy = Number.isFinite(last.dy) ? Math.round(last.dy) : 0;
     if (!dx && !dy) break;
+
+    if (!changed) ensureBasemapAdjustHistoryV61();
+    changed = true;
     project.basemap.offsetX = Math.round((Number(project.basemap.offsetX) || 0) + dx);
     project.basemap.offsetY = Math.round((Number(project.basemap.offsetY) || 0) + dy);
     totalDx += dx;
@@ -173,271 +209,298 @@ function bestFitBasemapPositionV60() {
     wallDetectionCache = null;
   }
 
-  invalidateBasemapComparisonV60(true);
-  const status = $('basemapAdjustStatusV60');
+  invalidateBasemapComparisonV61(true);
+
+  const status = $('reviewBasemapStatusV61');
   if (!last || (!last.matchesX && !last.matchesY)) {
     if (status) {
       status.textContent =
-        'No reliable wall-band translation was found. Drag the basemap manually or use the arrow keys.';
+        'No reliable translation was found. Drag the basemap manually or use the arrow buttons.';
     }
     return;
   }
+
   if (status) {
     status.textContent =
-      `Best-fit moved the basemap ${totalDx.toLocaleString()} mm in X and ` +
+      `Best fit moved the basemap ${totalDx.toLocaleString()} mm in X and ` +
       `${totalDy.toLocaleString()} mm in Y using ${last.matchesX + last.matchesY} wall matches. ` +
-      'Check several outer and internal walls before pressing Done.';
+      'Check several outer and internal walls before continuing.';
   }
+
   if ($('basemapStatus')) {
+    $('basemapStatus').hidden = false;
     $('basemapStatus').textContent =
-      'Basemap position adjusted against authored walls. Wall coordinates and calibrated image size were not changed.';
+      'Basemap position adjusted. Authored walls and calibrated image size were not changed.';
   }
 }
 
-function nudgeBasemapV60(dx, dy) {
+function nudgeBasemapV61(dx, dy) {
   if (!project.basemap) return;
-  setBasemapOffsetV60(
+  ensureBasemapAdjustHistoryV61();
+  setBasemapOffsetV61(
     (Number(project.basemap.offsetX) || 0) + dx,
     (Number(project.basemap.offsetY) || 0) + dy,
     true
   );
-  const status = $('basemapAdjustStatusV60');
+
+  const status = $('reviewBasemapStatusV61');
   if (status) status.textContent = `Nudged ${Math.abs(dx || dy).toLocaleString()} mm.`;
 }
 
-function finishBasemapAdjustV60(commit) {
-  if (!basemapAdjustActiveV60 || !basemapAdjustSessionV60) return;
-  const session = basemapAdjustSessionV60;
-
-  if (!commit && project.basemap && session.basemap) {
-    project.basemap.offsetX = session.basemap.offsetX;
-    project.basemap.offsetY = session.basemap.offsetY;
-    project.basemap.width = session.basemap.width;
-    project.basemap.depth = session.basemap.depth;
-    undoStack.splice(session.undoLength);
-    redoStack.splice(0, redoStack.length, ...session.redo);
-    $('undo').disabled = !undoStack.length;
-    $('redo').disabled = !redoStack.length;
-  }
-
-  basemapAdjustActiveV60 = false;
-  basemapAdjustDragV60 = null;
-  basemapAdjustSessionV60 = null;
+function deactivateBasemapAdjustV61() {
+  basemapAdjustActiveV61 = false;
+  basemapAdjustDragV61 = null;
   orbit.enabled = true;
-  renderer.domElement.classList.remove('basemap-adjust-cursor-v60');
-  $('adjustBasemap')?.classList.remove('active');
-  if ($('basemapAdjustPanelV60')) $('basemapAdjustPanelV60').hidden = true;
-  invalidateBasemapComparisonV60(true);
-
-  if ($('basemapStatus')) {
-    $('basemapStatus').textContent = commit
-      ? 'Basemap position saved. Wall geometry was not changed.'
-      : 'Basemap adjustment cancelled; the previous position was restored.';
-  }
+  renderer.domElement.classList.remove('basemap-adjust-cursor-v61');
 }
 
-function beginBasemapAdjustV60() {
-  if (!project.basemap || !basemapImage?.complete) {
-    alert('Upload and set the scale of a floor-plan basemap first.');
-    return;
-  }
-  if (basemapAdjustActiveV60) {
-    finishBasemapAdjustV60(true);
-    return;
-  }
+function activateBasemapAdjustV61() {
+  if (!project.basemap || !basemapImage?.complete || !basemapImage.naturalWidth) return;
 
-  basemapAdjustSessionV60 = {
-    basemap: cloneBasemapRegistrationV60(),
-    undoLength: undoStack.length,
-    redo: [...redoStack]
+  basemapAdjustSessionV61 = {
+    basemap: cloneBasemapRegistrationV61(),
+    historyPushed: false
   };
-  pushHistory('adjust basemap position');
-  basemapAdjustActiveV60 = true;
+  basemapAdjustActiveV61 = true;
   basemapGroup.visible = true;
+
   if ($('toggleBasemap')) $('toggleBasemap').classList.add('active');
-  $('adjustBasemap')?.classList.add('active');
-  if ($('basemapAdjustPanelV60')) $('basemapAdjustPanelV60').hidden = false;
-  renderer.domElement.classList.add('basemap-adjust-cursor-v60');
+
+  renderer.domElement.classList.add('basemap-adjust-cursor-v61');
   transform.detach();
   select(null);
   selectedArchitecture = null;
   updateArchitecturePanel();
   renderArchitectureList();
   setTool('select');
-  syncBasemapOffsetFieldsV60();
 
-  const status = $('basemapAdjustStatusV60');
+  if (typeof detectedWallHighlightGroupV28 !== 'undefined') {
+    detectedWallHighlightGroupV28.visible = false;
+  }
+  if (typeof validationOverlayGroupV28 !== 'undefined') {
+    validationOverlayGroupV28.visible = false;
+  }
+
+  // A top view makes direct basemap dragging predictable.
+  viewTop();
+  syncBasemapAdjustReadoutV61();
+
+  const status = $('reviewBasemapStatusV61');
   if (status) {
     status.textContent =
-      'Drag the floor plan, use Best fit to walls, or nudge it. This mode changes Offset X/Y only.';
+      'Drag the floor plan to line it up with the authored walls, or use Best fit to walls. ' +
+      'Only Offset X/Y will change.';
   }
 }
 
-function beginBasemapDragV60(event) {
-  if (!basemapAdjustActiveV60 || event.button !== 0 || !project.basemap) return;
-  const point = basemapAdjustPlanPointV60(event);
+function beginBasemapDragV61(event) {
+  if (!basemapAdjustActiveV61 || event.button !== 0 || !project.basemap) return;
+
+  const point = basemapAdjustPlanPointV61(event);
   if (!point) return;
-  basemapAdjustDragV60 = {
+
+  ensureBasemapAdjustHistoryV61();
+  basemapAdjustDragV61 = {
     pointerId: event.pointerId,
     startPoint: point,
     startOffsetX: Number(project.basemap.offsetX) || 0,
     startOffsetY: Number(project.basemap.offsetY) || 0
   };
+
   orbit.enabled = false;
   renderer.domElement.setPointerCapture?.(event.pointerId);
   event.preventDefault();
   event.stopImmediatePropagation();
 }
 
-function updateBasemapDragV60(event) {
-  if (!basemapAdjustActiveV60 || !basemapAdjustDragV60 ||
-      event.pointerId !== basemapAdjustDragV60.pointerId) return;
-  const point = basemapAdjustPlanPointV60(event);
+function updateBasemapDragV61(event) {
+  if (
+    !basemapAdjustActiveV61 ||
+    !basemapAdjustDragV61 ||
+    event.pointerId !== basemapAdjustDragV61.pointerId
+  ) return;
+
+  const point = basemapAdjustPlanPointV61(event);
   if (!point) return;
-  const dx = point.x - basemapAdjustDragV60.startPoint.x;
-  const dy = point.y - basemapAdjustDragV60.startPoint.y;
-  setBasemapOffsetV60(
-    basemapAdjustDragV60.startOffsetX + dx,
-    basemapAdjustDragV60.startOffsetY + dy,
+
+  const dx = point.x - basemapAdjustDragV61.startPoint.x;
+  const dy = point.y - basemapAdjustDragV61.startPoint.y;
+
+  setBasemapOffsetV61(
+    basemapAdjustDragV61.startOffsetX + dx,
+    basemapAdjustDragV61.startOffsetY + dy,
     true
   );
+
   event.preventDefault();
   event.stopImmediatePropagation();
 }
 
-function endBasemapDragV60(event) {
-  if (!basemapAdjustDragV60 ||
-      (event.pointerId !== undefined && event.pointerId !== basemapAdjustDragV60.pointerId)) return;
-  renderer.domElement.releasePointerCapture?.(basemapAdjustDragV60.pointerId);
-  basemapAdjustDragV60 = null;
+function endBasemapDragV61(event) {
+  if (
+    !basemapAdjustDragV61 ||
+    (event.pointerId !== undefined && event.pointerId !== basemapAdjustDragV61.pointerId)
+  ) return;
+
+  renderer.domElement.releasePointerCapture?.(basemapAdjustDragV61.pointerId);
+  basemapAdjustDragV61 = null;
   orbit.enabled = true;
   event.preventDefault?.();
   event.stopImmediatePropagation?.();
 }
 
-function installBasemapAdjustUiV60() {
-  const setScale = $('setScaleBasemap');
-  const alignFurniture = $('alignFurniture');
-  if (!setScale || !alignFurniture || $('adjustBasemap')) return;
+function setGuidedReviewStepV61(step) {
+  reviewStepV36 = Math.max(1, Math.min(2, Number(step) || 1));
 
-  const button = document.createElement('button');
-  button.id = 'adjustBasemap';
-  button.type = 'button';
-  button.textContent = 'Adjust basemap';
-  button.title =
-    'Move the calibrated basemap to match the authored walls without moving or resizing the walls.';
-  alignFurniture.parentNode.insertBefore(button, alignFurniture);
-  button.onclick = beginBasemapAdjustV60;
+  reviewWorkflowV36.querySelectorAll('[data-review-step]').forEach(page => {
+    page.hidden = Number(page.dataset.reviewStep) !== reviewStepV36;
+  });
 
-  const panel = document.createElement('div');
-  panel.id = 'basemapAdjustPanelV60';
-  panel.hidden = true;
-  panel.innerHTML = `
-    <div class="basemap-adjust-heading-v60">
-      <strong>Adjust basemap</strong>
-      <span id="basemapAdjustReadoutV60"></span>
-    </div>
-    <div class="basemap-adjust-copy-v60">
-      Drag the floor plan to match the walls. The calibrated width, depth and crop stay unchanged.
-    </div>
-    <div class="basemap-adjust-actions-v60">
-      <button id="basemapBestFitV60" type="button">Best fit to walls</button>
-      <button id="basemapAdjustLeftV60" type="button" title="Nudge left">←</button>
-      <button id="basemapAdjustUpV60" type="button" title="Nudge up">↑</button>
-      <button id="basemapAdjustDownV60" type="button" title="Nudge down">↓</button>
-      <button id="basemapAdjustRightV60" type="button" title="Nudge right">→</button>
-    </div>
-    <div id="basemapAdjustStatusV60" class="basemap-adjust-status-v60"></div>
-    <div class="basemap-adjust-footer-v60">
-      <button id="basemapAdjustCancelV60" type="button">Cancel</button>
-      <button id="basemapAdjustDoneV60" type="button">Done</button>
-    </div>
-  `;
-  viewport.appendChild(panel);
+  $('reviewStepLabel').textContent = `Step ${reviewStepV36 + 1} of 3`;
+  $('reviewProgressBar').style.width = `${(reviewStepV36 + 1) / 3 * 100}%`;
 
-  $('basemapBestFitV60').onclick = bestFitBasemapPositionV60;
-  $('basemapAdjustLeftV60').onclick = () => nudgeBasemapV60(-10, 0);
-  $('basemapAdjustRightV60').onclick = () => nudgeBasemapV60(10, 0);
-  $('basemapAdjustUpV60').onclick = () => nudgeBasemapV60(0, -10);
-  $('basemapAdjustDownV60').onclick = () => nudgeBasemapV60(0, 10);
-  $('basemapAdjustCancelV60').onclick = () => finishBasemapAdjustV60(false);
-  $('basemapAdjustDoneV60').onclick = () => finishBasemapAdjustV60(true);
+  if ($('reviewGuideTitle')) {
+    $('reviewGuideTitle').textContent =
+      reviewStepV36 === 1 ? 'Adjust basemap' : 'Correct architecture';
+  }
+
+  if (reviewStepV36 === 1) {
+    activateBasemapAdjustV61();
+  } else {
+    deactivateBasemapAdjustV61();
+  }
 }
 
-if (!document.getElementById('layoutRefinementStylesV60')) {
+function continueToArchitectureReviewV61() {
+  if (!reviewIsActiveV36()) return;
+
+  deactivateBasemapAdjustV61();
+  setGuidedReviewStepV61(2);
+  reviewHighlightsVisibleV36 = true;
+
+  setWallReviewStatusV32('Checking walls and openings against the adjusted basemap…');
+  setReviewInstructionV36(
+    'Add missing architecture, or select an incorrect wall, door or window to align or delete it. ' +
+    'Double-click aligned overlapping walls to merge them.'
+  );
+
+  wallDetectionCache = null;
+  detectWalls();
+  detectDoorsV32();
+  setFurnitureReviewVisibilityV32(false);
+
+  if (typeof syncReviewCountsV36 === 'function') syncReviewCountsV36();
+  if (typeof syncArchitectureReviewUiV36 === 'function') syncArchitectureReviewUiV36();
+  if (typeof updateDetectedWallHighlightsV28 === 'function') {
+    updateDetectedWallHighlightsV28(true);
+  }
+}
+
+function installGuidedBasemapStepV61() {
+  // Remove the old normal-panel button and floating panel from the previous build.
+  $('adjustBasemap')?.remove();
+  $('basemapAdjustPanelV60')?.remove();
+
+  const workflow = $('wallReviewWorkflow');
+  const architecturePage = workflow?.querySelector(
+    '.review-guide-page[data-review-step="1"], .review-guide-page[data-review-step="2"]'
+  );
+  if (!workflow || !architecturePage) return;
+
+  architecturePage.dataset.reviewStep = '2';
+
+  if (!$('reviewBasemapPageV61')) {
+    const adjustPage = document.createElement('div');
+    adjustPage.id = 'reviewBasemapPageV61';
+    adjustPage.className = 'review-guide-page';
+    adjustPage.dataset.reviewStep = '1';
+    adjustPage.innerHTML = `
+      <h4>Match the floor plan to the walls</h4>
+      <p>
+        Drag the basemap itself until the printed wall bands line up with the authored walls.
+        This changes only the basemap Offset X/Y; wall coordinates, scale, width, depth and crop stay unchanged.
+      </p>
+      <div class="review-navigation-help">
+        <strong>Move the basemap</strong>
+        <span>
+          Left-drag the floor plan. Scroll to zoom and right-drag to pan.
+          Use Best fit to walls for an automatic translation, then fine-tune manually.
+        </span>
+      </div>
+      <div class="review-basemap-readout-v61" id="reviewBasemapReadoutV61"></div>
+      <div class="button-row review-basemap-tools-v61">
+        <button id="reviewBasemapBestFitV61" class="primary">Best fit to walls</button>
+        <button id="reviewBasemapLeftV61" title="Nudge left">←</button>
+        <button id="reviewBasemapUpV61" title="Nudge up">↑</button>
+        <button id="reviewBasemapDownV61" title="Nudge down">↓</button>
+        <button id="reviewBasemapRightV61" title="Nudge right">→</button>
+      </div>
+      <p class="wall-review-instruction" id="reviewBasemapStatusV61"></p>
+      <div class="review-confirm-section">
+        <button id="reviewBasemapContinueV61" class="primary review-confirm-button">
+          Continue to correct architecture
+        </button>
+      </div>
+    `;
+    architecturePage.before(adjustPage);
+  }
+
+  $('reviewBasemapBestFitV61').onclick = bestFitBasemapPositionV61;
+  $('reviewBasemapLeftV61').onclick = () => nudgeBasemapV61(-10, 0);
+  $('reviewBasemapRightV61').onclick = () => nudgeBasemapV61(10, 0);
+  $('reviewBasemapUpV61').onclick = () => nudgeBasemapV61(0, -10);
+  $('reviewBasemapDownV61').onclick = () => nudgeBasemapV61(0, 10);
+  $('reviewBasemapContinueV61').onclick = continueToArchitectureReviewV61;
+
+  setReviewStepV36 = setGuidedReviewStepV61;
+}
+
+if (!document.getElementById('layoutRefinementStylesV61')) {
   const style = document.createElement('style');
-  style.id = 'layoutRefinementStylesV60';
+  style.id = 'layoutRefinementStylesV61';
   style.textContent = `
-    #adjustBasemap.active {
-      background: var(--sage-dark);
-      border-color: var(--sage);
-    }
-    #viewport.basemap-adjust-mode-v60,
-    .basemap-adjust-cursor-v60 {
+    .basemap-adjust-cursor-v61 {
       cursor: move !important;
     }
-    #basemapAdjustPanelV60 {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      z-index: 70;
-      width: min(560px, calc(100% - 24px));
-      transform: translateX(-50%);
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(34, 35, 31, .96);
-      box-shadow: 0 18px 55px rgba(0, 0, 0, .38);
-      color: var(--text);
-    }
-    #basemapAdjustPanelV60[hidden] { display: none !important; }
-    .basemap-adjust-heading-v60 {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 5px;
-    }
-    .basemap-adjust-heading-v60 strong { font-size: 12px; }
-    .basemap-adjust-heading-v60 span,
-    .basemap-adjust-copy-v60,
-    .basemap-adjust-status-v60 {
+    .review-basemap-readout-v61 {
+      margin-top: 10px;
       color: var(--muted);
       font-size: 10px;
       line-height: 1.4;
     }
-    .basemap-adjust-actions-v60,
-    .basemap-adjust-footer-v60 {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
+    .review-basemap-tools-v61 {
+      display: grid;
+      grid-template-columns: minmax(130px, 1fr) repeat(4, 36px);
+      gap: 6px;
       margin-top: 10px;
     }
-    .basemap-adjust-actions-v60 button:first-child { flex: 1 1 150px; }
-    .basemap-adjust-actions-v60 button:not(:first-child) { min-width: 36px; }
-    .basemap-adjust-status-v60 { min-height: 28px; margin-top: 8px; }
-    .basemap-adjust-footer-v60 { justify-content: flex-end; }
-    #basemapAdjustDoneV60 {
-      background: var(--sage-dark);
-      border-color: var(--sage);
+    .review-basemap-tools-v61 button {
+      min-width: 0;
+      padding-left: 7px;
+      padding-right: 7px;
     }
-    @media (max-width: 700px) {
-      #basemapAdjustPanelV60 { top: 8px; width: calc(100% - 16px); }
-      .basemap-adjust-heading-v60 { display: grid; }
+    @media (max-width: 420px) {
+      .review-basemap-tools-v61 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .review-basemap-tools-v61 button:first-child {
+        grid-column: 1 / -1;
+      }
     }
   `;
   document.head.appendChild(style);
 }
 
-installBasemapAdjustUiV60();
+installGuidedBasemapStepV61();
 
-renderer.domElement.addEventListener('pointerdown', beginBasemapDragV60, true);
-renderer.domElement.addEventListener('pointermove', updateBasemapDragV60, true);
-renderer.domElement.addEventListener('pointerup', endBasemapDragV60, true);
-renderer.domElement.addEventListener('pointercancel', endBasemapDragV60, true);
+renderer.domElement.addEventListener('pointerdown', beginBasemapDragV61, true);
+renderer.domElement.addEventListener('pointermove', updateBasemapDragV61, true);
+renderer.domElement.addEventListener('pointerup', endBasemapDragV61, true);
+renderer.domElement.addEventListener('pointercancel', endBasemapDragV61, true);
 
 window.addEventListener('keydown', event => {
-  if (!basemapAdjustActiveV60) return;
+  if (!basemapAdjustActiveV61) return;
+
   const amount = event.shiftKey ? 100 : 10;
   const deltas = {
     ArrowLeft: [-amount, 0],
@@ -445,17 +508,60 @@ window.addEventListener('keydown', event => {
     ArrowUp: [0, -amount],
     ArrowDown: [0, amount]
   };
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    finishBasemapAdjustV60(false);
-    return;
-  }
+
   if (!deltas[event.key]) return;
+
   event.preventDefault();
   event.stopImmediatePropagation();
-  nudgeBasemapV60(...deltas[event.key]);
+  nudgeBasemapV61(...deltas[event.key]);
 }, true);
+
+// Preserve the existing review-session capture and all normal review UI setup,
+// but suppress automatic basemap fitting and wall detection until Step 2 is done.
+const beginWallReviewBeforeV61 = beginWallReviewV32;
+beginWallReviewV32 = function(force = false) {
+  const autoFitBefore = autoFitBasemap;
+  const detectWallsBefore = detectWalls;
+  const detectDoorsBefore = detectDoorsV32;
+
+  autoFitBasemap = () => {};
+  detectWalls = () => {};
+  detectDoorsV32 = () => {};
+
+  try {
+    beginWallReviewBeforeV61(force);
+  } finally {
+    autoFitBasemap = autoFitBefore;
+    detectWalls = detectWallsBefore;
+    detectDoorsV32 = detectDoorsBefore;
+  }
+
+  if (!reviewIsActiveV36()) return;
+
+  basemapAdjustSessionV61 = null;
+  setGuidedReviewStepV61(1);
+  setWallReviewStatusV32('Move the calibrated basemap to match the authored walls');
+  setFurnitureReviewVisibilityV32(false);
+
+  if (typeof syncArchitectureReviewUiV36 === 'function') {
+    syncArchitectureReviewUiV36();
+  }
+};
+
+// Exiting and discarding restores the review snapshot, including the original
+// basemap offset. Also leave drag mode cleanly.
+const restoreReviewSessionBeforeV61 = restoreReviewSessionV36;
+restoreReviewSessionV36 = function(snapshot) {
+  deactivateBasemapAdjustV61();
+  basemapAdjustSessionV61 = null;
+  return restoreReviewSessionBeforeV61(snapshot);
+};
+
+$('confirmWallReview')?.addEventListener('click', () => {
+  deactivateBasemapAdjustV61();
+  basemapAdjustSessionV61 = null;
+}, true);
+
 
 // -----------------------------------------------------------------------------
 // Labels follow their objects, remain in Photo mode, and hide with furniture.
