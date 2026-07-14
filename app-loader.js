@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-nondestructive-review-v50';
+  const moduleVersion = '20260714-basemap-label-camera-v60';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
@@ -28,16 +28,19 @@
     'app-parts/27.js',
     'app-parts/28.js',
     'app-parts/29.js',
+    'app-parts/30.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];
 
-  Promise.all(parts.map(path =>
-    fetch(`${path}?v=${moduleVersion}`, {cache:'no-store'}).then(response => {
-      if(!response.ok)throw new Error(`Failed to load ${path}: ${response.status}`);
-      return response.text();
-    })
-  ))
+  Promise.all(
+    parts.map(path =>
+      fetch(`${path}?v=${moduleVersion}`, { cache: 'no-store' }).then(response => {
+        if (!response.ok) throw new Error(`Failed to load ${path}: ${response.status}`);
+        return response.text();
+      })
+    )
+  )
     .then(sourceParts => {
       const script = document.createElement('script');
       script.textContent = sourceParts.join('\n');
@@ -46,8 +49,6 @@
     .catch(error => {
       console.error(error);
       const viewport = document.getElementById('viewport');
-      if(viewport){
-        viewport.innerHTML = `Could not load Layout Studio: ${error.message}`;
-      }
+      if (viewport) viewport.innerHTML = `Could not load Layout Studio: ${error.message}`;
     });
 })();
