@@ -10,8 +10,9 @@
 // - Keeps labels visible in Photo mode.
 // - Keeps furniture labels attached to their objects and hides them with hidden furniture.
 // - Preserves the current plan focus when switching Top, Bird's-eye and Eye-level views.
+// - Locks Eye-level pitch to horizontal and suppresses labels for auto-hidden nearby furniture.
 
-const layoutRefinementVersionV61 = '20260714-guided-basemap-v61';
+const layoutRefinementVersionV61 = '20260714-eye-horizontal-label-hide-v62';
 
 // -----------------------------------------------------------------------------
 // Step 2 of 3 — Adjust basemap
@@ -591,9 +592,19 @@ function syncFurnitureLabelsV60() {
       .map(object => [object.userData.id, object])
   );
 
+  let cameraHiddenIds = new Set();
+  if (typeof hiddenFurnitureIdsV42 === 'function') {
+    try {
+      cameraHiddenIds = hiddenFurnitureIdsV42();
+    } catch (error) {
+      console.warn('Could not read camera-hidden furniture IDs for labels.', error);
+    }
+  }
+
   labelGroup.children.forEach(label => {
     const id = furnitureIdForLabelV60(label);
     if (!id) return;
+
     const object = objects.get(id);
     if (!object) {
       label.visible = false;
@@ -610,27 +621,25 @@ function syncFurnitureLabelsV60() {
       );
     }
 
-    const furnitureHidden = !object.visible;
-    if (furnitureHidden) {
-      label.visible = false;
-      label.userData.hiddenByFurnitureV60 = true;
-    } else if (label.userData.hiddenByFurnitureV60) {
-      label.visible = true;
-      label.userData.hiddenByFurnitureV60 = false;
-    }
+    const furnitureHidden = cameraHiddenIds.has(id) || !object.visible;
+    label.userData.hiddenByFurnitureV60 = furnitureHidden;
+
+    // Only force labels off here. The normal label-occlusion pass decides
+    // whether labels for visible furniture should otherwise be shown.
+    if (furnitureHidden) label.visible = false;
   });
 }
 
 const applyCameraFurnitureVisibilityBeforeV60 = applyCameraFurnitureVisibilityV42;
 applyCameraFurnitureVisibilityV42 = function() {
   applyCameraFurnitureVisibilityBeforeV60();
-  syncFurnitureLabelsV60();
+  updateLabelOcclusion();
 };
 
 const updateLabelOcclusionBeforeV60 = updateLabelOcclusion;
 updateLabelOcclusion = function() {
-  syncFurnitureLabelsV60();
   updateLabelOcclusionBeforeV60();
+  syncFurnitureLabelsV60();
 };
 
 const syncSelectedFromMeshBeforeV60 = syncSelectedFromMesh;
@@ -688,6 +697,22 @@ if (photoModeButtonV31) {
 
 let viewPresetInitialisedV60 = false;
 const preservedViewHeadingV60 = new THREE.Vector3(0.72, 0, 0.69).normalize();
+const orbitMinPolarAngleBeforeEyeLockV62 = Number.isFinite(orbit.minPolarAngle)
+  ? orbit.minPolarAngle
+  : 0;
+const orbitMaxPolarAngleBeforeEyeLockV62 = Number.isFinite(orbit.maxPolarAngle)
+  ? orbit.maxPolarAngle
+  : Math.PI;
+
+function releaseEyeHorizontalLockV62() {
+  orbit.minPolarAngle = orbitMinPolarAngleBeforeEyeLockV62;
+  orbit.maxPolarAngle = orbitMaxPolarAngleBeforeEyeLockV62;
+}
+
+function applyEyeHorizontalLockV62() {
+  orbit.minPolarAngle = Math.PI / 2;
+  orbit.maxPolarAngle = Math.PI / 2;
+}
 
 function projectViewExtentV60() {
   const basemap = project.basemap || {};
@@ -732,6 +757,7 @@ function finishViewPresetV60(buttonId) {
 }
 
 viewTop = function() {
+  releaseEyeHorizontalLockV62();
   const focus = currentViewFocusV60();
   rememberViewHeadingV60();
   const extent = projectViewExtentV60();
@@ -754,6 +780,7 @@ viewTop = function() {
 };
 
 viewBird = function() {
+  releaseEyeHorizontalLockV62();
   const focus = currentViewFocusV60();
   const horizontalBefore = rememberViewHeadingV60();
   const extent = projectViewExtentV60();
@@ -792,17 +819,22 @@ viewEye = function() {
     Math.min(5.5, horizontalBefore > 0.25 ? horizontalBefore : currentDistance * 0.32)
   );
   const eyeHeight = Math.max(0.8, Math.min(2.4, (+$('cameraHeight')?.value || 1300) * MM));
-  const targetHeight = Math.max(0.65, Math.min(eyeHeight - 0.12, 1.1));
 
   camera.up.set(0, 1, 0);
   camera.fov = 52;
   camera.updateProjectionMatrix();
-  orbit.target.set(focus.x, targetHeight, focus.z);
+
+  // Camera and target use the same Y coordinate, producing a truly horizontal
+  // view. Locking OrbitControls to a 90-degree polar angle prevents accidental
+  // upward/downward tilt while still allowing horizontal rotation.
+  orbit.target.set(focus.x, eyeHeight, focus.z);
   camera.position.set(
     focus.x + preservedViewHeadingV60.x * horizontal,
     eyeHeight,
     focus.z + preservedViewHeadingV60.z * horizontal
   );
+  applyEyeHorizontalLockV62();
+
   orbit.enabled = true;
   orbit.enableRotate = true;
   orbit.enablePan = true;
