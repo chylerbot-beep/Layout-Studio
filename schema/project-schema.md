@@ -122,6 +122,49 @@ Categories:
 - `carpentry`
 - `decorative`
 
+### Image-derived custom elements
+
+When an inspiration image contains an important element without a suitable native model, store it in the existing `furniture` array as a simple editable box:
+
+```json
+{
+  "id": "custom-curved-bedside-cabinet",
+  "name": "Curved oak bedside cabinet",
+  "category": "carpentry",
+  "model": "custom-box",
+  "custom": true,
+  "description": "Rounded bedside cabinet interpreted from the reference image",
+  "x": 1450,
+  "y": 2100,
+  "w": 550,
+  "d": 420,
+  "h": 520,
+  "elevation": 0,
+  "rotation": 0,
+  "color": 11771878,
+  "placement": {
+    "roomId": "room-master",
+    "mode": "wall",
+    "wallId": "wall-master-west",
+    "gap": 0
+  },
+  "reference": {
+    "image": "bedroom-mood-board.jpg",
+    "description": "Curved cabinet beside the bed",
+    "confidence": "medium"
+  }
+}
+```
+
+- `custom`: `true` identifies an image-derived or otherwise non-native element.
+- `model`: use `custom-box`; Layout Studio renders it as a named editable box.
+- `description`: concise visual and functional intent.
+- `reference.image`: source upload filename when available.
+- `reference.description`: the element and its location in the source image.
+- `reference.confidence`: `high`, `medium` or `low` identification confidence.
+
+Image-derived dimensions are assumptions unless supported by project data. Keep the assumptions in project notes. Use several custom boxes with one `groupId` only when a spatially important object cannot be represented by one rectangle. Do not store executable code or external model URLs.
+
 ## Placement metadata
 
 `placement` preserves intent during conservative furniture alignment:
@@ -146,7 +189,7 @@ Categories:
 
 Placement is advisory; physical collisions and access take priority.
 
-## Supported custom models
+## Supported models
 
 Decorative models:
 
@@ -162,7 +205,11 @@ Carpentry models:
 
 - `l-wardrobe`
 
-An L-shaped wardrobe also requires `armDepth`, which must be smaller than both `w` and `d`. Unknown models render as editable boxes.
+Generic custom model:
+
+- `custom-box`
+
+An L-shaped wardrobe also requires `armDepth`, which must be smaller than both `w` and `d`. `custom-box` and unknown models render as editable boxes.
 
 ## Optional basemap calibration
 

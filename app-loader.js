@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-review-simplification-v48';
+  const moduleVersion = '20260714-custom-elements-v49';
   const parts = [
     'app-parts/01.js', 'app-parts/02.js', 'app-parts/03.js', 'app-parts/04.js',
     'app-parts/05.js', 'app-parts/06.js', 'app-parts/07.js', 'app-parts/09.js',

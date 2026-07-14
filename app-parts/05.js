@@ -101,7 +101,7 @@
       }
       function objectRow(item){
         const row=document.createElement('div');row.className='object-row'+(selected?.userData.id===item.id?' selected':'');
-        const pick=document.createElement('button');pick.textContent=item.name;pick.onclick=()=>selectById(item.id);
+        const pick=document.createElement('button');pick.textContent=item.name;if(item.custom||item.model==='custom-box'){const badge=document.createElement('span');badge.className='custom-object-badge';badge.textContent='Custom';pick.appendChild(badge);pick.title=item.description||'Custom project element';}pick.onclick=()=>selectById(item.id);
         const eye=document.createElement('button');eye.className='eye';eye.textContent='◎';eye.title='Focus camera';eye.onclick=()=>focusById(item.id);row.append(pick,eye);return row;
       }
       function renderObjectList(){

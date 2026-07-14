@@ -57,6 +57,53 @@ Use inspiration images for design language—materials, colour, furniture charac
 
 Work as both an interior designer and interior stylist: resolve function, scale and circulation first, then add a restrained layer of materials, lighting and decoration that supports the concept.
 
+### Translate inspiration images
+
+For each inspiration image or mood board:
+
+1. Identify the overall design language, materials, colours, lighting character and visual density.
+2. Identify only spatially relevant objects: furniture, built-in carpentry, substantial decoration and fixtures that affect the plan or elevations.
+3. Keep finishes, atmosphere and purely visual references in the notes; do not turn them into collision boxes.
+4. Reuse native basic objects when they match: sofa, dining table or chair, lounge chair, coffee table, console, king or queen bed, full-height wardrobe, kitchen cabinets, worktop, settee and TV console. Omit `model` for these editable basic forms.
+5. Use a native specialist model when appropriate: `plant`, `tv`, `picture-frame`, `fruit-bowl`, `phone`, `flask`, `glass-blocks` or `l-wardrobe`.
+6. If no native option fits, create a `custom-box` with a descriptive name, valid category, explicit dimensions, placement metadata and `custom: true`.
+7. Record the source image and what was identified in `reference`. Use `confidence` to distinguish clear identification from interpretation.
+8. Treat dimensions inferred from an image as assumptions and adapt them to the authoritative floor plan, circulation and physical constraints.
+
+Example custom element:
+
+```json
+{
+  "id": "custom-entry-fluted-panel",
+  "name": "Entry fluted feature panel",
+  "category": "carpentry",
+  "model": "custom-box",
+  "custom": true,
+  "description": "Full-height timber fluted feature panel",
+  "x": 10500,
+  "y": 7200,
+  "w": 1200,
+  "d": 80,
+  "h": 2600,
+  "elevation": 0,
+  "rotation": 90,
+  "color": 11185874,
+  "placement": {
+    "roomId": "room-entry",
+    "mode": "wall",
+    "wallId": "wall-entry-east",
+    "gap": 0
+  },
+  "reference": {
+    "image": "mood-board-2.jpg",
+    "description": "Fluted panel behind the console",
+    "confidence": "high"
+  }
+}
+```
+
+Custom elements remain simple, editable bounding boxes so Layout Studio can label, align, resize and validate them. Use a few grouped custom boxes with a shared `groupId` only when a built-in needs more than one rectangular part. Never generate executable code or external 3D assets.
+
 Develop one strong layout. Add an alternative only when it represents a real trade-off.
 
 Check:
@@ -132,6 +179,7 @@ After Gate 2, create:
 - concise notes
 - standard ZIP with `project.json` at the root
 - layout rationale, assumptions and warnings
+- a list of custom elements, their source images and assumed dimensions
 - recommended camera views
 
 Validate before delivery:

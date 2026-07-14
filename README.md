@@ -67,6 +67,7 @@ Ruler metadata and `settings.architectureReviewConfirmed` are optional, so older
 - Validation reports physical furniture/furniture, furniture/wall, furniture/opening and furniture/fixed-shell overlaps only.
 - The precision panel becomes a drawer below 900 px.
 - Furniture, carpentry and decorative catalogues are grouped inside the collapsible **Add** section.
+- Project JSON may also contain named `custom-box` elements derived from inspiration images. They remain editable, alignable and physically validated, and appear with a **Custom** badge in Scene objects.
 
 ## Camera and display
 
@@ -97,9 +98,10 @@ Use:
 
 - `gpt/BTO-Layout-Planner-Instructions.md`
 - `gpt/BTO-Layout-Planning-Workflow.md`
-- `gpt/BTO-Layout-Object-Catalog.md`
 - `schema/project-schema.md`
 - `schema/project-template.json`
+
+The separate object catalogue is retained in the repository as an app-development reference but is not required as Custom GPT Knowledge. The planner instructions contain the compact native-model list and the custom-element fallback.
 
 Generated handoffs should set `settings.architectureReviewConfirmed` to `false`, provide validated `project.json` separately, and include a real ZIP rather than a renamed text file.
 

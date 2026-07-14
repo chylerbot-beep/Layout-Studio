@@ -46,6 +46,7 @@
     .object-row button { text-align: left; padding: 7px 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .object-row .eye { width: 34px; text-align: center; }
     .object-row.selected button:first-child { border-color: var(--sage); background: #384036; }
+    .custom-object-badge { display: inline-block; margin-left: 7px; padding: 1px 5px; border: 1px solid var(--sage-dark); border-radius: 999px; color: #c9d6c4; font-size: 8px; line-height: 1.35; vertical-align: 1px; }
     details.toggle-group { border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,.08); overflow: hidden; }
     details.toggle-group + details.toggle-group { margin-top: 8px; }
     details.toggle-group > summary { cursor: pointer; list-style: none; padding: 10px 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text); font-size: 11px; font-weight: 650; user-select: none; }

@@ -12,7 +12,6 @@
 2. Remove older Knowledge-file copies.
 3. Upload:
    - `BTO-Layout-Planning-Workflow.md`
-   - `BTO-Layout-Object-Catalog.md`
    - `project-schema.md`
    - `project-template.json`
 
@@ -30,5 +29,6 @@ Before publishing the GPT, test:
 4. correction of an existing project without rebuilding valid geometry
 5. standard ZIP export with `project.json` at its root
 6. wall décor is placed only on solid wall areas and never across a door or window
+7. an inspiration image containing an unavailable object produces a named `custom-box` with dimensions, placement and reference metadata
 
 The GPT should use only two planning approval gates and remain focused on planning, validation and Layout Studio project-file creation.
