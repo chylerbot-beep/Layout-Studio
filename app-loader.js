@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-guided-basemap-v61';
+  const moduleVersion = '20260714-eye-horizontal-label-hide-v62';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
