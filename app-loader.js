@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-basemap-label-camera-v60';
+  const moduleVersion = '20260714-guided-basemap-v61';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
