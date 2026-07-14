@@ -74,6 +74,8 @@ Touching surfaces are valid; overlapping volumes are not.
 - Freestanding seating groups: `mode: "free"`
 - Objects on furniture: `mode: "support"` with `supportId`
 - Dining table and chairs: same `roomId` and `groupId`
+- Pictures and other wall décor: `mode: "wall"` with a valid `wallId`, positioned only on a solid wall interval outside every door and window span
+- Never place a picture, TV or decoration on window glazing or across an opening; omit it when no suitable solid wall area exists
 
 Example:
 

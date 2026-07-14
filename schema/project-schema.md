@@ -228,6 +228,7 @@ Camera vectors use Three.js world units in metres; project geometry remains mill
 - Dimensions are positive; wall length is at least 200 mm.
 - Opening `wallId` values reference existing walls.
 - Placement wall and support references exist.
+- Wall-mounted furniture and décor do not overlap the horizontal and vertical span of any door or window on the same wall.
 - Camera-cutaway wall IDs exist.
 - Elevation is non-negative.
 - Categories, placement modes and custom models are valid.

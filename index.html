@@ -201,7 +201,6 @@
           </div>
           <div class="button-row" style="margin-top:12px">
             <button id="alignSelectedWall">Align selected to basemap β</button>
-            <button id="alignAllWalls">Align all walls β</button>
             <button id="deleteArchitecture" class="danger">Delete</button>
           </div>
         </div>
@@ -238,10 +237,9 @@
     <div class="review-guide-page" data-review-step="1">
       <h4>Correct mismatches</h4>
       <p>Furniture and its validation errors are hidden. Red outlines mark unconfirmed walls; switch them off whenever they obscure the basemap.</p>
-      <div class="review-navigation-help"><strong>Move around the plan</strong><span>Bird’s-eye starts near top-down. Scroll to zoom, drag to orbit, and right-drag to pan. Drawing a new item switches to Top view.</span></div>
+      <div class="review-navigation-help"><strong>Move around the plan</strong><span>Bird’s-eye starts near top-down. Scroll to zoom, drag to orbit, and right-drag to pan. Add wall, door and window keep the current view.</span></div>
       <div class="review-suggestion-counts" id="reviewSuggestionCounts">Checking architecture…</div>
       <div class="button-row wall-review-tools">
-        <button id="reviewAlignAll">Align all walls</button>
         <button id="reviewAddWall">Add wall</button>
         <button id="reviewAddDoor">Add door</button>
         <button id="reviewAddWindow">Add window</button>
@@ -326,6 +324,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app-loader.js?v=20260714-photo-furniture-detection-v43"></script>
+  <script src="app-loader.js?v=20260714-magnetic-editing-v45"></script>
 </body>
 </html>

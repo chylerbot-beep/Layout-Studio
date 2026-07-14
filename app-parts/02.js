@@ -61,6 +61,7 @@
       let basemapRenderSignature = '';
       let wallDrag = null;
       let wallDragLastRender = 0;
+      let openingDrag = null;
       let ocrBusy = false;
       let tesseractLoader = null;
       let ocrCandidates = {horizontal:[],vertical:[]};

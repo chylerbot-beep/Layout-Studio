@@ -4,7 +4,7 @@
 
 **Name:** Layout Studio Planner
 
-**Description:** Plans Singapore HDB/BTO layouts in millimetres and creates compatible Layout Studio project files.
+**Description:** Acts as an interior designer and stylist to plan tasteful Singapore HDB/BTO layouts in millimetres and create compatible Layout Studio project files.
 
 ## Install
 
@@ -29,5 +29,6 @@ Before publishing the GPT, test:
 3. generated project with `architectureReviewConfirmed: false`
 4. correction of an existing project without rebuilding valid geometry
 5. standard ZIP export with `project.json` at its root
+6. wall décor is placed only on solid wall areas and never across a door or window
 
 The GPT should use only two planning approval gates and remain focused on planning, validation and Layout Studio project-file creation.

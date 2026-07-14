@@ -35,8 +35,8 @@
       function updateWallDrag(event){
         if(!wallDrag||event.pointerId!==wallDrag.pointerId)return;const point=planPoint(event,25),wall=(project.walls||[]).find(w=>w.id===wallDrag.wallId);if(!point||!wall)return;const o=wallDrag.original;let x1=o.x1,y1=o.y1,x2=o.x2,y2=o.y2;
         if(wallDrag.mode==='move'){const dx=point.x-wallDrag.startPoint.x,dy=point.y-wallDrag.startPoint.y;x1+=dx;y1+=dy;x2+=dx;y2+=dy;}
-        else if(wallDrag.mode==='start'){x1=point.x;y1=point.y;}
-        else if(wallDrag.mode==='end'){x2=point.x;y2=point.y;}
+        else if(wallDrag.mode==='start'){const target=event.altKey?point:magneticWallPointV45(point,wall.id);x1=target.x;y1=target.y;}
+        else if(wallDrag.mode==='end'){const target=event.altKey?point:magneticWallPointV45(point,wall.id);x2=target.x;y2=target.y;}
         else if(wallDrag.mode==='rotate'){const angle=Math.atan2(point.y-o.cy,point.x-o.cx),half=o.length/2,ux=Math.cos(angle),uy=Math.sin(angle);x1=o.cx-ux*half;y1=o.cy-uy*half;x2=o.cx+ux*half;y2=o.cy+uy*half;}
         setWallFromEndpoints(wall,x1,y1,x2,y2,o.thickness,false);const now=performance.now();if(now-wallDragLastRender>32){wallDragLastRender=now;refreshArchitectureVisuals(false);populateArchitectureFields('wall',wall);}
       }
@@ -44,24 +44,42 @@
         if(!wallDrag||event.pointerId!==undefined&&event.pointerId!==wallDrag.pointerId)return;const wall=(project.walls||[]).find(w=>w.id===wallDrag.wallId);renderer.domElement.releasePointerCapture?.(wallDrag.pointerId);wallDrag=null;orbit.enabled=true;if(wall){refreshArchitectureVisuals(true);$('toolHint').textContent='Wall updated. Drag the body, blue endpoints or green rotation handle again, or use Undo.';}if(cancel)$('toolHint').textContent='Wall drag ended.';
       }
 
+      function beginOpeningDragV45(opening,event){
+        if(opening.type!=='window')return false;
+        openingDrag={pointerId:event.pointerId,openingId:opening.id,originalOffset:+opening.offset||0,startX:event.clientX,startY:event.clientY,history:false,lastRender:0};orbit.enabled=false;renderer.domElement.setPointerCapture?.(event.pointerId);$('toolHint').textContent='Drag left or right along the wall to position the window.';return true;
+      }
+      function updateOpeningDragV45(event){
+        if(!openingDrag||event.pointerId!==openingDrag.pointerId)return;const opening=(project.openings||[]).find(item=>item.id===openingDrag.openingId),wall=opening&&(project.walls||[]).find(item=>item.id===opening.wallId),point=planPoint(event,25);if(!opening||!wall||!point)return;
+        if(!openingDrag.history&&Math.hypot(event.clientX-openingDrag.startX,event.clientY-openingDrag.startY)<3)return;
+        if(!openingDrag.history){pushHistory('move window along wall');openingDrag.history=true;}
+        const e=wallMetrics(wall),minimum=(+opening.width||300)/2+25,raw=(point.x-e.x1)*e.ux+(point.y-e.y1)*e.uy;opening.offset=Math.round(Math.max(minimum,Math.min(e.length-minimum,raw))/25)*25;
+        const now=performance.now();if(now-openingDrag.lastRender>32){openingDrag.lastRender=now;refreshArchitectureVisuals(false);populateArchitectureFields('opening',opening);$('toolHint').textContent='Window position follows the wall. Release to finish.';}
+      }
+      function endOpeningDragV45(event,cancel=false){
+        if(!openingDrag||event.pointerId!==undefined&&event.pointerId!==openingDrag.pointerId)return;const id=openingDrag.openingId,moved=openingDrag.history;renderer.domElement.releasePointerCapture?.(openingDrag.pointerId);openingDrag=null;orbit.enabled=true;if(moved){refreshArchitectureVisuals(true);selectArchitecture('opening',id);$('toolHint').textContent='Window repositioned. Drag it again or use the offset field for exact placement.';}else if(cancel)$('toolHint').textContent='Window drag ended.';
+      }
+
       function clearViewportInteraction(){
-        if(wallDrag)endWallDrag({pointerId:wallDrag.pointerId},true);select(null);selectedArchitecture=null;updateArchitecturePanel();renderArchitectureList();setTool('select');$('selectionStatus').textContent='Nothing selected';
+        if(wallDrag)endWallDrag({pointerId:wallDrag.pointerId},true);if(openingDrag)endOpeningDragV45({pointerId:openingDrag.pointerId},true);select(null);selectedArchitecture=null;updateArchitecturePanel();renderArchitectureList();setTool('select');$('selectionStatus').textContent='Nothing selected';
       }
       renderer.domElement.addEventListener('pointerdown',e=>{
         if(e.button===2){e.preventDefault();e.stopImmediatePropagation();clearViewportInteraction();}
       },true);
       renderer.domElement.addEventListener('pointerdown',e=>{
         if(transform.dragging||e.button!==0)return;
-        if(activeTool!=='select'){const point=planPoint(e);if(!point)return;if(activeTool==='wall')drawWallAt(point);else addOpeningAt(point,activeTool);return;}
+        if(activeTool!=='select'){const point=planPoint(e);if(!point)return;if(activeTool==='wall')drawWallAt(point,e);else addOpeningAt(point,activeTool);return;}
         const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);
         const controlHits=raycaster.intersectObjects(selectionOverlayGroup.children,false).filter(h=>h.object.userData?.wallControl);if(controlHits.length&&beginWallDrag(controlHits[0].object.userData.wallControl,e)){e.preventDefault();e.stopPropagation();return;}
-        const furnitureHits=raycaster.intersectObjects(furnitureGroup.children.filter(item=>item.visible),true);if(furnitureHits.length){const object=sceneObjectFromHit(furnitureHits[0].object);if(object){select(object);return;}}
-        const openingHits=raycaster.intersectObjects(openingGroup.children,false).filter(h=>h.object.userData?.opening);if(openingHits.length){selectArchitecture('opening',openingHits[0].object.userData.id);return;}
+        const openingHits=raycaster.intersectObjects(openingGroup.children,false).filter(h=>h.object.userData?.opening),furnitureHits=raycaster.intersectObjects(furnitureGroup.children.filter(item=>item.visible),true);
+        if(openingHits.length&&(!furnitureHits.length||openingHits[0].distance<=furnitureHits[0].distance)){const opening=(project.openings||[]).find(item=>item.id===openingHits[0].object.userData.id);selectArchitecture('opening',opening?.id);if(opening&&beginOpeningDragV45(opening,e)){e.preventDefault();e.stopPropagation();}return;}
+        if(furnitureHits.length){const object=sceneObjectFromHit(furnitureHits[0].object);if(object){select(object);return;}}
         const wallHits=raycaster.intersectObjects(shellGroup.children,false).filter(h=>h.object.userData?.wall);if(wallHits.length){selectArchitecture('wall',wallHits[0].object.userData.id);return;}
       });
       renderer.domElement.addEventListener('pointermove',updateWallDrag);
+      renderer.domElement.addEventListener('pointermove',updateOpeningDragV45);
       renderer.domElement.addEventListener('pointerup',endWallDrag);
-      renderer.domElement.addEventListener('pointercancel',e=>endWallDrag(e,true));
+      renderer.domElement.addEventListener('pointerup',endOpeningDragV45);
+      renderer.domElement.addEventListener('pointercancel',e=>{endWallDrag(e,true);endOpeningDragV45(e,true);});
       renderer.domElement.addEventListener('contextmenu',e=>{e.preventDefault();clearViewportInteraction();});
       window.addEventListener('resize',resize);
       ['nameField','xField','yField','wField','dField','hField','rField'].forEach(id=>$(id).addEventListener('change',rebuildSelected));
@@ -86,7 +104,7 @@
       $('undo').onclick=undoAction;$('redo').onclick=redoAction;$('undo').disabled=true;$('redo').disabled=true;
       $('toolSelect').onclick=()=>setTool('select');$('toolWall').onclick=()=>setTool('wall');$('toolDoor').onclick=()=>setTool('door');$('toolWindow').onclick=()=>setTool('window');
       $('deleteArchitecture').onclick=()=>selectedArchitecture&&deleteArchitecture(selectedArchitecture.kind,selectedArchitecture.id);
-      $('alignSelectedWall').onclick=alignSelectedWallToBasemap;$('alignAllWalls').onclick=alignAllWallsToBasemap;
+      $('alignSelectedWall').onclick=alignSelectedWallToBasemap;
       $('uploadBasemap').onclick=()=>$('basemapFile').click();$('basemapFile').onchange=e=>e.target.files[0]&&loadBasemap(e.target.files[0]);
       $('toggleBasemap').onclick=()=>{basemapGroup.visible=!basemapGroup.visible;$('toggleBasemap').classList.toggle('active',basemapGroup.visible);};
       $('removeBasemap').onclick=()=>{if(!project.basemap)return;pushHistory('remove basemap');project.basemap=null;basemapImage=null;wallDetectionCache=null;basemapRenderSignature='';$('ocrPanel').hidden=true;buildBasemap(true);$('basemapStatus').textContent='No basemap loaded.';renderArchitectureHighlight();};
@@ -104,5 +122,5 @@
       $('autoTrace').onclick=detectWalls;$('clearDetected').onclick=()=>{if(!(project.walls||[]).some(x=>x.detected))return;pushHistory('clear detected walls');const ids=new Set(project.walls.filter(x=>x.detected).map(x=>x.id));project.walls=project.walls.filter(x=>!x.detected);project.openings=project.openings.filter(x=>!ids.has(x.wallId));if(selectedArchitecture&&ids.has(selectedArchitecture.id))selectedArchitecture=null;buildScene();};
       window.addEventListener('keydown',e=>{const mod=e.ctrlKey||e.metaKey;if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redoAction():undoAction();}if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();redoAction();}if(e.key==='Escape'){setTool('select');select(null);selectedArchitecture=null;updateArchitecturePanel();renderArchitectureList();$('selectionStatus').textContent='Nothing selected';}});
 
-      renderCatalog();normalizeProject();buildScene();viewBird();resize();$('alignSelectedWall').disabled=true;$('alignAllWalls').disabled=true;animate();
+      renderCatalog();normalizeProject();buildScene();viewBird();resize();$('alignSelectedWall').disabled=true;animate();
     })();

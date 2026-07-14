@@ -128,17 +128,6 @@
         setReviewInstructionV36('Selected wall aligned. Compare it with the basemap before confirming.');
       }
 
-      function alignAllReviewWallsV36(){
-        if(!project.basemap){
-          setReviewInstructionV36('Upload and calibrate a basemap before aligning walls.');
-          return;
-        }
-        alignAllWallsToBasemap(true);
-        setFurnitureReviewVisibilityV32(false);
-        syncArchitectureReviewUiV36();
-        setReviewInstructionV36('All matched walls were centred on their nearest basemap wall bands. Check any remaining mismatches manually.');
-      }
-
       function deleteSelectedReviewArchitectureV36(){
         if(!selectedArchitecture){
           setReviewInstructionV36('Select an incorrect wall, door or window first.');
@@ -172,10 +161,9 @@
         reviewHighlightsVisibleV36 = !reviewHighlightsVisibleV36;
         syncReviewHighlightsV36();
       };
-      $('reviewAddWall').onclick = () => selectReviewToolV36('wall', 'Top view enabled. Click two points to draw the missing wall.');
-      $('reviewAddDoor').onclick = () => selectReviewToolV36('door', 'Top view enabled. Click the correct wall to add a missing door.');
-      $('reviewAddWindow').onclick = () => selectReviewToolV36('window', 'Top view enabled. Click the correct wall to add a missing window.');
-      $('reviewAlignAll').onclick = alignAllReviewWallsV36;
+      $('reviewAddWall').onclick = () => selectReviewToolV36('wall', 'Current view preserved. Click two points to draw the missing wall; nearby wall joints snap magnetically.');
+      $('reviewAddDoor').onclick = () => selectReviewToolV36('door', 'Current view preserved. Click the correct wall to add a missing door.');
+      $('reviewAddWindow').onclick = () => selectReviewToolV36('window', 'Current view preserved. Click the correct wall to add a missing window.');
       $('reviewAlignSelected').onclick = alignSelectedReviewWallV36;
       $('reviewDeleteSelected').onclick = deleteSelectedReviewArchitectureV36;
       $('reviewOriginal').addEventListener('pointerdown', showOriginalBasemapV36);

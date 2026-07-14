@@ -71,14 +71,16 @@
       }
       readProjectFromZip=async function(file){return readZipObjectV29(await JSZip.loadAsync(file),file?.name||'project ZIP',0);};
 
-      // Delete the selected furniture with the physical Delete key, but never while
+      // Delete the selected furniture, wall, door or window with the physical Delete
+      // key, but never while
       // typing, editing a form field, dragging a control, or viewing a modal.
       window.addEventListener('keydown',event=>{
-        if(event.key!=='Delete'||!selected||transform.dragging||wallDrag||document.querySelector('.modal.open'))return;
+        if(event.key!=='Delete'||(!selected&&!selectedArchitecture)||transform.dragging||wallDrag||openingDrag||document.querySelector('.modal.open'))return;
         const target=event.target,tag=target?.tagName?.toLowerCase();
         if(target?.isContentEditable||['input','textarea','select'].includes(tag))return;
-        event.preventDefault();event.stopPropagation();pushHistory('delete furniture with keyboard');
-        const id=selected.userData.id;project.furniture=project.furniture.filter(item=>item.id!==id);select(null);buildScene();
+        event.preventDefault();event.stopPropagation();
+        if(selected){pushHistory('delete furniture with keyboard');const id=selected.userData.id;project.furniture=project.furniture.filter(item=>item.id!==id);select(null);buildScene();return;}
+        deleteArchitecture(selectedArchitecture.kind,selectedArchitecture.id);
       },true);
 
       // Eye-level labels: migrate the old 18 px default to 30 px and remove the

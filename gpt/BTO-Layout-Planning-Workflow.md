@@ -43,7 +43,7 @@ When imported, Layout Studio:
 - detects centred wall bands from the calibrated basemap, rejects isolated text/dimension strokes and checks likely doors
 - preserves authored wall lengths and walls that own openings when a detected band is only partial
 - opens **Correct architecture** with optional wall highlights
-- lets the user align all walls or add, align and delete individual walls, doors and windows
+- lets the user add, magnetically join, align and delete individual walls, doors and windows
 - reveals and conservatively aligns furniture after confirmation
 
 Never invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values must come from the actual source image and ruler.
@@ -51,6 +51,8 @@ Never invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those valu
 ## 3. Plan the layout
 
 Use inspiration images for design language—materials, colour, furniture character, lighting and visual density—without forcing objects into unsuitable spaces.
+
+Work as both an interior designer and interior stylist: resolve function, scale and circulation first, then add a restrained layer of materials, lighting and decoration that supports the concept.
 
 Develop one strong layout. Add an alternative only when it represents a real trade-off.
 
@@ -63,6 +65,9 @@ Check:
 - TV viewing
 - bed and wardrobe access
 - furniture/furniture, furniture/wall and furniture/fixed-shell overlaps
+- furniture or wall décor overlapping doors, windows or glazing
+
+For wall-mounted artwork and décor, verify both its horizontal wall interval and elevation against every opening on that wall. It may overlap neither a door nor a window. If the wall has no sufficiently large uninterrupted area, omit the object or choose another appropriate solid wall rather than mounting it on glazing.
 
 Keep physical collision warnings separate from softer design advice.
 

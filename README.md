@@ -26,7 +26,6 @@ For a new PNG or any imported ZIP containing a basemap, the guided review is **S
 
 - near-top-down Bird's-eye navigation
 - centred wall-band and door checking against the calibrated basemap
-- **Align all walls** plus selected-wall alignment
 - toggleable wall highlights
 - manual wall, door and window creation
 - align and delete tools
@@ -59,11 +58,13 @@ Ruler metadata and `settings.architectureReviewConfirmed` are optional, so older
 ## Editing and validation
 
 - Walls support body movement, endpoint editing and centre rotation.
+- New and extended wall endpoints magnetically join nearby wall centre lines and endpoints; Alt temporarily bypasses the magnet.
+- Windows can be dragged horizontally along their owning wall.
 - Ctrl/Cmd preserves a wall's angle while dragging an endpoint.
 - Furniture, carpentry and decoration use millimetre fields and optional placement metadata.
 - Straight carpentry resizes lengthwise; L-shaped wardrobes resize from either free end.
-- Conservative alignment preserves rooms, wall intent, support relationships and grouped arrangements.
-- Validation reports physical furniture/furniture, furniture/wall and furniture/fixed-shell overlaps only.
+- Conservative alignment preserves rooms, wall side, support relationships and grouped arrangements; carpentry is flushed to its intended wall without crossing through it.
+- Validation reports physical furniture/furniture, furniture/wall, furniture/opening and furniture/fixed-shell overlaps only.
 - The precision panel becomes a drawer below 900 px.
 - Furniture, carpentry and decorative catalogues are grouped inside the collapsible **Add** section.
 

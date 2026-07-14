@@ -94,14 +94,6 @@
         const match=bestSegmentForWall(wall,getDetectedWallSegments(true))||localStripMatch(wall);if(!match){$('toolHint').textContent='No sufficiently similar wall line was found near the selected wall. Adjust the basemap crop/offset or edit the wall endpoints manually.';return;}
         pushHistory('align selected wall');alignWallToSegment(wall,match.segment);buildScene();$('toolHint').textContent=match.segment.local?`Aligned “${wall.name}” to the strongest nearby basemap wall line while preserving its length. Review the blue overlay before continuing.`:`Aligned “${wall.name}” to the nearest detected wall band in the basemap. Review the blue overlay before continuing.`;
       }
-      function alignAllWallsToBasemap(includeDetected=false){
-        includeDetected=includeDetected===true;
-        if(!project.basemap)return;const segments=getDetectedWallSegments(true),walls=(project.walls||[]).filter(w=>includeDetected||!w.detected),used=new Set(),matches=[];
-        walls.sort((a,b)=>Math.max(b.w,b.d)-Math.max(a.w,a.d)).forEach(w=>{const m=bestSegmentForWall(w,segments,used)||localStripMatch(w);if(m){matches.push({wall:w,match:m});if(m.index>=0)used.add(m.index);}});
-        if(!matches.length){$('toolHint').textContent='No authored walls could be matched. Run Auto-fit drawing β and confirm the plan width/depth first.';return;}
-        pushHistory('align all walls');matches.forEach(x=>alignWallToSegment(x.wall,x.match.segment));buildScene();const label=includeDetected?'review walls':'authored walls';$('toolHint').textContent=matches.length===walls.length?`Aligned all ${walls.length} ${label} to centred basemap wall bands. Review the result before continuing.`:`Aligned ${matches.length} of ${walls.length} ${label}. Unmatched walls were left unchanged for manual review.`;
-      }
-
       function select(mesh){
         selected=mesh||null;transform.detach();furnitureGroup.children.forEach(m=>setObjectTint(m,m.userData.color||palette.furniture,0x000000));
         if(selected){selectedArchitecture=null;clearGroup(selectionOverlayGroup);updateArchitecturePanel();renderArchitectureList();transform.attach(selected);setObjectTint(selected,selected.userData.color||palette.furniture,0x263225);}
