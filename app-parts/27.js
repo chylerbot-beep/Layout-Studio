@@ -1,6 +1,6 @@
       // Architecture-review UI and responsive precision-panel access.
       // Detection remains in app-parts/25.js; ruler calibration remains in 26.js.
-      const REVIEW_STEP_COUNT_V36 = 2;
+      const REVIEW_STEP_COUNT_V36 = 1;
       const reviewWorkflowV36 = $('wallReviewWorkflow');
       const leftPanelV36 = document.querySelector('.panel.left');
       let reviewStepV36 = 1;
@@ -26,8 +26,6 @@
         });
         $('reviewStepLabel').textContent = `Step ${reviewStepV36 + 1} of ${REVIEW_STEP_COUNT_V36 + 1}`;
         $('reviewProgressBar').style.width = `${(reviewStepV36 + 1) / (REVIEW_STEP_COUNT_V36 + 1) * 100}%`;
-        $('reviewStepBack').hidden = reviewStepV36 === 1;
-        $('reviewStepNext').hidden = reviewStepV36 === REVIEW_STEP_COUNT_V36;
       }
 
       function setReviewInstructionV36(message){
@@ -155,8 +153,6 @@
         $('reviewOriginal').textContent = 'Show original';
       }
 
-      $('reviewStepBack').onclick = () => setReviewStepV36(reviewStepV36 - 1);
-      $('reviewStepNext').onclick = () => setReviewStepV36(reviewStepV36 + 1);
       $('reviewToggleHighlights').onclick = () => {
         reviewHighlightsVisibleV36 = !reviewHighlightsVisibleV36;
         syncReviewHighlightsV36();

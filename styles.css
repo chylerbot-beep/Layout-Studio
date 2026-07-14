@@ -120,6 +120,7 @@
     .wall-review-tools button { flex: 1 1 92px; }
     .wall-review-tools .review-highlight-toggle { flex-basis: 100%; }
     .wall-review-instruction { min-height: 28px; }
+    .review-confirm-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
     .review-confirm-button { width: 100%; padding: 11px; }
     .review-guide-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
     .review-guide-actions .spacer { flex: 1; }

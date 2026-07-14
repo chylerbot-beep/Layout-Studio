@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Layout Studio</title>
-  <link rel="stylesheet" href="styles.css?v=20260714-workspace-simplification-v47" />
+  <link rel="stylesheet" href="styles.css?v=20260714-review-simplification-v48" />
 </head>
 <body>
   <div class="app">
@@ -231,7 +231,7 @@
 
   <section class="wall-review-workflow review-guide" id="wallReviewWorkflow" aria-labelledby="reviewGuideTitle" hidden>
     <div class="review-guide-header">
-      <div><span id="reviewStepLabel">Step 2 of 3</span><h3 id="reviewGuideTitle">Correct architecture</h3></div>
+      <div><span id="reviewStepLabel">Step 2 of 2</span><h3 id="reviewGuideTitle">Correct architecture</h3></div>
     </div>
     <div class="review-guide-progress"><span id="reviewProgressBar"></span></div>
     <div class="review-guide-status"><strong>Floor-plan check</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
@@ -251,19 +251,13 @@
         <button id="reviewToggleHighlights" class="active review-highlight-toggle">Highlight walls: on</button>
       </div>
       <p class="wall-review-instruction" id="wallReviewInstruction">Add missing architecture, or select an incorrect wall, door or window to align or delete it. Double-click aligned overlapping walls to merge them.</p>
-    </div>
-
-    <div class="review-guide-page" data-review-step="2" hidden>
-      <h4>Confirm architecture</h4>
-      <p>Make one last comparison with the basemap. Confirming keeps the reviewed walls, reveals furniture and runs conservative furniture alignment as one undoable operation.</p>
-      <button id="confirmWallReview" class="primary review-confirm-button">Confirm architecture · reveal and align furniture</button>
+      <div class="review-confirm-section">
+        <button id="confirmWallReview" class="primary review-confirm-button">Confirm architecture · reveal and align furniture</button>
+      </div>
     </div>
 
     <div class="review-guide-actions">
       <button id="reviewCancel" class="danger">Exit and discard</button>
-      <span class="spacer"></span>
-      <button id="reviewStepBack">Back</button>
-      <button id="reviewStepNext" class="primary">Next</button>
     </div>
   </section>
 
@@ -326,6 +320,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app-loader.js?v=20260714-workspace-simplification-v47"></script>
+  <script src="app-loader.js?v=20260714-review-simplification-v48"></script>
 </body>
 </html>
