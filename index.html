@@ -227,11 +227,9 @@
     </aside>
   </div>
 
-  <button id="resumeReviewGuide" hidden>Resume architecture review</button>
-  <section class="wall-review-workflow review-guide" id="wallReviewWorkflow" role="dialog" aria-modal="false" aria-labelledby="reviewGuideTitle" hidden>
+  <section class="wall-review-workflow review-guide" id="wallReviewWorkflow" aria-labelledby="reviewGuideTitle" hidden>
     <div class="review-guide-header">
       <div><span id="reviewStepLabel">Step 1 of 3</span><h3 id="reviewGuideTitle">Review and adjust floor plan</h3></div>
-      <button id="reviewGuideClose" title="Minimize review guide" aria-label="Minimize review guide">−</button>
     </div>
     <div class="review-guide-progress"><span id="reviewProgressBar"></span></div>
     <div class="review-guide-status"><strong>Floor-plan check</strong><span id="wallReviewStatus">Waiting for floor-plan check…</span></div>
@@ -239,12 +237,7 @@
     <div class="review-guide-page" data-review-step="1">
       <h4>Inspect detected architecture</h4>
       <p>Furniture is hidden while you compare the yellow wall and opening suggestions with the basemap.</p>
-      <div class="review-navigation-help"><strong>Adjust the view</strong><span>Scroll to zoom. Drag to look around. Use these views whenever the plan is difficult to inspect.</span></div>
-      <div class="button-row review-view-tools">
-        <button id="reviewViewTop">Top</button>
-        <button id="reviewViewBird">Bird's eye</button>
-        <button id="reviewViewEye">Eye level</button>
-      </div>
+      <div class="review-navigation-help"><strong>Adjust the view</strong><span>Use the Top, Bird’s-eye and Eye-level buttons in the header. Scroll to zoom and drag the viewport to look around.</span></div>
       <p class="wall-review-instruction">Inspect the full home, then continue to correction tools.</p>
     </div>
 
@@ -267,6 +260,8 @@
     </div>
 
     <div class="review-guide-actions">
+      <button id="reviewCancel" class="danger">Exit and discard</button>
+      <span class="spacer"></span>
       <button id="reviewStepBack">Back</button>
       <button id="reviewStepNext" class="primary">Next</button>
     </div>
