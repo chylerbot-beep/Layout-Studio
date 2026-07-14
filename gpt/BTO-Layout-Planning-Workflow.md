@@ -35,7 +35,8 @@ This is verification, not a third approval gate. Set `settings.architectureRevie
 When imported, Layout Studio:
 
 - opens **Set scale** first for a new PNG or any imported ZIP containing a basemap
-- reuses saved ruler metadata as a starting point but requires the ZIP scale to be applied again
+- automatically positions the horizontal ruler on the longest reliable span for user verification
+- requires the ZIP scale to be applied again before detection
 - hides furniture and furniture-validation overlays
 - detects centred wall bands from the calibrated basemap and checks likely doors
 - opens **Correct architecture** with optional wall highlights

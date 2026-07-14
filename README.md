@@ -17,12 +17,12 @@ Open `http://localhost:8000` in a desktop browser.
 
 1. Start blank or open a JSON/ZIP project.
 2. Upload a floor-plan image.
-3. Set scale with the horizontal ruler.
+3. Verify the automatically positioned horizontal ruler and enter the printed dimension.
 4. Check the plan and correct architecture.
 5. Confirm architecture to reveal and conservatively align furniture.
 6. Validate, set a camera and export PNG or project files.
 
-For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Saved ruler metadata supplies the starting position, but ZIP scale must be applied again before detection. The correction and confirmation steps replace the normal left panel and provide:
+For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. The correction and confirmation steps replace the normal left panel and provide:
 
 - near-top-down Bird's-eye navigation
 - centred wall-band and door checking against the calibrated basemap

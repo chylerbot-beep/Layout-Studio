@@ -297,14 +297,14 @@
   <div class="modal scale-modal" id="scaleModal" role="dialog" aria-modal="true" aria-labelledby="scaleModalTitle">
     <div class="dialog scale-dialog">
       <div class="scale-dialog-heading">
-        <div><span class="scale-step-label">Step 1 of 3</span><h3 id="scaleModalTitle">Set floor-plan scale</h3><p class="small">Drag the blue ruler ends over a printed horizontal dimension. Both ends stay locked to the same horizontal plane.</p></div>
+        <div><span class="scale-step-label">Step 1 of 3</span><h3 id="scaleModalTitle">Set floor-plan scale</h3><p class="small">The ruler starts on the longest detected horizontal span. Verify its endpoints and enter the printed millimetres; both ends stay locked to one horizontal plane.</p><p class="small scale-auto-status" id="scaleAutoStatus">Finding the longest horizontal span…</p></div>
         <button id="scaleCancel" aria-label="Close scale calibration">Close</button>
       </div>
       <div class="scale-canvas-wrap"><canvas id="scaleCanvas"></canvas></div>
       <div class="scale-controls">
         <label>Known length (mm)<input id="scaleKnownMm" type="number" value="12600" min="100" step="5" inputmode="numeric" /></label>
         <div class="scale-reading"><span id="scalePixelReading">Move the ruler ends</span><strong id="scaleResultReading">Scale not set</strong></div>
-        <div class="button-row"><button id="scaleZoomOut" title="Zoom out">−</button><button id="scaleZoomIn" title="Zoom in">+</button><button id="scaleResetRuler">Reset ruler</button></div>
+        <div class="button-row"><button id="scaleZoomOut" title="Zoom out">−</button><button id="scaleZoomIn" title="Zoom in">+</button><button id="scaleAutoRuler">Find longest span</button><button id="scaleResetRuler">Reset ruler</button></div>
       </div>
       <div class="dialog-actions"><button id="scaleCancelBottom">Cancel</button><button id="scaleApply" class="primary">Apply scale</button></div>
     </div>
@@ -314,6 +314,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app-loader.js?v=20260714-wall-detection-v39"></script>
+  <script src="app-loader.js?v=20260714-auto-ruler-v40"></script>
 </body>
 </html>

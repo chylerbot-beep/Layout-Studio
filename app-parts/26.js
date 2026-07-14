@@ -108,6 +108,78 @@
           : 'Scale not set';
       }
 
+      function longestHorizontalScaleSpanV40(){
+        if(!basemapImage?.complete || !basemapImage.naturalWidth)return null;
+        const maxDimension = 1200;
+        const scale = Math.min(1, maxDimension / Math.max(basemapImage.naturalWidth, basemapImage.naturalHeight));
+        const width = Math.max(2, Math.round(basemapImage.naturalWidth * scale));
+        const height = Math.max(2, Math.round(basemapImage.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d', {willReadFrequently:true});
+        ctx.drawImage(basemapImage, 0, 0, width, height);
+        const pixels = ctx.getImageData(0, 0, width, height).data;
+        const maxGap = Math.max(3, Math.round(width * .012));
+        let best = null;
+
+        function considerSpan(start, end, y, darkPixels){
+          if(start < 0 || end < start)return;
+          const span = end - start + 1;
+          const density = darkPixels / span;
+          if(span < width * .35 || density < .42)return;
+          const score = span * (.85 + .15 * density);
+          if(!best || score > best.score)best = {start, end, y, score};
+        }
+
+        for(let y = 2; y < height - 2; y++){
+          let start = -1;
+          let end = -1;
+          let gap = 0;
+          let darkPixels = 0;
+          for(let x = 1; x < width - 1; x++){
+            const index = (y * width + x) * 4;
+            const gray = pixels[index] * .2126 + pixels[index + 1] * .7152 + pixels[index + 2] * .0722;
+            const dark = pixels[index + 3] > 32 && gray < 180;
+            if(dark){
+              if(start < 0){start = x; darkPixels = 0;}
+              end = x;
+              gap = 0;
+              darkPixels++;
+            }else if(start >= 0){
+              gap++;
+              if(gap > maxGap){
+                considerSpan(start, end, y, darkPixels);
+                start = -1;
+                end = -1;
+                gap = 0;
+                darkPixels = 0;
+              }
+            }
+          }
+          considerSpan(start, end, y, darkPixels);
+        }
+        if(!best)return null;
+        return {
+          a: {u:(best.start + .5) / width, v:(best.y + .5) / height},
+          b: {u:(best.end + .5) / width, v:(best.y + .5) / height}
+        };
+      }
+
+      function autoPositionScaleRulerV40(){
+        const span = longestHorizontalScaleSpanV40();
+        if(!span){
+          $('scaleAutoStatus').textContent = 'No reliable overall horizontal span was found. Position the ruler manually.';
+          return false;
+        }
+        scaleStateV33.a = span.a;
+        scaleStateV33.b = span.b;
+        keepScaleRulerHorizontalV33(span.a.v);
+        $('scaleAutoStatus').textContent = 'Ruler placed on the longest horizontal span. Verify both endpoints before applying the scale.';
+        drawScaleCanvasV33();
+        return true;
+      }
+
       function drawScaleLineV33(ctx, from, to, width, color){
         ctx.strokeStyle = color;
         ctx.lineWidth = width;
@@ -188,6 +260,7 @@
         scaleStateV33.zoom = 1;
         scaleStateV33.panX = 0;
         scaleStateV33.panY = 0;
+        $('scaleAutoStatus').textContent = 'Ruler reset. Drag either endpoint; both remain on one horizontal plane.';
         drawScaleCanvasV33();
       }
 
@@ -198,15 +271,20 @@
         }
         scaleStateV33.pendingCheck = !!pendingCheck;
         const saved = project.basemap.scaleCalibration;
-        if(saved?.a && saved?.b){
-          scaleStateV33.a = {...saved.a};
-          scaleStateV33.b = {...saved.b};
-          keepScaleRulerHorizontalV33(((+saved.a.v || 0) + (+saved.b.v || 0)) / 2);
-        }else{
-          resetScaleRulerV33();
-        }
-        $('scaleKnownMm').value = saved?.knownMm || project.plan?.width || project.basemap?.width || 12600;
+        const overallWidth = project.plan?.width || project.basemap?.width || saved?.knownMm || 12600;
+        $('scaleKnownMm').value = overallWidth;
         $('scaleModal').classList.add('open');
+        if(!autoPositionScaleRulerV40()){
+          if(saved?.a && saved?.b){
+            scaleStateV33.a = {...saved.a};
+            scaleStateV33.b = {...saved.b};
+            keepScaleRulerHorizontalV33(((+saved.a.v || 0) + (+saved.b.v || 0)) / 2);
+            $('scaleKnownMm').value = saved.knownMm || overallWidth;
+            $('scaleAutoStatus').textContent = 'Using the saved ruler position because no reliable automatic span was found.';
+          }else{
+            resetScaleRulerV33();
+          }
+        }
         requestAnimationFrame(drawScaleCanvasV33);
       }
 
@@ -244,6 +322,7 @@
       function startScaleDragV33(event){
         if(!basemapImage)return;
         event.preventDefault();
+        $('scaleAutoStatus').textContent = 'Manual ruler position. Both endpoints remain locked to one horizontal plane.';
         const rect = scaleCanvasV33.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
@@ -317,6 +396,7 @@
       scaleCanvasV33.addEventListener('wheel', zoomScaleCanvasV33, {passive:false});
       $('scaleKnownMm').addEventListener('input', drawScaleCanvasV33);
       $('scaleResetRuler').onclick = resetScaleRulerV33;
+      $('scaleAutoRuler').onclick = autoPositionScaleRulerV40;
       $('scaleZoomIn').onclick = () => { scaleStateV33.zoom = Math.min(6, scaleStateV33.zoom * 1.25); drawScaleCanvasV33(); };
       $('scaleZoomOut').onclick = () => { scaleStateV33.zoom = Math.max(.6, scaleStateV33.zoom * .8); drawScaleCanvasV33(); };
       $('scaleApply').onclick = applyScaleCalibrationV33;

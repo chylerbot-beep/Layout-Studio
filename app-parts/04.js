@@ -61,7 +61,9 @@
         if(!basemapImage){alert('Upload a floor-plan image first.');return;}
         const analysis=makeBasemapAnalysis(false,1200),masked=analysis&&makeWallMask(analysis,210),bounds=analysis&&largestMaskBounds(masked.mask,analysis.w,analysis.h);
         if(!bounds||bounds.count<200){$('basemapStatus').textContent='Auto-fit could not isolate the plan drawing. Keep the full image and use Offset X/Y for manual alignment.';return;}
-        const padX=Math.max(4,Math.round((bounds.maxX-bounds.minX)*.015)),padY=Math.max(4,Math.round((bounds.maxY-bounds.minY)*.015));
+        // Use the detected drawing boundary itself. Decorative padding changes the
+        // physical width after ruler calibration and shifts walls off their bands.
+        const padX=0,padY=0;
         const left=Math.max(0,bounds.minX-padX)/analysis.w,top=Math.max(0,bounds.minY-padY)/analysis.h,right=Math.min(analysis.w-1,bounds.maxX+padX)/analysis.w,bottom=Math.min(analysis.h-1,bounds.maxY+padY)/analysis.h;
         pushHistory('auto-fit basemap');project.basemap.crop={left,top,right,bottom};wallDetectionCache=null;buildBasemap(true);
         $('basemapStatus').textContent=`Auto-fit cropped ${Math.round(left*100)}% left, ${Math.round(top*100)}% top, ${Math.round((1-right)*100)}% right and ${Math.round((1-bottom)*100)}% bottom. Review against the walls before tracing.`;
