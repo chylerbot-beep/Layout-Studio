@@ -148,6 +148,6 @@
         normalizeProjectV27=function(){normalizeProjectV27BeforeV28();ensurePhysicalValidationSettingsV28();};
       }
       const buildSceneBeforeV28=buildScene;
-      buildScene=function(){buildSceneBeforeV28();bindDetectedWallHighlightToggleV28();updateDetectedWallHighlightsV28(true);validate();};
+      buildScene=function(){buildSceneBeforeV28();updateDetectedWallHighlightsV28(true);validate();};
 
-      ensurePhysicalValidationSettingsV28();syncValidationToggleV28();bindDetectedWallHighlightToggleV28();updateDetectedWallHighlightsV28(true);
+      ensurePhysicalValidationSettingsV28();syncValidationToggleV28();updateDetectedWallHighlightsV28(true);
