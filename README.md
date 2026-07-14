@@ -1,9 +1,25 @@
 # Layout Studio
 
-A lightweight browser-based Three.js planner for reconstructing Singapore floor plans in millimetres, placing furniture and carpentry, validating physical overlaps, setting cameras and exporting views.
+A lightweight browser-based Three.js planner for reconstructing Singapore floor
+plans in millimetres, placing furniture and carpentry, validating physical
+overlaps, setting cameras and exporting views.
 
-Structured project JSON is authoritative. Basemaps and screenshots are visual references.
-During the explicit architecture-review pass, a calibrated basemap temporarily guides wall X/Y placement; confirming writes the reviewed geometry back into authoritative project data.
+## Authority model
+
+Structured project JSON is authoritative. Floor-plan basemaps are visual
+comparison layers.
+
+Calibration registers and crops the source image. It does not move walls,
+openings or furniture. The architecture scan creates review suggestions with
+separate **Current JSON** and **Basemap candidate** values. A project coordinate
+changes only when the user selects **Apply suggestion**, uses an explicit manual
+editing tool, or applies the high-confidence suggestions after confirmation.
+
+A persistent status identifies the current state:
+
+- **Basemap calibrated and cropped** — suggestions are available.
+- **Basemap unregistered** — set scale before scanning.
+- **JSON-only mode** — basemap detection is disabled.
 
 ## Run locally
 
@@ -16,83 +32,110 @@ Open `http://localhost:8000` in a desktop browser.
 ## Main workflow
 
 1. Start blank or open a JSON/ZIP project.
-2. Upload a floor-plan image.
-3. Verify the automatically positioned horizontal ruler and enter the printed dimension.
-4. Check the plan and correct architecture.
-5. Confirm architecture to reveal and conservatively align furniture.
-6. Validate, set a camera and export PNG or project files.
+2. Upload or load a floor-plan image.
+3. Choose one route:
+   - **Set scale** to register the basemap and compare it with the JSON; or
+   - **Use JSON only** to skip basemap detection for an existing measured project.
+4. Review mismatches one at a time.
+5. Choose **Keep JSON** or **Apply suggestion** for each item.
+6. Confirm architecture to reveal and conservatively align furniture.
+7. Validate, set a camera and export PNG or project files.
 
-For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Set scale searches for the longest reliable horizontal span and positions the ruler there; the user verifies its endpoints and enters the printed dimension. ZIP scale must be applied again before detection. A ZIP without a basemap opens a Step 1 choice to upload the matching floor plan or continue with its authoritative JSON measurements. The automatic wall-and-door pass runs immediately after scale is applied. The correction and confirmation steps replace the normal left panel and provide:
+When unresolved suggestions remain, confirmation asks whether to keep the
+current JSON geometry for those items.
 
-- near-top-down Bird's-eye navigation
-- centred wall-band and door checking against the calibrated basemap
-- toggleable wall highlights
-- manual wall, door and window creation
-- align and delete tools
-- temporary full-opacity basemap comparison
-- Exit and discard, which restores the pre-review project and camera
+## Calibration and architecture review
 
-Scale calibration crops detected page margins before converting pixels to millimetres. The architecture scan ignores isolated text and dimension strokes, centres authored walls without changing their authoritative length, and protects walls that own doors or windows from partial detections. Furniture and furniture-validation overlays remain hidden until architecture is confirmed. Automatic window insertion is intentionally omitted because generic floor-plan symbols are not reliable enough.
+Scale calibration:
 
-Legacy handoffs that contain both shelter walls and a room-sized solid shelter shell are rendered from the walls only. Advisory shell allowances marked `fixed: false` remain in project data but are not rendered or treated as physical collision blocks.
+- uses a horizontal ruler with a known printed millimetre dimension;
+- detects and stores a normalized drawing crop;
+- stores millimetres per pixel and ruler endpoints;
+- updates the basemap registration;
+- preserves `project.plan` extents when the imported project already contains
+  authored architecture.
+
+Architecture detection:
+
+- requires a registered basemap;
+- ignores isolated short marks where possible;
+- proposes wall centre-line and door changes without applying them;
+- never deletes unmatched authored walls;
+- never joins split wall pairs automatically;
+- leaves split-wall door candidates for manual review;
+- shows the current JSON position in red and the candidate in amber.
+
+Manual **Align selected**, add and delete tools remain available because they
+are explicit user actions.
 
 ## Project compatibility
 
-Layout Studio imports and exports normal ZIP files containing `project.json` at the root. Packages may also contain:
+Layout Studio imports and exports normal ZIP files containing `project.json` at
+the root. Packages may also contain:
 
 - `manifest.json`
 - project notes
 - a basemap under `assets/`
 - reference images under `references/`
 
-The importer also accepts:
+The importer also accepts older `.btozip` archives, nested project JSON,
+standalone Layout Studio JSON and supported wrapper objects.
 
-- older `.btozip` archives
-- differently named or nested project JSON
-- project data wrapped in `project`, `data`, `layout` or `scene`
-- one ZIP nested inside another
-- standalone Layout Studio JSON
-
-Ruler metadata and `settings.architectureReviewConfirmed` are optional, so older files remain compatible.
+Ruler metadata and `settings.architectureReviewConfirmed` remain optional for
+older files. JSON-only review mode is stored as
+`settings.basemapReviewMode: "json-only"`.
 
 ## Editing and validation
 
 - Walls support body movement, endpoint editing and centre rotation.
-- New and extended wall endpoints magnetically join nearby wall centre lines and endpoints; Alt temporarily bypasses the magnet.
-- Windows can be dragged horizontally along their owning wall.
-- Ctrl/Cmd preserves a wall's angle while dragging an endpoint.
-- Furniture, carpentry and decoration use millimetre fields and optional placement metadata.
-- Straight carpentry resizes lengthwise; L-shaped wardrobes resize from either free end.
-- Conservative alignment preserves rooms, wall side, support relationships and grouped arrangements; carpentry is flushed to its intended wall without crossing through it.
-- Validation reports physical furniture/furniture, furniture/wall, furniture/opening and furniture/fixed-shell overlaps only.
-- The precision panel becomes a drawer below 900 px.
-- Furniture, carpentry and decorative catalogues are grouped inside the collapsible **Add** section.
-- Project JSON may also contain named `custom-box` elements derived from inspiration images. They remain editable, alignable and physically validated, and appear with a **Custom** badge in Scene objects.
+- New and extended wall endpoints magnetically join nearby centre lines and
+  endpoints; Alt temporarily bypasses the magnet.
+- Windows can be dragged along their owning wall.
+- Ctrl/Cmd preserves a wall angle while dragging an endpoint.
+- Furniture, carpentry and decoration use millimetre fields and optional
+  placement metadata.
+- Conservative alignment preserves room, wall-side, support and group intent.
+- Validation reports physical furniture, wall, opening and fixed-shell
+  collisions.
 
 ## Camera and display
 
 - Top, Bird's-eye and Eye-level views
-- 52° default perspective lens and 1300 mm default eye height
+- 52° default perspective lens and 1,300 mm default eye height
 - blocking-wall hiding without deleting geometry
-- Photo mode with a floating Camera panel for clean screenshots
-- automatic nearby-furniture hiding by camera distance, plus per-object hide/show and Show all furniture
+- Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames
 
-Hidden walls and furniture remain in project data, collision checks and validation.
+Hidden walls and furniture remain in project data and validation.
 
 ## Code structure
 
-- `app-loader.js` loads `app-parts/` in a fixed order and concatenates them into one shared IIFE.
-- Later modules intentionally refine earlier functions.
-- `app-parts/25.js` owns architecture detection and review state.
-- `app-parts/26.js` owns ruler calibration.
-- `app-parts/27.js` owns review and responsive precision UI.
-- `app-parts/28.js` owns Photo-mode camera and furniture visibility controls.
-- `app-parts/08.js` starts the app after all overrides load.
+`app-loader.js` loads `app-parts/` in a fixed order and concatenates them into
+one shared IIFE. Later files intentionally refine earlier functions.
 
-Keep this order intact. Do not convert the project to another framework without a separate migration plan.
+- `app-parts/25.js` — legacy detection primitives and review state
+- `app-parts/26.js` — ruler calibration
+- `app-parts/27.js` — review and responsive precision UI
+- `app-parts/28.js` — Photo-mode controls
+- `app-parts/29.js` — non-destructive suggestions, authority status and
+  JSON-only route
+- `app-parts/08.js` — starts the app after every override loads
 
-## Custom GPT / Claude files
+Keep this order intact.
+
+## Checks
+
+```bash
+node scripts/check-bundle.mjs
+node scripts/check-architecture-review.mjs
+```
+
+The bundle check validates the concatenated JavaScript syntax. The architecture
+review check verifies that the non-destructive module is loaded before startup
+and contains the required registration guard, suggestion actions and unresolved
+review warning.
+
+## Custom GPT files
 
 Use:
 
@@ -101,13 +144,14 @@ Use:
 - `schema/project-schema.md`
 - `schema/project-template.json`
 
-The separate object catalogue is retained in the repository as an app-development reference but is not required as Custom GPT Knowledge. The planner instructions contain the compact native-model list and the custom-element fallback.
-
-Generated handoffs should set `settings.architectureReviewConfirmed` to `false`, provide validated `project.json` separately, and include a real ZIP rather than a renamed text file.
+Generated handoffs should set
+`settings.architectureReviewConfirmed` to `false`. Parsing JSON and reopening a
+ZIP proves schema and packaging validity only; it does not prove calibrated
+overlay alignment.
 
 ## Browser dependencies
 
 - Three.js
 - JSZip
 
-Ruler calibration and floor-plan checking run locally in the browser without a paid AI service.
+Ruler calibration and floor-plan checking run locally in the browser.
