@@ -1,41 +1,58 @@
 # Layout Studio project schema v2.7
 
-The project file is UTF-8 JSON. Coordinates and dimensions are millimetres. The top-left of the calibrated plan is `(0, 0)`; positive X moves right and positive Y moves down in plan view.
+Projects are UTF-8 JSON. All plan coordinates and dimensions are millimetres. Plan origin is top-left: X increases right and Y increases down.
 
-## Top-level fields
+Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename existing keys.
 
-- `meta`: project name, brief, timestamps and app version
-- `references`: reference-image metadata; package builds may add `assetPath`
-- `basemap`: calibrated floor-plan image metadata; JSON builds may include `dataUrl`, package builds use `assetPath`
-- `rooms`: semantic rectangular room zones
-- `walls`: editable wall centre lines
-- `openings`: doors and windows attached to a wall by `wallId` and millimetre `offset`
-- `shell`: fixed rectangular architecture or existing built-ins
-- `clearances`: rectangular circulation zones
-- `furniture`: furniture, carpentry and decorative objects
-- `settings`: ceiling, blocking-wall and architecture-review settings
-- `camera`: Three.js camera position, target and FOV
-
-## Optional basemap scale calibration
-
-Layout Studio can calculate the basemap dimensions from a draggable ruler. These fields are optional and additive; older projects containing only `basemap.width` and `basemap.depth` remain valid.
+## Top level
 
 ```json
 {
-  "basemap": {
-    "width": 12600,
-    "depth": 9400,
-    "scaleMmPerPixel": 12.3046875,
-    "scaleCalibration": {
-      "knownMm": 12600,
-      "a": { "u": 0.12, "v": 0.16 },
-      "b": { "u": 0.88, "v": 0.16 }
-    }
-  }
+  "meta": {},
+  "references": [],
+  "basemap": null,
+  "rooms": [],
+  "walls": [],
+  "openings": [],
+  "shell": [],
+  "clearances": [],
+  "furniture": [],
+  "settings": {},
+  "camera": null,
+  "plan": { "width": 14775, "depth": 9500, "unit": "mm" }
 }
 ```
 
-`a` and `b` are normalized source-image coordinates. The structured millimetre geometry remains authoritative; calibration metadata only helps display and analyse the visual basemap.
+- `meta`: name, brief, timestamps and app version
+- `references`: reference-image metadata; ZIP packages may use `assetPath`
+- `basemap`: floor-plan image metadata; JSON may use `dataUrl`, ZIP packages use `assetPath`
+- `rooms`: semantic rectangular zones
+- `walls`: editable wall centre lines
+- `openings`: doors and windows attached to walls
+- `shell`: fixed architecture or built-ins
+- `clearances`: rectangular advisory zones
+- `furniture`: furniture, carpentry and decorative objects
+- `settings`: ceiling, camera cutaway, validation and review state
+- `camera`: Three.js position, target and FOV
+- `plan`: overall millimetre dimensions
+
+## Rectangular zones and fixed shell
+
+Rooms, shell items and clearances use plan rectangles:
+
+```json
+{
+  "id": "room-living",
+  "name": "Living room",
+  "type": "living",
+  "x": 6200,
+  "y": 1000,
+  "w": 5575,
+  "d": 4700
+}
+```
+
+Shell items may also include `h`, `elevation`, `rotation`, `color` and `type`.
 
 ## Wall
 
@@ -52,6 +69,8 @@ Layout Studio can calculate the basemap dimensions from a draggable ruler. These
 }
 ```
 
+Generate endpoint-based walls. Legacy `x`, `y`, `w`, `d` wall bounds remain import-compatible.
+
 ## Opening
 
 ```json
@@ -67,14 +86,14 @@ Layout Studio can calculate the basemap dimensions from a draggable ruler. These
 }
 ```
 
-`offset` is measured along the wall centre line from the wall start point to the opening centre.
+`type` is `door` or `window`. `offset` measures from the wall start to the opening centre along the wall centre line. Doors may also include `swing`.
 
-## Furniture / carpentry / decorative object
+## Furniture, carpentry and decoration
 
 ```json
 {
   "id": "dining-table",
-  "name": "Oval dining table",
+  "name": "Dining table",
   "category": "furniture",
   "x": 7200,
   "y": 3200,
@@ -93,13 +112,17 @@ Layout Studio can calculate the basemap dimensions from a draggable ruler. These
 }
 ```
 
-`x` and `y` refer to the object's top-left unrotated bounding rectangle. Rotation is in degrees around the object centre.
+`x` and `y` are the top-left of the unrotated plan rectangle. Rotation is degrees around the object centre. `elevation` is the bottom height above finished floor and defaults to `0`.
 
-`elevation` is the height of the object's bottom above finished floor level. It defaults to `0`. For an object placed on top of another object, use the supporting object's `elevation + h` as the upper object's elevation.
+Categories:
 
-## Optional placement metadata
+- `furniture`
+- `carpentry`
+- `decorative`
 
-The `placement` object lets Layout Studio preserve design intent when **Align furniture β** is used after walls have been corrected.
+## Placement metadata
+
+`placement` preserves intent during conservative furniture alignment:
 
 ```json
 {
@@ -112,88 +135,63 @@ The `placement` object lets Layout Studio preserve design intent when **Align fu
 }
 ```
 
-Fields:
-- `roomId`: intended room-zone ID
-- `mode`: `wall`, `free`, or `support`
-- `wallId`: valid wall ID for wall-anchored objects
-- `gap`: desired clear distance in millimetres from the wall face
-- `supportId`: object ID beneath an elevated decorative object
-- `groupId`: shared ID for objects whose relative arrangement should be preserved
+- `roomId`: intended room
+- `mode`: `wall`, `free` or `support`
+- `wallId`: wall anchor
+- `gap`: desired distance from wall face
+- `supportId`: supporting furniture ID
+- `groupId`: arrangement that should move together
 
-Recommended use:
-- Wardrobes, kitchen cabinets, worktops and TV consoles: `mode: "wall"` with `wallId`
-- Beds: `mode: "wall"` when the intended headboard wall is known
-- Dining table and chairs: shared `groupId`, usually `dining-set`
-- Freestanding sofa, lounge chair and coffee table: usually `mode: "free"`
-- TV, fruit bowl, handphone and flask on another object: `mode: "support"` with `supportId`
+Placement is advisory; physical collisions and access take priority.
 
-Placement metadata is advisory. Collision, circulation and door-clearance checks take priority.
+## Supported custom models
 
-## L-shaped wardrobe
+Decorative models:
+
+- `glass-blocks`
+- `plant`
+- `tv`
+- `picture-frame`
+- `fruit-bowl`
+- `phone`
+- `flask`
+
+Carpentry models:
+
+- `l-wardrobe`
+
+An L-shaped wardrobe also requires `armDepth`, which must be smaller than both `w` and `d`. Unknown models render as editable boxes.
+
+## Optional basemap calibration
+
+Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are optional:
 
 ```json
 {
-  "id": "wardrobe-master-l",
-  "name": "L-shaped wardrobe",
-  "category": "carpentry",
-  "model": "l-wardrobe",
-  "x": 950,
-  "y": 1200,
-  "w": 2400,
-  "d": 1800,
-  "h": 2700,
-  "armDepth": 600,
-  "elevation": 0,
-  "rotation": 0,
-  "placement": {
-    "roomId": "room-master",
-    "mode": "wall",
-    "wallId": "wall-master-west",
-    "gap": 0
+  "basemap": {
+    "width": 12600,
+    "depth": 9400,
+    "scaleMmPerPixel": 12.3046875,
+    "scaleCalibration": {
+      "knownMm": 12600,
+      "a": { "u": 0.12, "v": 0.16 },
+      "b": { "u": 0.88, "v": 0.16 }
+    }
   }
 }
 ```
 
-- `w`: outer length of the first arm
-- `d`: outer length of the perpendicular arm
-- `armDepth`: shared carcass depth
-- Keep `armDepth` smaller than both `w` and `d`
-- Layout Studio can resize either free end independently
+`a` and `b` are normalized source-image coordinates. Calibration affects the visual basemap only; project geometry remains authoritative. Do not invent these values.
 
-## Example tabletop object
-
-```json
-{
-  "id": "fruit-bowl-dining",
-  "name": "Bowl of fruits",
-  "category": "decorative",
-  "model": "fruit-bowl",
-  "x": 8060,
-  "y": 3500,
-  "w": 360,
-  "d": 360,
-  "h": 190,
-  "elevation": 760,
-  "rotation": 0,
-  "color": 12095597,
-  "placement": {
-    "roomId": "room-dining",
-    "mode": "support",
-    "supportId": "dining-table",
-    "groupId": "dining-set"
-  }
-}
-```
-
-## Blocking-wall settings
-
-Blocking-wall visibility changes only viewport and PNG rendering. It does not delete walls or remove them from validation.
+## Settings
 
 ```json
 {
   "settings": {
     "ceilingVisible": false,
     "ceilingHeight": 2600,
+    "validationEnabled": true,
+    "architectureReviewConfirmed": false,
     "cameraCutaway": {
       "enabled": false,
       "style": "hide",
@@ -204,67 +202,34 @@ Blocking-wall visibility changes only viewport and PNG rendering. It does not de
 }
 ```
 
-- `enabled`: automatically hide blocking walls at low camera heights
-- `style`: use `hide`; older `fade` values remain accepted for compatibility but are treated as hidden by the current interface
-- `depth`: maximum cutaway distance from the camera in millimetres
-- `hiddenWallIds`: walls manually hidden for camera views; all IDs must refer to valid walls
+- `architectureReviewConfirmed` is optional for old projects. Use `false` for generated handoffs.
+- Camera cutaway changes only display and PNG output; hidden walls remain in data and validation.
+- Use cutaway style `hide`. Legacy `fade` values remain import-compatible and are treated as hidden.
 
-## Align furniture β behaviour
+## Camera
 
-The current beta follows conservative rules:
-1. Keep objects in their intended room when possible.
-2. Preserve grouped layouts, especially dining tables and matching chairs.
-3. Keep wall-anchored carpentry parallel and close to its wall.
-4. Move supported decorative objects with their supporting furniture.
-5. Avoid walls, fixed shell objects, door-clearance zones and declared circulation clearances.
-6. Do not move already valid freestanding furniture merely to make it look more regular.
-7. Apply all changes as one undoable action.
+```json
+{
+  "camera": {
+    "position": [11.2, 1.3, 8.5],
+    "target": [9.0, 1.1, 3.2],
+    "fov": 52
+  }
+}
+```
 
-When placement metadata is absent, the app infers relationships from object names, current room, proximity to walls and elevation.
+Camera vectors use Three.js world units in metres; project geometry remains millimetres. `fov` is vertical field of view in degrees.
 
-## Supported models
+## Validation checklist
 
-Decorative:
-- `glass-blocks`
-- `plant`
-- `tv`
-- `picture-frame`
-- `fruit-bowl`
-- `phone`
-- `flask`
-
-Carpentry:
-- `l-wardrobe`
-
-Objects without a recognised `model` render as editable boxes.
-
-## Architecture review state
-
-`settings.architectureReviewConfirmed` is an optional boolean. Older projects without it remain valid and enter the architecture-first review when a basemap is available. After the user confirms the reviewed walls, Layout Studio sets it to `true`, reveals furniture and runs conservative furniture alignment.
-
-## Current catalogue defaults
-
-- Full-height wardrobe: `2400 × 600 × 2700 mm`
-- L-shaped wardrobe: `2400 × 1800 × 2700 mm`, `armDepth: 600`, model `l-wardrobe`
-- TV console: `1800 × 450 × 500 mm`
-- TV: `1200 × 180 × 760 mm`, model `tv`
-- Framed picture: `800 × 70 × 1000 mm`, model `picture-frame`
-- Bowl of fruits: `360 × 360 × 190 mm`, model `fruit-bowl`
-- Handphone: `80 × 160 × 14 mm`, model `phone`
-- Water flask: `95 × 95 × 300 mm`, model `flask`
-
-## Validation requirements
-
-- IDs must be unique within the project.
-- Every opening's `wallId` must exist.
-- Every `placement.wallId` and `placement.supportId`, when supplied, must reference a valid object.
-- Every `settings.cameraCutaway.hiddenWallIds` entry must reference a valid wall.
-- Wall length must be at least 200 mm.
-- Dimensions must be positive.
-- Elevation must be zero or positive.
+- IDs are unique.
+- Dimensions are positive; wall length is at least 200 mm.
+- Opening `wallId` values reference existing walls.
+- Placement wall and support references exist.
+- Camera-cutaway wall IDs exist.
+- Elevation is non-negative.
+- Categories, placement modes and custom models are valid.
 - Ceiling height defaults to 2600 mm.
-- `category` is one of `furniture`, `carpentry`, or `decorative`.
-- `placement.mode`, when supplied, is one of `wall`, `free`, or `support`.
-- `settings.architectureReviewConfirmed` is boolean when supplied. Use `false` for a generated or newly handed-off project so the user reviews architecture before furniture is revealed.
-- `settings.cameraCutaway.style` should be `hide`; legacy `fade` values remain import-compatible.
-- Use a supported `model` value when custom geometry is required.
+- `architectureReviewConfirmed`, when supplied, is boolean.
+
+For generated projects, start from `project-template.json`, validate the JSON, and test the exported ZIP by reopening its root `project.json`.

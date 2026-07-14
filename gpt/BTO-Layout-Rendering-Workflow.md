@@ -1,166 +1,94 @@
 # Layout Studio Rendering Workflow
 
-This file teaches the Custom GPT how to turn approved Layout Studio screenshots into photorealistic interior images without changing the approved layout.
+Use this workflow to turn an approved Layout Studio camera view into a photorealistic interior without changing its layout.
 
-## Rendering handoff package
+## Required handoff
 
-Preferred inputs for each camera view:
+Prefer:
 
-1. `camera-view.png` exported from Layout Studio
-2. latest `project.json` or project ZIP
-3. relevant reference interior images
+1. approved camera PNG
+2. latest project JSON or ZIP
+3. relevant inspiration images
 4. room name and requested mood
-5. optional top-view screenshot
+5. optional top view
 
-The eye-level camera PNG is the binding composition reference. The project JSON is the binding dimensional reference. Inspiration images are the binding aesthetic reference.
+Authority order:
 
-## Best screenshot preparation
+1. Camera PNG controls camera, crop, perspective and visible composition.
+2. Project data controls dimensions, object identity, elevation and hidden relationships.
+3. Inspiration images control materials, colours, lighting and styling.
 
-Before exporting from Layout Studio:
+Geometry always overrides aesthetics.
 
-- use Eye level view
-- position camera around 1450–1650 mm unless another viewpoint is intended
-- set a believable interior FOV, usually around 50–70 degrees
-- hide blocking walls only when a wall blocks the desired photograph
-- turn off validation outlines
-- turn off labels for the cleanest source image, or use eye-level label cleanup
-- hide grids, clearance zones, selection handles and transform controls
-- confirm the door, window and furniture arrangement in the frame
+## Prepare the source view
 
-The GPT must still remove any interface remnants that remain in the screenshot.
+Before export, prefer Eye level with a believable interior lens. Hide only genuinely blocking foreground walls. Turn off labels, validation, grid, clearances, basemap, selection handles and transform controls when possible.
 
-## Reference hierarchy
+The rendering step must remove any UI remnants that remain.
 
-### 1. Camera screenshot controls geometry and composition
+## Rendering contract
+
 Preserve:
-- camera angle and crop
-- perspective
-- visible wall planes
-- ceiling height and visible beams or bulkheads
+
+- camera angle, crop and perspective
+- visible wall and ceiling planes
 - doors, windows and openings
-- furniture and carpentry positions
-- furniture orientation and massing
-- circulation gaps
+- furniture and carpentry count, position, orientation and approximate bounds
+- circulation gaps and dining capacity
 
-### 2. Project JSON controls dimensions and object identity
-Use it to verify:
-- exact object dimensions
-- wall and opening relationships
-- ceiling height
-- object elevation
-- room assignment
-- objects partly hidden in the screenshot
+Convert blocks into realistic objects while keeping their overall footprint and location. Small detailing changes—legs, edge profiles and upholstery thickness—are acceptable. Moving or materially resizing an object is not.
 
-### 3. Inspiration images control styling
-Use them for:
+Use inspiration references only for:
+
 - materials and colours
 - furniture detailing
 - lighting
-- curtains and rugs
-- artwork, plants and decorative objects
+- curtains, rugs, art, plants and small decoration
 - photographic mood
 
-Never let an inspiration image change the approved floor-plan geometry.
+Do not show:
 
-## Blocking-wall interpretation
+- labels or UI
+- red review or validation outlines
+- blue selection overlays
+- transform or resize handles
+- grids, clearances or basemap graphics
 
-A hidden foreground wall is a camera aid. It does not automatically mean the wall was hacked.
+A hidden blocking wall is a camera aid. Do not interpret it as a hacked wall unless the project or brief confirms that change.
 
-For the final image:
-- keep the photographic view opened by the hidden blocking wall
-- do not show a translucent construction wall in the final render
-- do not invent a permanent opening unless the project or brief confirms one
-- do not alter other walls to compensate
-
-## Block-to-real-object conversion
-
-Replace simplified Layout Studio masses with realistic objects while preserving bounding dimensions.
-
-Examples:
-- sofa block → realistic sofa with approximately the same width, depth and position
-- oval dining-table block → realistic oval table with the same footprint
-- wardrobe block → full-height carpentry following the same wall run
-- kitchen cabinets → realistic upper/lower cabinetry within the same runs
-- TV console and TV → realistic objects at the same elevation and centreline
-- glass-block block → glass-block screen with the same extent
-
-Small changes to upholstery thickness, legs and edge profiles are acceptable. Changing the total footprint or moving the object is not.
-
-## Screenshot elements that must not appear in the render
-
-Remove or ignore:
-- labels
-- red validation outlines
-- red architecture-review outlines
-- blue wall-selection overlays
-- transform arrows and rotation rings
-- resize handles
-- grid lines
-- clearance zones
-- basemap drawing
-- UI panels, buttons and status messages
-
-## Prompt assembly template
-
-Use this internal structure when preparing a render request:
+## Compact prompt recipe
 
 ```text
-Create a photorealistic architectural interior photograph from the supplied Layout Studio camera screenshot.
+Create a photorealistic interior from the approved Layout Studio camera screenshot.
 
-BINDING SPATIAL REFERENCE
-- Preserve the screenshot's exact camera angle, composition, perspective and major geometry.
-- Preserve all visible wall, ceiling, door and window positions.
-- Preserve furniture and carpentry placement, orientation, count and approximate bounding dimensions.
-- Do not invent or remove openings or move major objects.
-
-PROJECT DATA
-- Use the attached project JSON for millimetre dimensions, object identity, ceiling height and hidden spatial relationships.
-
-AESTHETIC REFERENCE
-- Apply the supplied reference images to materials, colours, furniture detailing, lighting and styling only.
-- Geometry takes priority over aesthetics.
-
-CLEANUP
-- Remove all Layout Studio labels, outlines, grids, controls and UI remnants.
-
-PHOTOGRAPHY
-- Realistic interior photography, natural material detail, believable lighting and lens behaviour.
+Preserve the exact camera, crop, perspective, visible architecture, object count,
+placement, orientation and approximate dimensions. Use project JSON for millimetres
+and identity. Apply references only to materials, colours, lighting and styling.
+Remove all Layout Studio UI, labels, outlines, grids and controls.
 ```
 
-Then add room-specific material and styling instructions derived from the references.
+Add only room-specific material and mood instructions after this contract.
 
-## Geometry-drift review
+## Geometry-drift check
 
-After generation, compare the output with the Layout Studio screenshot and check:
+Compare the result with the approved screenshot:
 
-- Is the camera angle unchanged?
-- Are the same walls and openings visible?
-- Is the number of windows and doors unchanged?
-- Are sofa, table, chairs, beds, TV and carpentry in the same places?
-- Is the dining capacity preserved?
-- Are major circulation gaps still visible?
-- Did the generator invent another room or corridor?
+- same camera and visible walls
+- same doors and windows
+- same major furniture and carpentry positions
+- same object count and dining capacity
+- same important circulation gaps
+- no invented room or corridor
 
-Regenerate when a material spatial change occurs.
+Regenerate when drift is material. Do not rationalise an incorrect image.
 
-## When to return to Layout Studio
+## Return to Planning Mode when needed
 
-Do not paint a structural planning change into the render. Return to Layout Studio first when the user asks to:
+Make spatial changes in Layout Studio first, including:
 
-- move or remove a wall
-- add or relocate a door or window
-- change room zoning
-- move major furniture or carpentry
-- change dining capacity
-- change kitchen configuration
-- resize beds, wardrobes, islands or major circulation routes
+- moving or removing walls
+- adding or relocating doors or windows
+- changing zoning, dining capacity or kitchen configuration
+- moving or resizing major furniture or carpentry
 
-After the Layout Studio screenshot is updated, continue Rendering Mode from the new approved camera view.
-
-## Suggested rendering conversation starters
-
-- Turn this approved Layout Studio screenshot into a photorealistic interior without changing its geometry.
-- Apply these reference images to this camera view while preserving the approved layout.
-- Compare this screenshot with the project JSON, then render the room.
-- Revise only the materials and lighting; keep the camera and furniture positions unchanged.
-- Create a second photorealistic view from this new approved Layout Studio camera screenshot.
+Continue rendering from a newly approved screenshot after the project is updated.

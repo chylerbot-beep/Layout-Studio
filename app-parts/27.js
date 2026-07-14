@@ -1,74 +1,278 @@
-      // In-panel architecture review and responsive precision-panel access.
-      // Review temporarily replaces the normal left inspector, leaving the viewport
-      // unobstructed. Cancel restores the project, history and camera from before the
-      // automatic floor-plan check; confirmation keeps the reviewed architecture.
-      let reviewGuideStepV35=1,reviewSessionSnapshotV35=null,reviewHighlightsEnabledV36=true;
-      const reviewWorkflowV35=$('wallReviewWorkflow'),leftPanelV35=document.querySelector('.panel.left');
-      reviewWorkflowV35.classList.add('section');leftPanelV35.prepend(reviewWorkflowV35);
+      // Architecture-review UI and responsive precision-panel access.
+      // Detection remains in app-parts/25.js; ruler calibration remains in 26.js.
+      const REVIEW_STEP_COUNT_V36 = 2;
+      const reviewWorkflowV36 = $('wallReviewWorkflow');
+      const leftPanelV36 = document.querySelector('.panel.left');
+      let reviewStepV36 = 1;
+      let reviewSessionV36 = null;
+      let reviewHighlightsVisibleV36 = true;
+      let originalBasemapOpacityV36 = null;
 
-      function setReviewGuideStepV35(step){
-        reviewGuideStepV35=Math.max(1,Math.min(2,step));
-        reviewWorkflowV35.querySelectorAll('[data-review-step]').forEach(page=>page.hidden=Number(page.dataset.reviewStep)!==reviewGuideStepV35);
-        $('reviewStepLabel').textContent=`Step ${reviewGuideStepV35} of 2`;$('reviewProgressBar').style.width=`${reviewGuideStepV35/2*100}%`;
-        $('reviewStepBack').hidden=reviewGuideStepV35===1;$('reviewStepNext').hidden=reviewGuideStepV35===2;
-      }
-      function reviewGuideIsActiveV35(){return !!(wallReviewActiveV32&&project.basemap&&project.settings?.architectureReviewConfirmed!==true);}
-      function syncReviewGuideVisibilityV35(){
-        const active=reviewGuideIsActiveV35();reviewWorkflowV35.hidden=!active;document.body.classList.toggle('architecture-review-mode',active);if($('collisionStatus'))$('collisionStatus').hidden=active;
-        if(typeof updateDetectedWallHighlightsV28==='function')updateDetectedWallHighlightsV28(false);
-      }
-      function syncReviewSuggestionCountsV36(){
-        const node=$('reviewSuggestionCounts');if(!node)return;const walls=(project.walls||[]).filter(item=>item.detected).length,doors=(project.openings||[]).filter(item=>item.type==='door'&&item.autoDetected).length,windows=(project.openings||[]).filter(item=>item.type==='window'&&item.autoDetected).length;
-        node.textContent=`Unconfirmed: ${walls} wall${walls===1?'':'s'} · ${doors} detected door${doors===1?'':'s'} · ${windows} detected or aligned window${windows===1?'':'s'}`;
-      }
-      function syncReviewHighlightToggleV36(){
-        const button=$('reviewToggleHighlights');if(button){button.classList.toggle('active',reviewHighlightsEnabledV36);button.textContent=`Red highlights: ${reviewHighlightsEnabledV36?'on':'off'}`;}
-        if(typeof detectedWallHighlightGroupV28!=='undefined')detectedWallHighlightGroupV28.visible=reviewGuideIsActiveV35()&&reviewHighlightsEnabledV36;
-      }
-      function captureReviewSessionV35(){
-        return{projectJson:JSON.stringify(project),undo:[...undoStack],redo:[...redoStack],cameraPosition:camera.position.toArray(),cameraTarget:orbit.target.toArray(),fov:camera.fov,view:{top:$('viewTop').classList.contains('active'),bird:$('viewBird').classList.contains('active'),eye:$('viewEye').classList.contains('active')}};
-      }
-      function restoreReviewSessionV35(snapshot){
-        if(typeof cancelReviewAreaV33==='function')cancelReviewAreaV33();if(typeof restoreOriginalBasemapV33==='function')restoreOriginalBasemapV33();
-        project=JSON.parse(snapshot.projectJson);normalizeProjectV27();selected=null;selectedArchitecture=null;transform.detach();wallDetectionCache=null;basemapRenderSignature='';wallReviewActiveV32=false;wallReviewStartKeyV32='';
-        undoStack.splice(0,undoStack.length,...snapshot.undo);redoStack.splice(0,redoStack.length,...snapshot.redo);$('undo').disabled=!undoStack.length;$('redo').disabled=!redoStack.length;
-        camera.position.fromArray(snapshot.cameraPosition);orbit.target.fromArray(snapshot.cameraTarget);camera.fov=snapshot.fov;camera.updateProjectionMatrix();orbit.enabled=true;orbit.enableRotate=true;orbit.enablePan=true;orbit.enableZoom=true;orbit.update();
-        $('viewTop').classList.toggle('active',snapshot.view.top);$('viewBird').classList.toggle('active',snapshot.view.bird);$('viewEye').classList.toggle('active',snapshot.view.eye);$('fovField').value=Math.round(camera.fov);$('cameraHeight').value=Math.round(camera.position.y/MM);
-        buildScene();syncBasemapControls();updateProjectWorkspace();$('basemapStatus').textContent='Architecture review discarded. The project has been restored to its state before floor-plan checking.';
+      reviewWorkflowV36.classList.add('section');
+      leftPanelV36.prepend(reviewWorkflowV36);
+
+      function reviewIsActiveV36(){
+        return !!(
+          wallReviewActiveV32 &&
+          project.basemap &&
+          project.settings?.architectureReviewConfirmed !== true
+        );
       }
 
-      $('reviewStepBack').onclick=()=>setReviewGuideStepV35(reviewGuideStepV35-1);
-      $('reviewStepNext').onclick=()=>setReviewGuideStepV35(reviewGuideStepV35+1);
-      $('reviewToggleHighlights').onclick=()=>{reviewHighlightsEnabledV36=!reviewHighlightsEnabledV36;syncReviewHighlightToggleV36();};
-      $('reviewAddWall').onclick=()=>{setTool('wall');$('wallReviewInstruction').textContent='Top view enabled. Click two points to draw the missing wall.';};
-      $('reviewAddDoor').onclick=()=>{setTool('door');$('wallReviewInstruction').textContent='Top view enabled. Click the correct wall to add a missing door.';};
-      $('reviewAddWindow').onclick=()=>{setTool('window');$('wallReviewInstruction').textContent='Top view enabled. Click the correct wall to add a missing window.';};
-      $('reviewAutoFix').onclick=()=>{
-        if(!project.basemap||!basemapImage?.complete)return;const before=JSON.stringify(project),undoBefore=[...undoStack];$('wallReviewInstruction').textContent='Checking the full basemap for wall bands and door symbols…';
-        detectWalls();detectDoorsV32();const changed=JSON.stringify(project)!==before;if(changed){undoStack.splice(0,undoStack.length,...undoBefore,before);if(undoStack.length>60)undoStack.splice(0,undoStack.length-60);redoStack.length=0;$('undo').disabled=false;$('redo').disabled=true;$('undo').title='Undo automatic architecture fix';}
-        setFurnitureReviewVisibilityV32(false);syncReviewSuggestionCountsV36();syncReviewHighlightToggleV36();$('wallReviewInstruction').textContent='Automatic pass complete. Check red wall suggestions, then add or remove any remaining architecture manually.';
+      function setReviewStepV36(step){
+        reviewStepV36 = Math.max(1, Math.min(REVIEW_STEP_COUNT_V36, step));
+        reviewWorkflowV36.querySelectorAll('[data-review-step]').forEach(page => {
+          page.hidden = Number(page.dataset.reviewStep) !== reviewStepV36;
+        });
+        $('reviewStepLabel').textContent = `Step ${reviewStepV36} of ${REVIEW_STEP_COUNT_V36}`;
+        $('reviewProgressBar').style.width = `${reviewStepV36 / REVIEW_STEP_COUNT_V36 * 100}%`;
+        $('reviewStepBack').hidden = reviewStepV36 === 1;
+        $('reviewStepNext').hidden = reviewStepV36 === REVIEW_STEP_COUNT_V36;
+      }
+
+      function setReviewInstructionV36(message){
+        $('wallReviewInstruction').textContent = message;
+      }
+
+      function pluralV36(count, singular){
+        return `${count} ${singular}${count === 1 ? '' : 's'}`;
+      }
+
+      function syncReviewCountsV36(){
+        const walls = (project.walls || []).filter(item => item.detected).length;
+        const doors = (project.openings || []).filter(item => item.type === 'door' && item.autoDetected).length;
+        const windows = (project.openings || []).filter(item => item.type === 'window' && item.autoDetected).length;
+        $('reviewSuggestionCounts').textContent = [
+          `Unconfirmed: ${pluralV36(walls, 'wall')}`,
+          pluralV36(doors, 'detected door'),
+          pluralV36(windows, 'detected or aligned window')
+        ].join(' · ');
+      }
+
+      function syncReviewHighlightsV36(){
+        const button = $('reviewToggleHighlights');
+        button.classList.toggle('active', reviewHighlightsVisibleV36);
+        button.textContent = `Red highlights: ${reviewHighlightsVisibleV36 ? 'on' : 'off'}`;
+        detectedWallHighlightGroupV28.visible = reviewIsActiveV36() && reviewHighlightsVisibleV36;
+      }
+
+      function syncArchitectureReviewUiV36(){
+        const active = reviewIsActiveV36();
+        reviewWorkflowV36.hidden = !active;
+        document.body.classList.toggle('architecture-review-mode', active);
+        $('collisionStatus').hidden = active;
+        syncReviewCountsV36();
+        updateDetectedWallHighlightsV28(false);
+        syncReviewHighlightsV36();
+      }
+
+      function captureReviewSessionV36(){
+        return {
+          projectJson: JSON.stringify(project),
+          undo: [...undoStack],
+          redo: [...redoStack],
+          cameraPosition: camera.position.toArray(),
+          cameraTarget: orbit.target.toArray(),
+          fov: camera.fov,
+          activeView: ['viewTop', 'viewBird', 'viewEye'].find(id => $(id).classList.contains('active'))
+        };
+      }
+
+      function restoreReviewSessionV36(snapshot){
+        restoreOriginalBasemapV36();
+        project = JSON.parse(snapshot.projectJson);
+        normalizeProjectV27();
+        selected = null;
+        selectedArchitecture = null;
+        transform.detach();
+        wallDetectionCache = null;
+        basemapRenderSignature = '';
+        wallReviewActiveV32 = false;
+        wallReviewStartKeyV32 = '';
+
+        undoStack.splice(0, undoStack.length, ...snapshot.undo);
+        redoStack.splice(0, redoStack.length, ...snapshot.redo);
+        $('undo').disabled = !undoStack.length;
+        $('redo').disabled = !redoStack.length;
+
+        camera.position.fromArray(snapshot.cameraPosition);
+        orbit.target.fromArray(snapshot.cameraTarget);
+        camera.fov = snapshot.fov;
+        camera.updateProjectionMatrix();
+        orbit.enabled = true;
+        orbit.enableRotate = true;
+        orbit.enablePan = true;
+        orbit.enableZoom = true;
+        orbit.update();
+
+        ['viewTop', 'viewBird', 'viewEye'].forEach(id => $(id).classList.toggle('active', id === snapshot.activeView));
+        $('fovField').value = Math.round(camera.fov);
+        $('cameraHeight').value = Math.round(camera.position.y / MM);
+        buildScene();
+        syncBasemapControls();
+        updateProjectWorkspace();
+        $('basemapStatus').textContent = 'Architecture review discarded. The project has been restored to its state before floor-plan checking.';
+      }
+
+      function groupAutomaticFixHistoryV36(projectBefore, undoBefore){
+        if(JSON.stringify(project) === projectBefore)return;
+        undoStack.splice(0, undoStack.length, ...undoBefore, projectBefore);
+        if(undoStack.length > 60)undoStack.splice(0, undoStack.length - 60);
+        redoStack.length = 0;
+        $('undo').disabled = false;
+        $('redo').disabled = true;
+        $('undo').title = 'Undo automatic architecture fix';
+      }
+
+      function runAutomaticArchitectureFixV36(){
+        if(!project.basemap || !basemapImage?.complete)return;
+        const projectBefore = JSON.stringify(project);
+        const undoBefore = [...undoStack];
+        setReviewInstructionV36('Checking the full basemap for wall bands and door symbols…');
+        detectWalls();
+        detectDoorsV32();
+        groupAutomaticFixHistoryV36(projectBefore, undoBefore);
+        setFurnitureReviewVisibilityV32(false);
+        syncArchitectureReviewUiV36();
+        setReviewInstructionV36('Automatic pass complete. Check red wall suggestions, then add or remove any remaining architecture manually.');
+      }
+
+      function selectReviewToolV36(tool, instruction){
+        setTool(tool);
+        setReviewInstructionV36(instruction);
+      }
+
+      function alignSelectedReviewWallV36(){
+        if(selectedArchitecture?.kind !== 'wall'){
+          setReviewInstructionV36('Select a wall first, then choose Align selected.');
+          return;
+        }
+        alignSelectedWallToBasemap();
+        setReviewInstructionV36('Selected wall aligned. Compare it with the basemap before confirming.');
+      }
+
+      function deleteSelectedReviewArchitectureV36(){
+        if(!selectedArchitecture){
+          setReviewInstructionV36('Select an incorrect wall, door or window first.');
+          return;
+        }
+        $('deleteArchitecture').click();
+        setReviewInstructionV36('Incorrect architecture removed. Continue reviewing the plan.');
+      }
+
+      function showOriginalBasemapV36(){
+        if(originalBasemapOpacityV36 !== null || !project.basemap)return;
+        originalBasemapOpacityV36 = project.basemap.opacity ?? .48;
+        project.basemap.opacity = 1;
+        basemapGroup.children.forEach(item => { if(item.material)item.material.opacity = 1; });
+        $('reviewOriginal').classList.add('active');
+        $('reviewOriginal').textContent = 'Release original';
+      }
+
+      function restoreOriginalBasemapV36(){
+        if(originalBasemapOpacityV36 === null || !project.basemap)return;
+        project.basemap.opacity = originalBasemapOpacityV36;
+        basemapGroup.children.forEach(item => { if(item.material)item.material.opacity = originalBasemapOpacityV36; });
+        originalBasemapOpacityV36 = null;
+        $('reviewOriginal').classList.remove('active');
+        $('reviewOriginal').textContent = 'Hold original';
+      }
+
+      $('reviewStepBack').onclick = () => setReviewStepV36(reviewStepV36 - 1);
+      $('reviewStepNext').onclick = () => setReviewStepV36(reviewStepV36 + 1);
+      $('reviewAutoFix').onclick = runAutomaticArchitectureFixV36;
+      $('reviewToggleHighlights').onclick = () => {
+        reviewHighlightsVisibleV36 = !reviewHighlightsVisibleV36;
+        syncReviewHighlightsV36();
       };
-      $('reviewCancel').onclick=()=>{if(!reviewSessionSnapshotV35)return;if(!confirm('Exit architecture review and discard every automatic or manual change made during this review?'))return;const snapshot=reviewSessionSnapshotV35;reviewSessionSnapshotV35=null;restoreReviewSessionV35(snapshot);syncReviewGuideVisibilityV35();};
-      $('confirmWallReview').addEventListener('click',()=>{reviewSessionSnapshotV35=null;document.body.classList.remove('architecture-review-mode');});
+      $('reviewAddWall').onclick = () => selectReviewToolV36('wall', 'Top view enabled. Click two points to draw the missing wall.');
+      $('reviewAddDoor').onclick = () => selectReviewToolV36('door', 'Top view enabled. Click the correct wall to add a missing door.');
+      $('reviewAddWindow').onclick = () => selectReviewToolV36('window', 'Top view enabled. Click the correct wall to add a missing window.');
+      $('reviewAlignSelected').onclick = alignSelectedReviewWallV36;
+      $('reviewDeleteSelected').onclick = deleteSelectedReviewArchitectureV36;
+      $('reviewOriginal').addEventListener('pointerdown', showOriginalBasemapV36);
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
+        $('reviewOriginal').addEventListener(type, restoreOriginalBasemapV36);
+      });
 
-      const beginWallReviewBeforePanelV35=beginWallReviewV32;
-      beginWallReviewV32=function(force=false){
-        const candidate=wallReviewActiveV32?null:captureReviewSessionV35();setReviewGuideStepV35(1);beginWallReviewBeforePanelV35(force);if(candidate&&reviewGuideIsActiveV35())reviewSessionSnapshotV35=candidate;if(reviewGuideIsActiveV35()){viewBird();orbit.enabled=true;orbit.enableRotate=true;orbit.enablePan=true;orbit.enableZoom=true;orbit.update();}syncReviewSuggestionCountsV36();syncReviewGuideVisibilityV35();syncReviewHighlightToggleV36();
+      window.addEventListener('keydown', event => {
+        if((event.key === 'y' || event.key === 'Y') && !event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat && !reviewWorkflowV36.hidden){
+          showOriginalBasemapV36();
+        }
+      });
+      window.addEventListener('keyup', event => {
+        if(event.key === 'y' || event.key === 'Y')restoreOriginalBasemapV36();
+      });
+
+      $('reviewCancel').onclick = () => {
+        if(!reviewSessionV36)return;
+        if(!confirm('Exit architecture review and discard every automatic or manual change made during this review?'))return;
+        const snapshot = reviewSessionV36;
+        reviewSessionV36 = null;
+        restoreReviewSessionV36(snapshot);
+        syncArchitectureReviewUiV36();
       };
-      const updateDetectedWallHighlightsBeforeReviewV36=updateDetectedWallHighlightsV28;
-      updateDetectedWallHighlightsV28=function(rebuild=false){updateDetectedWallHighlightsBeforeReviewV36(rebuild);detectedWallHighlightGroupV28.visible=reviewGuideIsActiveV35()&&reviewHighlightsEnabledV36;};
-      const validateBeforeReviewV36=validate;
-      validate=function(){validateBeforeReviewV36();if(wallReviewActiveV32){clearGroup(validationOverlayGroupV28);validationOverlayGroupV28.visible=false;}if($('collisionStatus'))$('collisionStatus').hidden=!!wallReviewActiveV32;};
-      const buildSceneBeforePanelV35=buildScene;
-      buildScene=function(){buildSceneBeforePanelV35();syncReviewSuggestionCountsV36();syncReviewGuideVisibilityV35();syncReviewHighlightToggleV36();};
-      setReviewGuideStepV35(1);syncReviewGuideVisibilityV35();syncReviewHighlightToggleV36();
+      $('confirmWallReview').addEventListener('click', () => {
+        reviewSessionV36 = null;
+        document.body.classList.remove('architecture-review-mode');
+      });
 
-      const precisionPanelV35=$('precisionPanel'),precisionToggleV35=$('togglePrecisionPanel'),precisionBackdropV35=$('precisionPanelBackdrop');
-      function setPrecisionPanelOpenV35(open){
-        const mobile=window.matchMedia('(max-width: 900px)').matches,value=!!open&&mobile;precisionPanelV35.classList.toggle('mobile-open',value);precisionPanelV35.setAttribute('aria-hidden',String(mobile&&!value));document.body.classList.toggle('precision-panel-open',value);precisionToggleV35.classList.toggle('active',value);precisionToggleV35.setAttribute('aria-expanded',String(value));precisionToggleV35.textContent=value?'Close precision':'Precision';
+      const beginWallReviewBeforeUiV36 = beginWallReviewV32;
+      beginWallReviewV32 = function(force = false){
+        const snapshot = wallReviewActiveV32 ? null : captureReviewSessionV36();
+        setReviewStepV36(1);
+        beginWallReviewBeforeUiV36(force);
+        if(snapshot && reviewIsActiveV36())reviewSessionV36 = snapshot;
+        syncArchitectureReviewUiV36();
+      };
+
+      const updateDetectedWallHighlightsBeforeUiV36 = updateDetectedWallHighlightsV28;
+      updateDetectedWallHighlightsV28 = function(rebuild = false){
+        updateDetectedWallHighlightsBeforeUiV36(rebuild);
+        detectedWallHighlightGroupV28.visible = reviewIsActiveV36() && reviewHighlightsVisibleV36;
+      };
+
+      const validateBeforeReviewUiV36 = validate;
+      validate = function(){
+        validateBeforeReviewUiV36();
+        if(wallReviewActiveV32){
+          clearGroup(validationOverlayGroupV28);
+          validationOverlayGroupV28.visible = false;
+        }
+        $('collisionStatus').hidden = !!wallReviewActiveV32;
+      };
+
+      const buildSceneBeforeReviewUiV36 = buildScene;
+      buildScene = function(){
+        buildSceneBeforeReviewUiV36();
+        syncArchitectureReviewUiV36();
+      };
+
+      // Precision controls become a drawer below 900 px instead of disappearing.
+      const precisionPanelV36 = $('precisionPanel');
+      const precisionToggleV36 = $('togglePrecisionPanel');
+      const precisionBackdropV36 = $('precisionPanelBackdrop');
+
+      function setPrecisionPanelOpenV36(open){
+        const mobile = window.matchMedia('(max-width: 900px)').matches;
+        const visible = !!open && mobile;
+        precisionPanelV36.classList.toggle('mobile-open', visible);
+        precisionPanelV36.setAttribute('aria-hidden', String(mobile && !visible));
+        document.body.classList.toggle('precision-panel-open', visible);
+        precisionToggleV36.classList.toggle('active', visible);
+        precisionToggleV36.setAttribute('aria-expanded', String(visible));
+        precisionToggleV36.textContent = visible ? 'Close precision' : 'Precision';
       }
-      precisionToggleV35.onclick=()=>setPrecisionPanelOpenV35(!precisionPanelV35.classList.contains('mobile-open'));
-      precisionBackdropV35.onclick=()=>setPrecisionPanelOpenV35(false);
-      window.addEventListener('resize',()=>{if(!window.matchMedia('(max-width: 900px)').matches)setPrecisionPanelOpenV35(false);});
-      window.addEventListener('keydown',event=>{if(event.key==='Escape'&&precisionPanelV35.classList.contains('mobile-open'))setPrecisionPanelOpenV35(false);});
-      setPrecisionPanelOpenV35(false);
+
+      precisionToggleV36.onclick = () => setPrecisionPanelOpenV36(!precisionPanelV36.classList.contains('mobile-open'));
+      precisionBackdropV36.onclick = () => setPrecisionPanelOpenV36(false);
+      window.addEventListener('resize', () => {
+        if(!window.matchMedia('(max-width: 900px)').matches)setPrecisionPanelOpenV36(false);
+      });
+      window.addEventListener('keydown', event => {
+        if(event.key === 'Escape' && precisionPanelV36.classList.contains('mobile-open'))setPrecisionPanelOpenV36(false);
+      });
+
+      setReviewStepV36(1);
+      syncArchitectureReviewUiV36();
+      setPrecisionPanelOpenV36(false);

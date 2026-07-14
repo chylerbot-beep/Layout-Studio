@@ -81,23 +81,6 @@
         const id=selected.userData.id;project.furniture=project.furniture.filter(item=>item.id!==id);select(null);buildScene();
       },true);
 
-      // Legacy Display toggle retained for project/UI compatibility. Architecture review
-      // now owns the visible red unconfirmed-wall outline toggle.
-      let autoWallsHighlightEnabledV29=true;
-      try{autoWallsHighlightEnabledV29=localStorage.getItem('bto-layout-studio:auto-walls-highlight')!=='off';}catch{}
-      const displaySectionV29=[...document.querySelectorAll('.panel.left > .section')].find(section=>section.querySelector(':scope > h2')?.textContent.trim()==='Display');
-      const displayButtonsV29=displaySectionV29?.querySelector(':scope > .section-collapse-body > .button-row, :scope > .button-row');
-      if(displayButtonsV29&&!$('toggleAutoWalls')){
-        const button=document.createElement('button');button.id='toggleAutoWalls';button.textContent='Auto walls';displayButtonsV29.appendChild(button);
-      }
-      function syncAutoWallsToggleV29(){const button=$('toggleAutoWalls');if(button){button.classList.toggle('active',autoWallsHighlightEnabledV29);button.title=autoWallsHighlightEnabledV29?'Hide auto-detected wall outlines':'Show auto-detected wall outlines';}}
-      if(typeof detectedHighlightShouldShowV28==='function'){
-        const detectedHighlightShouldShowBeforeV29=detectedHighlightShouldShowV28;
-        detectedHighlightShouldShowV28=function(){return autoWallsHighlightEnabledV29&&detectedHighlightShouldShowBeforeV29();};
-      }
-      if($('toggleAutoWalls'))$('toggleAutoWalls').onclick=()=>{autoWallsHighlightEnabledV29=!autoWallsHighlightEnabledV29;try{localStorage.setItem('bto-layout-studio:auto-walls-highlight',autoWallsHighlightEnabledV29?'on':'off');}catch{}syncAutoWallsToggleV29();if(typeof updateDetectedWallHighlightsV28==='function')updateDetectedWallHighlightsV28(false);};
-      syncAutoWallsToggleV29();if(typeof updateDetectedWallHighlightsV28==='function')updateDetectedWallHighlightsV28(false);
-
       // Eye-level labels: migrate the old 18 px default to 30 px and remove the
       // visible-count cap entirely. Occlusion and overlap decluttering still apply.
       const ensureEyeLabelSettingsBeforeV29=ensureEyeLabelSettings;

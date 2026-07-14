@@ -1,85 +1,68 @@
 # Layout Studio Planning Workflow
 
-Use this Knowledge file whenever the user is reconstructing, planning, correcting or validating a Singapore HDB/BTO layout.
+Use this workflow for new plans, project corrections and layout validation.
 
-## 1. Inputs
+## 1. Gather only essential inputs
 
-Request only information that is missing and materially necessary:
+Ask for missing information that affects the layout:
 
-- floor-plan PNG, JPG or PDF
-- at least one reliable printed dimension in millimetres; overall width and depth when available
-- reference interior images
+- floor plan and reliable printed dimensions
 - occupants and room uses
-- walls that may be opened or hacked
+- walls that may be hacked or opened
 - required beds, TV, dining capacity, work areas and storage
-- known HDB or renovation constraints
+- renovation constraints and inspiration images
 
-Do not treat screenshot pixels as authoritative dimensions. Use published dimensions and structured project data.
+Use printed dimensions and project data. Do not derive authoritative millimetres from screenshot pixels.
 
-## 2. Architectural reconstruction
+## 2. Reconstruct architecture
 
-1. Establish plan orientation and millimetre dimensions. When the user will calibrate the image in Layout Studio, identify the clearest trustworthy printed dimension for the draggable ruler.
-2. Reconstruct external and internal walls in millimetres.
-3. Add doors and windows as openings linked to valid wall IDs.
-4. Preserve the household shelter and other confirmed non-hackable elements.
-5. Distinguish existing, retained, proposed and uncertain walls in the explanation.
-6. Check wall endpoints, wall thicknesses, opening offsets and room adjacency.
-7. Produce one top-down architectural review.
+1. Confirm orientation and scale. If Layout Studio will calibrate a new basemap, identify one clear horizontal printed dimension for its ruler.
+2. Reconstruct walls in millimetres.
+3. Add doors and windows with valid `wallId` and `offset` values.
+4. Preserve the household shelter and other fixed or non-hackable elements.
+5. Mark assumptions and distinguish retained, proposed and uncertain work.
+6. Check endpoints, thicknesses, opening offsets and room adjacency.
+7. Present one top-down architecture review.
 
-### Approval Gate 1
+### Gate 1 — Architecture approval
 
-Ask the user to approve:
+Obtain approval for walls, openings, fixed shell, proposed hacked walls and dimensional assumptions. Do not add another gate before layout planning.
 
-- external and internal walls
-- doors and windows
-- household shelter and fixed shell
-- proposed hacked or opened walls
-- any dimensional assumptions
+### Layout Studio import review
 
-Do not add another approval step before furniture planning.
+This is verification, not a third approval gate. Set `settings.architectureReviewConfirmed` to `false` in every handoff.
 
-The Layout Studio import review is a verification step, not a third planning approval gate. For every generated or handed-off project, set `settings.architectureReviewConfirmed` to `false`. On opening the project, Layout Studio hides furniture and furniture-validation overlays, checks the full basemap, and opens directly in **Correct architecture**. The user can rerun the conservative full-plan wall-and-door pass, toggle red unconfirmed-wall outlines, add missing walls/doors/windows, and align or delete incorrect architecture. **Confirm architecture** then reveals and conservatively aligns furniture.
+When imported, Layout Studio:
 
-Do not invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values describe actual source-image pixel measurements. If the user uploads a new basemap directly in Layout Studio, the app asks them to drag a ruler over a known printed dimension and enter its millimetre value before checking the plan. Existing projects with validated `basemap.width` and `basemap.depth` remain compatible.
+- hides furniture and furniture-validation overlays
+- runs a conservative full-plan wall and door check
+- opens **Correct architecture** with red unconfirmed-wall outlines
+- lets the user add, align or delete walls, doors and windows
+- reveals and conservatively aligns furniture after confirmation
 
-## 3. Design-language analysis
+Never invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values must come from the actual source image and ruler.
 
-Analyse the reference images for:
+## 3. Plan the layout
 
-- zoning and spatial composition
-- furniture silhouettes and proportions
-- material and colour language
-- carpentry integration
-- visual density
-- lighting strategy
-- decorative rhythm
-- photographic mood
+Use inspiration images for design language—materials, colour, furniture character, lighting and visual density—without forcing objects into unsuitable spaces.
 
-Apply the design language without forcing objects into spaces that cannot accommodate them.
-
-## 4. Layout planning
-
-Develop one strong primary layout. Add alternatives only when there is a genuine trade-off.
+Develop one strong layout. Add an alternative only when it represents a real trade-off.
 
 Check:
 
-- entrance circulation
+- entrance and room-to-room circulation
 - door swings and access
 - kitchen work zones
 - dining seating and pull-back
 - TV viewing
-- bed-side access
-- wardrobe access
-- routes between rooms
-- furniture/furniture overlaps
-- furniture/wall overlaps
-- furniture/fixed-shell overlaps
+- bed and wardrobe access
+- furniture/furniture, furniture/wall and furniture/fixed-shell overlaps
 
-Keep physical collision warnings separate from softer planning advice.
+Keep physical collision warnings separate from softer design advice.
 
 ### Placement metadata
 
-Add `placement` whenever the intended relationship is known:
+Add `placement` when the relationship is known:
 
 ```json
 {
@@ -91,104 +74,57 @@ Add `placement` whenever the intended relationship is known:
 }
 ```
 
-Fields:
-
-- `roomId`: intended room zone
-- `mode`: `wall`, `free`, or `support`
-- `wallId`: intended wall anchor
+- `roomId`: intended room
+- `mode`: `wall`, `free` or `support`
+- `wallId`: wall anchor
 - `gap`: distance from wall face in millimetres
-- `supportId`: supporting object for a raised decorative object
-- `groupId`: objects whose relative arrangement should be preserved
+- `supportId`: supporting object
+- `groupId`: arrangement to preserve
 
-Recommended relationships:
+Typical use:
 
-- wardrobes, kitchen runs, worktops and TV consoles: `mode: "wall"`
-- beds: wall relationship when the headboard wall is known
-- dining table and chairs: same `groupId`
-- sofas, lounge chairs and coffee tables: usually `mode: "free"`
-- TVs, bowls, phones and flasks on another object: `mode: "support"`
+- wardrobes, kitchen runs and TV consoles: `wall`
+- sofas and coffee tables: `free`
+- tabletop or console-top objects: `support`
+- table and matching chairs: shared `groupId`
 
-### Elevation
-
-`elevation` is the height of the object's bottom above finished floor level.
-
-Examples:
-
-- floor-standing object: `0`
-- TV on a 500 mm TV console: `500`
-- bowl on a 760 mm dining table: `760`
-- framed picture: bottom-of-frame elevation, often `900–1200`
-
-For stacked objects:
+`elevation` is the object's bottom height above finished floor. For a supported object:
 
 ```text
 upper elevation = support elevation + support height
 ```
 
-### Approval Gate 2
+### Gate 2 — Layout approval
 
-Ask the user to approve:
+Obtain approval for zoning, furniture, carpentry, major decoration, circulation and unresolved assumptions.
 
-- room zoning
-- furniture arrangement
-- carpentry
-- major decorative placement
-- circulation
-- unresolved assumptions
-
-## 5. Cameras
+## 4. Cameras
 
 Recommend:
 
-- top view for plan checking
-- bird’s-eye view for spatial understanding
-- eye-level views for rendering
+- Top for plan checking
+- Bird's-eye for spatial understanding
+- Eye level for rendering
 
-A typical eye-level camera is around 1450–1650 mm, but use the project intent. Hide blocking walls only when a wall prevents the intended photograph.
+Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation.
 
-Example:
+## 5. Create the handoff
 
-```json
-{
-  "enabled": true,
-  "style": "hide",
-  "depth": 1200,
-  "hiddenWallIds": []
-}
-```
-
-Blocking-wall visibility affects photography only and does not remove walls from the model.
-
-## 6. Project output
-
-After Gate 2, produce:
+After Gate 2, create:
 
 - `project.json`
-- concise project notes
+- concise notes
 - standard ZIP with `project.json` at the root
-- layout rationale
-- assumptions and unresolved warnings
+- layout rationale, assumptions and warnings
 - recommended camera views
 
-Validate:
+Validate before delivery:
 
 - unique IDs
-- valid opening `wallId` references
-- positive dimensions
-- wall length at least 200 mm
-- valid categories
-- valid supported models
-- valid `placement.wallId` and `placement.supportId`
+- positive dimensions and walls at least 200 mm long
+- valid opening, placement, support and cutaway references
+- valid categories, models and placement modes
 - non-negative elevations
-- valid camera-cutaway wall IDs
-- `settings.architectureReviewConfirmed` is `false` for handoff
+- `settings.architectureReviewConfirmed: false`
 
-When Code Interpreter is available:
-
-1. create and parse `project.json`
-2. provide it separately
-3. create a real ZIP archive
-4. reopen the ZIP
-5. confirm `project.json` parses from the ZIP
-
-Never create a fake ZIP by renaming a text or JSON file.
+When file tools are available, parse `project.json`, create the ZIP, reopen it and parse its root `project.json`. Provide the JSON separately as well.

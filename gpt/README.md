@@ -1,52 +1,35 @@
 # Custom GPT setup
 
-## Suggested identity
+## Identity
 
 **Name:** Layout Studio Planner & Renderer
 
-**Description:** Plans Singapore HDB/BTO layouts in millimetres, generates Layout Studio project files, and turns approved Layout Studio camera screenshots into spatially faithful photorealistic interior images.
+**Description:** Plans Singapore HDB/BTO layouts in millimetres, creates Layout Studio projects, and renders approved camera views without changing geometry.
 
-## Instructions
+## Install
 
-Paste the complete contents of `BTO-Layout-Planner-Instructions.md` into the GPT **Instructions** field. This concise version is below the 8,000-character limit. Replace the old instructions completely rather than appending them.
+1. Replace the GPT Instructions with `BTO-Layout-Planner-Instructions.md`.
+2. Remove older Knowledge-file copies.
+3. Upload:
+   - `BTO-Layout-Planning-Workflow.md`
+   - `BTO-Layout-Rendering-Workflow.md`
+   - `BTO-Layout-Object-Catalog.md`
+   - `project-schema.md`
+   - `project-template.json`
 
-## Knowledge files
+Enable Code Interpreter/Data Analysis and Image Generation. Web Search is optional for current regulations or product research.
 
-Remove older copies first, then upload:
+For Claude, use the same files as Project Instructions and Knowledge. Interpret “Code Interpreter” as the available file/code tools.
 
-1. `BTO-Layout-Planning-Workflow.md`
-2. `BTO-Layout-Rendering-Workflow.md`
-3. `BTO-Layout-Object-Catalog.md`
-4. `../schema/project-schema.md`
-5. `../schema/project-template.json`
-6. Any company-specific HDB planning standards, design-language guide or furniture-clearance guide
+## Quick tests
 
-The Instructions contain only the operating rules and mode selection. Detailed planning, rendering, catalogue and schema information lives in Knowledge so the Instructions remain within the character limit.
+Before publishing the GPT, test:
 
-## Capabilities
+1. new floor plan and brief
+2. existing Layout Studio ZIP
+3. generated project with `architectureReviewConfirmed: false`
+4. approved screenshot plus project JSON and references
+5. material-only render revision
+6. structural request that must return to Planning Mode
 
-Enable:
-
-- **Code Interpreter & Data Analysis** — inspect ZIP/JSON projects, validate data and create downloadable files
-- **Image Generation** — generate and revise photorealistic interiors from approved Layout Studio camera screenshots
-- **Web Search** — optional; use when current HDB rules, product dimensions or sourcing information are required
-
-## Suggested conversation starters
-
-- Start a new Layout Studio project from my floor plan and reference images.
-- Continue planning from this existing project ZIP.
-- Turn this approved Layout Studio screenshot into a photorealistic interior without changing its geometry.
-- Apply these references to this camera view while preserving the approved layout.
-
-## Preview tests
-
-Before selecting **Update**, test:
-
-1. A new floor plan and household brief
-2. An existing Layout Studio project ZIP
-3. An approved eye-level screenshot plus project JSON and reference images
-4. A render revision asking only for materials and lighting changes
-5. A spatial change that should be sent back to Layout Studio instead of painted into the render
-6. A generated project opening with `architectureReviewConfirmed: false`, followed by correction-first architecture review, confirmation and furniture reveal
-
-The GPT should stay in Planning Mode for layout work and enter Rendering Mode only for approved camera screenshots or explicit render requests.
+The GPT should use only two planning approval gates and should enter Rendering Mode only for an approved screenshot or explicit rendering request.

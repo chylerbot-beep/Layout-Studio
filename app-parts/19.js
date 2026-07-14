@@ -94,18 +94,12 @@
       function detectedWallOutlineV28(wall){
         const material=new THREE.MeshBasicMaterial({color:0xff3b30,wireframe:true,transparent:true,opacity:.96,depthTest:false,depthWrite:false}),mesh=makeWallPrism(wall,material,.035,wall.h);mesh.renderOrder=935;mesh.userData={detectedWallHighlight:true,wallId:wall.id};return mesh;
       }
-      function architectureWallsDetailsV28(){return $('architectureList')?.querySelector(':scope > details.subgroup:first-child')||null;}
-      function detectedHighlightShouldShowV28(){const details=architectureWallsDetailsV28(),section=$('architectureList')?.closest('.section');return !!details?.open&&!section?.classList.contains('section-collapsed');}
       function updateDetectedWallHighlightsV28(rebuild=false){
         if(rebuild){clearGroup(detectedWallHighlightGroupV28);(project.walls||[]).filter(wall=>wall.detected).forEach(wall=>detectedWallHighlightGroupV28.add(detectedWallOutlineV28(wall)));}
-        detectedWallHighlightGroupV28.visible=detectedHighlightShouldShowV28();
-      }
-      function bindDetectedWallHighlightToggleV28(){
-        const details=architectureWallsDetailsV28();if(details&&!details.dataset.detectedHighlightBound){details.dataset.detectedHighlightBound='true';details.addEventListener('toggle',()=>updateDetectedWallHighlightsV28(false));}
-        const sectionButton=$('architectureList')?.closest('.section')?.querySelector(':scope > h2 .section-collapse-toggle');if(sectionButton&&!sectionButton.dataset.detectedHighlightBound){sectionButton.dataset.detectedHighlightBound='true';sectionButton.addEventListener('click',()=>setTimeout(()=>updateDetectedWallHighlightsV28(false),0));}
+        detectedWallHighlightGroupV28.visible=false;
       }
       const renderArchitectureListBeforeDetectedOutline=renderArchitectureList;
-      renderArchitectureList=function(){renderArchitectureListBeforeDetectedOutline();bindDetectedWallHighlightToggleV28();updateDetectedWallHighlightsV28(true);};
+      renderArchitectureList=function(){renderArchitectureListBeforeDetectedOutline();updateDetectedWallHighlightsV28(true);};
 
       // Validation now reports physical geometry overlaps only. Clearance-zone advisory
       // messages are intentionally excluded, so dining-chair pull-back and island-aisle
