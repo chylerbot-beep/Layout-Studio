@@ -110,7 +110,7 @@ Recommend:
 
 - Top for plan checking
 - Bird's-eye for spatial understanding
-- Eye level for rendering
+- Eye level for spatial previews and exported camera screenshots
 
 Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation.
 

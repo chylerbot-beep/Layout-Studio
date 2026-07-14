@@ -96,7 +96,6 @@ Use:
 
 - `gpt/BTO-Layout-Planner-Instructions.md`
 - `gpt/BTO-Layout-Planning-Workflow.md`
-- `gpt/BTO-Layout-Rendering-Workflow.md`
 - `gpt/BTO-Layout-Object-Catalog.md`
 - `schema/project-schema.md`
 - `schema/project-template.json`
