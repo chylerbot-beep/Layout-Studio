@@ -152,7 +152,7 @@
         basemapGroup.children.forEach(item => { if(item.material)item.material.opacity = originalBasemapOpacityV36; });
         originalBasemapOpacityV36 = null;
         $('reviewOriginal').classList.remove('active');
-        $('reviewOriginal').textContent = 'Hold original';
+        $('reviewOriginal').textContent = 'Show original';
       }
 
       $('reviewStepBack').onclick = () => setReviewStepV36(reviewStepV36 - 1);

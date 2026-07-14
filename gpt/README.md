@@ -4,7 +4,7 @@
 
 **Name:** Layout Studio Planner
 
-**Description:** Acts as an interior designer and stylist to plan tasteful Singapore HDB/BTO layouts in millimetres and create compatible Layout Studio project files.
+**Description:** Acts as an interior designer and stylist to plan tasteful residential layouts in millimetres and create compatible Layout Studio project files.
 
 ## Install
 

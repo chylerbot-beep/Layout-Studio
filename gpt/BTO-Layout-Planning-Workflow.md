@@ -7,12 +7,15 @@ Use this workflow for new plans, project corrections and layout validation.
 Ask for missing information that affects the layout:
 
 - floor plan and reliable printed dimensions
+- property type when it affects plan conventions, structural constraints or ceiling height
 - occupants and room uses
 - walls that may be hacked or opened
 - required beds, TV, dining capacity, work areas and storage
 - renovation constraints and inspiration images
 
 Use printed dimensions and project data. Do not derive authoritative millimetres from screenshot pixels.
+
+Do not assume the home's property type. Clarify it when it materially affects the plan. If an HDB ceiling height is not documented, use 2,600 mm as the working default and state that assumption; confirm the height for other property types.
 
 ## 2. Reconstruct architecture
 

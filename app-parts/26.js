@@ -469,7 +469,6 @@
       }
 
       $('setScaleBasemap').onclick = () => openScaleCalibrationV33(false);
-      $('checkFloorPlan').onclick = checkFloorPlanV33;
 
       const scheduleWallReviewBeforeScaleV33 = scheduleWallReviewV32;
       scheduleWallReviewV32 = function(force = false){
