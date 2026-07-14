@@ -65,7 +65,7 @@
       }
       function splitDetectedSegmentAtDoorGapsV28(segment){
         if(!project.basemap||!basemapImage?.complete||detectionSegmentLengthV28(segment)<1500)return[segment];
-        const analysis=makeBasemapAnalysis(true,1100);if(!analysis)return[segment];const masked=makeWallMask(analysis,190),samples=occupancyAlongDetectedWallV28(segment,analysis,masked.raw);if(samples.length<12)return[segment];
+        const analysis=makeBasemapAnalysis(true,1100);if(!analysis)return[segment];const masked=makeWallMask(analysis,195),samples=occupancyAlongDetectedWallV28(segment,analysis,masked.raw);if(samples.length<12)return[segment];
         const baseline=medianNumberV28(samples.map(sample=>sample.occupancy).filter(value=>value>.05));if(baseline<.2)return[segment];const lowThreshold=Math.max(.10,Math.min(.32,baseline*.42));
         const low=samples.map(sample=>sample.occupancy<lowThreshold);for(let i=1;i<low.length-1;i++)if(!low[i]&&low[i-1]&&low[i+1])low[i]=true;
         const gaps=[];let run=-1;
@@ -80,7 +80,7 @@
       getDetectedWallSegments=function(force=false){
         const original=getDetectedWallSegmentsBeforeDoorFilter(force),withoutDoorLeaves=original.filter(segment=>!isDoorLeafSegmentV28(segment,original)),split=[];
         withoutDoorLeaves.forEach(segment=>split.push(...splitDetectedSegmentAtDoorGapsV28(segment)));
-        return split.filter(segment=>detectionSegmentLengthV28(segment)>=450);
+        return split.filter(segment=>detectionSegmentLengthV28(segment)>=350);
       };
 
       // Detected suggestions use normal wall material. During architecture review their

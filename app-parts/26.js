@@ -205,7 +205,7 @@
         }else{
           resetScaleRulerV33();
         }
-        $('scaleKnownMm').value = saved?.knownMm || 12600;
+        $('scaleKnownMm').value = saved?.knownMm || project.plan?.width || project.basemap?.width || 12600;
         $('scaleModal').classList.add('open');
         requestAnimationFrame(drawScaleCanvasV33);
       }
@@ -345,7 +345,7 @@
       const scheduleWallReviewBeforeScaleV33 = scheduleWallReviewV32;
       scheduleWallReviewV32 = function(force = false){
         if(project.settings?.scaleCalibrationRequired){
-          const openRuler = () => openScaleCalibrationV33(false);
+          const openRuler = () => openScaleCalibrationV33(true);
           if(basemapImage?.complete && basemapImage.naturalWidth)requestAnimationFrame(openRuler);
           else basemapImage?.addEventListener('load', openRuler, {once:true});
           return;

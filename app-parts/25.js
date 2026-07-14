@@ -28,7 +28,9 @@
         const e=wallMetrics(wall);if(e.horizontal!==segment.horizontal)return null;
         const a=e.horizontal?Math.min(e.x1,e.x2):Math.min(e.y1,e.y2),b=e.horizontal?Math.max(e.x1,e.x2):Math.max(e.y1,e.y2),p=e.horizontal?e.y1:e.x1;
         const overlap=Math.max(0,Math.min(b,segment.b)-Math.max(a,segment.a)),gap=overlap?0:Math.max(segment.a-b,a-segment.b,0),shorter=Math.max(1,Math.min(b-a,segment.b-segment.a)),perp=Math.abs(p-segment.p);
-        if(perp>Math.max(300,(e.thickness+(segment.thickness||120))*1.2)||overlap/shorter<.28&&gap>220)return null;
+        // Imported walls can be several hundred millimetres away from the drawing.
+        // Prefer the closest overlapping basemap band before creating a duplicate.
+        if(perp>Math.max(750,(e.thickness+(segment.thickness||120))*1.8)||overlap/shorter<.28&&gap>220)return null;
         return{score:perp*2+gap+Math.abs((b-a)-(segment.b-segment.a))*.08-overlap*.03,overlap};
       }
       function remapOpeningToWallV32(opening,oldWall,newWall){
@@ -58,8 +60,15 @@
           if(best){wall=best.wall;used.add(wall.id);kept.add(wall.id);const name=wall.name,id=wall.id,h=wall.h||wh;if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);wall.id=id;wall.name=name;wall.h=h;wall.detected=true;wall.autoDetected=true;replaced++;}
           else{wall={id:`detected-${stamp}-${index}`,name:`Detected wall ${index+1}`,h:wh,detected:true,autoDetected:true};if(line.horizontal)setWallFromEndpoints(wall,line.a,line.p,line.b,line.p,thickness);else setWallFromEndpoints(wall,line.p,line.a,line.p,line.b,thickness);project.walls.push(wall);kept.add(wall.id);added++;}
         });
+        let locallyAligned=0;
+        candidates.forEach(wall=>{
+          if(used.has(wall.id))return;
+          const match=localStripMatch(wall);
+          if(!match||match.score>720)return;
+          alignWallToSegment(wall,match.segment);wall.detected=true;wall.autoDetected=true;used.add(wall.id);kept.add(wall.id);locallyAligned++;
+        });
         const removedIds=new Set(candidates.filter(wall=>wall.detected&&!kept.has(wall.id)).map(wall=>wall.id));project.walls=project.walls.filter(wall=>!removedIds.has(wall.id));project.openings=(project.openings||[]).filter(opening=>!removedIds.has(opening.wallId));const merged=mergeAllWallOverlapsV32();
-        buildScene();setWallReviewStatusV32(`${replaced} walls replaced · ${added} missing walls added${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup replaced ${replaced} matching walls and added ${added} missing walls without stacking duplicates. Review the red unconfirmed-wall outlines before confirming.`;
+        buildScene();setWallReviewStatusV32(`${replaced} walls replaced · ${locallyAligned} nearby walls centred · ${added} missing walls added${merged?` · ${merged} overlaps merged`:''}`);$('toolHint').textContent=`Basemap cleanup replaced ${replaced} matching walls, centred ${locallyAligned} nearby walls and added ${added} missing walls without stacking duplicates. Review the highlighted walls before confirming.`;
       };
 
       function sampleDoorGapsForWallV32(wall,analysis,gray){

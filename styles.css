@@ -104,7 +104,7 @@
     .review-guide-header h3 { margin: 3px 0 0; font-size: 15px; }
     .review-guide-header span { color: #bfcdb9; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
     .review-guide-progress { height: 4px; margin: 12px 0; overflow: hidden; border-radius: 999px; background: #41423b; }
-    .review-guide-progress span { display: block; width: 50%; height: 100%; background: var(--sage); transition: width .18s ease; }
+    .review-guide-progress span { display: block; width: 66.667%; height: 100%; background: var(--sage); transition: width .18s ease; }
     .review-guide-status { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 9px 10px; border-radius: 8px; background: rgba(146,165,139,.09); font-size: 10px; line-height: 1.35; }
     .review-guide-status span { color: var(--muted); text-align: right; }
     .review-guide-page { padding: 12px 0 2px; }
@@ -114,6 +114,7 @@
     .review-navigation-help strong { color: var(--text); }
     .review-suggestion-counts { margin: 0 0 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: #d6ddd1; background: rgba(0,0,0,.1); font-size: 10px; line-height: 1.45; }
     .wall-review-tools button { flex: 1 1 92px; }
+    .wall-review-tools .review-highlight-toggle { flex-basis: 100%; }
     .wall-review-instruction { min-height: 28px; }
     .review-confirm-button { width: 100%; padding: 11px; }
     .review-guide-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
@@ -127,6 +128,7 @@
     .scale-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
     .scale-dialog-heading h3 { margin-bottom: 4px; }
     .scale-dialog-heading p { margin: 0; }
+    .scale-step-label { color: #bfcdb9; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
     .scale-canvas-wrap { height: min(64vh, 620px); min-height: 320px; margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #e5e5e3; }
     #scaleCanvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
     .scale-controls { display: grid; grid-template-columns: minmax(180px, 240px) 1fr auto; align-items: end; gap: 14px; margin-top: 12px; }

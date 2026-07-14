@@ -34,10 +34,12 @@ This is verification, not a third approval gate. Set `settings.architectureRevie
 
 When imported, Layout Studio:
 
+- opens **Set scale** first for a new PNG or any imported ZIP containing a basemap
+- reuses saved ruler metadata as a starting point but requires the ZIP scale to be applied again
 - hides furniture and furniture-validation overlays
-- runs a conservative full-plan wall and door check
-- opens **Correct architecture** with red unconfirmed-wall outlines
-- lets the user add, align or delete walls, doors and windows
+- detects centred wall bands from the calibrated basemap and checks likely doors
+- opens **Correct architecture** with optional wall highlights
+- lets the user align all walls or add, align and delete individual walls, doors and windows
 - reveals and conservatively aligns furniture after confirmation
 
 Never invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values must come from the actual source image and ruler.

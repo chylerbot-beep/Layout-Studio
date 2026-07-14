@@ -3,6 +3,7 @@
 A lightweight browser-based Three.js planner for reconstructing Singapore floor plans in millimetres, placing furniture and carpentry, validating physical overlaps, setting cameras and exporting views.
 
 Structured project JSON is authoritative. Basemaps and screenshots are visual references.
+During the explicit architecture-review pass, a calibrated basemap temporarily guides wall X/Y placement; confirming writes the reviewed geometry back into authoritative project data.
 
 ## Run locally
 
@@ -21,11 +22,12 @@ Open `http://localhost:8000` in a desktop browser.
 5. Confirm architecture to reveal and conservatively align furniture.
 6. Validate, set a camera and export PNG or project files.
 
-Architecture review replaces the normal left panel with two steps: **Correct architecture → Confirm**. It provides:
+For a new PNG or any imported ZIP containing a basemap, the guided review is **Set scale → Correct architecture → Confirm**. Saved ruler metadata supplies the starting position, but ZIP scale must be applied again before detection. The correction and confirmation steps replace the normal left panel and provide:
 
 - near-top-down Bird's-eye navigation
-- full-plan wall and door checking
-- toggleable red unconfirmed-wall outlines
+- centred wall-band and door checking against the calibrated basemap
+- **Align all walls** plus selected-wall alignment
+- toggleable wall highlights
 - manual wall, door and window creation
 - align and delete tools
 - temporary full-opacity basemap comparison

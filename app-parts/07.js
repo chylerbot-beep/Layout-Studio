@@ -1,19 +1,53 @@
           const thickness=b.p1-b.p0+1,length=b.b-b.a+1;return thickness>=3&&thickness<=Math.max(28,primary*.07)&&length>=minRun&&length/thickness>=2.5;
         });
       }
+      function detectedSegmentLength(segment){
+        return Math.max(0,segment.b-segment.a);
+      }
+      function detectedSegmentsMeet(first,second,tolerance=180){
+        if(first.horizontal===second.horizontal)return false;
+        const horizontal=first.horizontal?first:second,vertical=first.horizontal?second:first;
+        const x=vertical.p,y=horizontal.p;
+        const crossesHorizontal=x>=horizontal.a-tolerance&&x<=horizontal.b+tolerance;
+        const crossesVertical=y>=vertical.a-tolerance&&y<=vertical.b+tolerance;
+        if(!crossesHorizontal||!crossesVertical)return false;
+        const horizontalEnd=Math.min(Math.abs(x-horizontal.a),Math.abs(x-horizontal.b));
+        const verticalEnd=Math.min(Math.abs(y-vertical.a),Math.abs(y-vertical.b));
+        return horizontalEnd<=tolerance||verticalEnd<=tolerance;
+      }
+      function reliableDetectedSegment(segment,segments){
+        const length=detectedSegmentLength(segment);
+        if(length>=600)return true;
+        if(length<350)return false;
+        return segments.some(other=>other!==segment&&detectedSegmentLength(other)>=600&&detectedSegmentsMeet(segment,other));
+      }
+      function snapDetectedSegmentEnds(segments,tolerance=240){
+        return segments.map(segment=>{
+          const perpendicular=segments.filter(other=>other!==segment&&other.horizontal!==segment.horizontal&&segment.p>=other.a-tolerance&&segment.p<=other.b+tolerance&&(other.thickness>95||detectedSegmentLength(other)>=1250));
+          const snap=endpoint=>{
+            let best=endpoint,distance=tolerance+1;
+            perpendicular.forEach(other=>{const gap=Math.abs(other.p-endpoint);if(gap<distance){best=other.p;distance=gap;}});
+            return best;
+          };
+          const a=snap(segment.a),b=snap(segment.b);
+          return {...segment,a:Math.min(a,b),b:Math.max(a,b)};
+        });
+      }
       function getDetectedWallSegments(force=false){
         if(!project.basemap||!basemapImage?.complete||!basemapImage.naturalWidth)return [];
         const key=basemapSignature();if(!force&&wallDetectionCache?.key===key)return wallDetectionCache.segments;
-        const analysis=makeBasemapAnalysis(true,1100),masked=makeWallMask(analysis,190),horizontal=collectLineBands(masked.mask,analysis.w,analysis.h,true),vertical=collectLineBands(masked.mask,analysis.w,analysis.h,false),segments=[];
+        // 195 includes the pale centre of common plan wall bands. At 190 only the
+        // dark outer edge survived, which shifted suggested walls outside the basemap.
+        const analysis=makeBasemapAnalysis(true,1100),masked=makeWallMask(analysis,195),horizontal=collectLineBands(masked.mask,analysis.w,analysis.h,true),vertical=collectLineBands(masked.mask,analysis.w,analysis.h,false),segments=[];
         horizontal.forEach(b=>{const s=analysisPixelToWorld(b.a,b.p,analysis),e=analysisPixelToWorld(b.b,b.p,analysis),t=Math.abs(analysisPixelToWorld(0,b.p1,analysis).y-analysisPixelToWorld(0,b.p0,analysis).y);segments.push({horizontal:true,a:s.x,b:e.x,p:s.y,thickness:t,pixel:b});});
         vertical.forEach(b=>{const s=analysisPixelToWorld(b.p,b.a,analysis),e=analysisPixelToWorld(b.p,b.b,analysis),t=Math.abs(analysisPixelToWorld(b.p1,0,analysis).x-analysisPixelToWorld(b.p0,0,analysis).x);segments.push({horizontal:false,a:s.y,b:e.y,p:s.x,thickness:t,pixel:b});});
         const clean=[];
         segments.sort((a,b)=>(b.b-b.a)-(a.b-a.a)).forEach(seg=>{
-          const length=seg.b-seg.a;if(length<600||seg.thickness<35||seg.thickness>650)return;
+          if(!reliableDetectedSegment(seg,segments)||seg.thickness<35||seg.thickness>650)return;
           const duplicate=clean.some(x=>x.horizontal===seg.horizontal&&Math.abs(x.p-seg.p)<Math.max(90,(x.thickness+seg.thickness)*.55)&&Math.max(0,Math.min(x.b,seg.b)-Math.max(x.a,seg.a))/Math.min(x.b-x.a,seg.b-seg.a)>.72);
           if(!duplicate)clean.push({...seg,a:Math.round(seg.a/25)*25,b:Math.round(seg.b/25)*25,p:Math.round(seg.p/25)*25,thickness:Math.round(Math.max(70,Math.min(350,seg.thickness))/10)*10});
         });
-        wallDetectionCache={key,segments:clean.slice(0,80),threshold:masked.threshold};return wallDetectionCache.segments;
+        wallDetectionCache={key,segments:snapDetectedSegmentEnds(clean).slice(0,80),threshold:masked.threshold};return wallDetectionCache.segments;
       }
       function detectWalls(){
         if(!basemapImage){alert('Upload a floor-plan image first.');return;}
@@ -56,11 +90,12 @@
         const match=bestSegmentForWall(wall,getDetectedWallSegments(true))||localStripMatch(wall);if(!match){$('toolHint').textContent='No sufficiently similar wall line was found near the selected wall. Adjust the basemap crop/offset or edit the wall endpoints manually.';return;}
         pushHistory('align selected wall');alignWallToSegment(wall,match.segment);buildScene();$('toolHint').textContent=match.segment.local?`Aligned “${wall.name}” to the strongest nearby basemap wall line while preserving its length. Review the blue overlay before continuing.`:`Aligned “${wall.name}” to the nearest detected wall band in the basemap. Review the blue overlay before continuing.`;
       }
-      function alignAllWallsToBasemap(){
-        if(!project.basemap)return;const segments=getDetectedWallSegments(true),walls=(project.walls||[]).filter(w=>!w.detected),used=new Set(),matches=[];
+      function alignAllWallsToBasemap(includeDetected=false){
+        includeDetected=includeDetected===true;
+        if(!project.basemap)return;const segments=getDetectedWallSegments(true),walls=(project.walls||[]).filter(w=>includeDetected||!w.detected),used=new Set(),matches=[];
         walls.sort((a,b)=>Math.max(b.w,b.d)-Math.max(a.w,a.d)).forEach(w=>{const m=bestSegmentForWall(w,segments,used)||localStripMatch(w);if(m){matches.push({wall:w,match:m});if(m.index>=0)used.add(m.index);}});
         if(!matches.length){$('toolHint').textContent='No authored walls could be matched. Run Auto-fit drawing β and confirm the plan width/depth first.';return;}
-        pushHistory('align all walls');matches.forEach(x=>alignWallToSegment(x.wall,x.match.segment));buildScene();$('toolHint').textContent=matches.length===walls.length?`Aligned all ${walls.length} authored walls to nearby basemap lines. Review the result before continuing.`:`Aligned ${matches.length} of ${walls.length} authored walls. Unmatched walls were left unchanged; review each blue selection against the basemap.`;
+        pushHistory('align all walls');matches.forEach(x=>alignWallToSegment(x.wall,x.match.segment));buildScene();const label=includeDetected?'review walls':'authored walls';$('toolHint').textContent=matches.length===walls.length?`Aligned all ${walls.length} ${label} to centred basemap wall bands. Review the result before continuing.`:`Aligned ${matches.length} of ${walls.length} ${label}. Unmatched walls were left unchanged for manual review.`;
       }
 
       function select(mesh){

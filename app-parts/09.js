@@ -97,9 +97,10 @@
         if(packageBusy)return;if(typeof JSZip==='undefined'){setPackageStatus('JSZip did not load. Check the internet connection and reload.','error');return;}
         setPackageBusy(true,`Opening ${sourceLabel}…`);let zipError=null;
         try{
-          let next,detail='';
-          try{const result=await readProjectFromZip(file);next=result.next;detail=` from ${result.projectFileName}`;}
+          let next,detail='',loadedFromZip=false;
+          try{const result=await readProjectFromZip(file);next=result.next;detail=` from ${result.projectFileName}`;loadedFromZip=true;}
           catch(error){zipError=error;next=await readProjectFromPlainJson(file);detail=' as a plain JSON project';}
+          if(loadedFromZip&&next.basemap){next.settings=next.settings||{};next.settings.scaleCalibrationRequired=true;}
           applyProjectDataV27(next,'open project package');setPackageStatus(`Opened ${sourceLabel}${detail}.`,'ok');
         }catch(error){
           console.error('ZIP read error:',zipError);console.error('Fallback read error:',error);
