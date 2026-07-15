@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260714-eye-horizontal-label-hide-v62';
+  const moduleVersion = '20260715-eye-height-horizontal-v63';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
