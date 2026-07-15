@@ -1,20 +1,20 @@
-// Compact central Shift-selection labels with strict collision avoidance.
+// Compact central Shift-selection labels with guaranteed non-overlapping placement.
 // Loads after app-parts/34.js and before app-parts/08.js.
 
-const layoutSelectionDensityVersionV68 = '20260715-central-compact-labels-v68';
-const selectionAssistMeasureCanvasV68 = document.createElement('canvas');
-const selectionAssistMeasureContextV68 = selectionAssistMeasureCanvasV68.getContext('2d');
+const layoutSelectionDensityVersionV69 = '20260715-central-packed-labels-v69';
+const selectionAssistMeasureCanvasV69 = document.createElement('canvas');
+const selectionAssistMeasureContextV69 = selectionAssistMeasureCanvasV69.getContext('2d');
 
-function selectionAssistLabelWidthV68(text) {
+function selectionAssistLabelWidthV69(text) {
   const label = String(text || 'Object');
-  if (selectionAssistMeasureContextV68) {
-    selectionAssistMeasureContextV68.font = '600 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    return Math.max(48, Math.min(230, Math.ceil(selectionAssistMeasureContextV68.measureText(label).width + 16)));
+  if (selectionAssistMeasureContextV69) {
+    selectionAssistMeasureContextV69.font = '600 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    return Math.max(42, Math.min(220, Math.ceil(selectionAssistMeasureContextV69.measureText(label).width + 14)));
   }
-  return Math.max(48, Math.min(230, 16 + label.length * 6.6));
+  return Math.max(42, Math.min(220, 14 + label.length * 6.1));
 }
 
-function selectionAssistCentralEntriesV68(entries, metrics) {
+function selectionAssistCentralEntriesV69(entries, metrics) {
   const width = metrics.viewportRect.width;
   const height = metrics.viewportRect.height;
   const centreX = width / 2;
@@ -40,8 +40,6 @@ function selectionAssistCentralEntriesV68(entries, metrics) {
     entry.anchor.y <= height - marginY
   ));
 
-  // Keep the control useful when the exact middle is empty, while still choosing
-  // only the objects nearest the user's current point of attention.
   if (!central.length) central = [...mapped].sort((a, b) => a.centreScore - b.centreScore).slice(0, 6);
 
   const review = typeof architectureReviewActiveV67 === 'function' && architectureReviewActiveV67();
@@ -51,7 +49,7 @@ function selectionAssistCentralEntriesV68(entries, metrics) {
     .slice(0, limit);
 }
 
-function selectionAssistCompactRectV68(centreX, centreY, width, height) {
+function selectionAssistCompactRectV69(centreX, centreY, width, height) {
   return {
     left: centreX - width / 2,
     right: centreX + width / 2,
@@ -64,7 +62,7 @@ function selectionAssistCompactRectV68(centreX, centreY, width, height) {
   };
 }
 
-function selectionAssistRectInsideV68(rect, bounds) {
+function selectionAssistRectInsideV69(rect, bounds) {
   return (
     rect.left >= bounds.left &&
     rect.right <= bounds.right &&
@@ -73,34 +71,105 @@ function selectionAssistRectInsideV68(rect, bounds) {
   );
 }
 
-function placeCompactSelectionAssistLabelV68(anchor, text, occupied, bounds) {
-  const width = selectionAssistLabelWidthV68(text);
-  const height = 26;
-  const xStep = width / 2 + 16;
-  const yStep = height / 2 + 9;
+function selectionAssistRectFreeV69(rect, occupied, gap = 5) {
+  return !occupied.some(other => rectanglesOverlapV65(rect, other, gap));
+}
+
+function localSelectionAssistCandidatesV69(anchor, width, height) {
   const candidates = [];
+  const horizontalStep = Math.max(34, width * .42);
+  const verticalStep = height + 7;
 
-  // Search outward from the object's screen anchor. No fallback placement is used:
-  // if a collision-free slot is unavailable, that label is omitted rather than stacked.
-  [ -1, 1, -2, 2, -3, 3, -4, 4 ].forEach(yIndex => {
-    [ 0, 1, -1, 2, -2, 3, -3 ].forEach(xIndex => {
-      candidates.push({
-        x: anchor.x + xIndex * xStep,
-        y: anchor.y + yIndex * yStep,
-        distance: Math.hypot(xIndex * xStep, yIndex * yStep)
-      });
+  for (let ring = 1; ring <= 10; ring++) {
+    const yOffsets = [-ring, ring];
+    const xLimit = Math.max(1, Math.min(8, ring + 2));
+    yOffsets.forEach(yIndex => {
+      for (let xIndex = -xLimit; xIndex <= xLimit; xIndex++) {
+        candidates.push({
+          x: anchor.x + xIndex * horizontalStep,
+          y: anchor.y + yIndex * verticalStep,
+          distance: Math.hypot(xIndex * horizontalStep, yIndex * verticalStep)
+        });
+      }
     });
-  });
-  candidates.sort((a, b) => a.distance - b.distance);
-
-  for (const candidate of candidates) {
-    const rect = selectionAssistCompactRectV68(candidate.x, candidate.y, width, height);
-    if (!selectionAssistRectInsideV68(rect, bounds)) continue;
-    if (occupied.some(other => rectanglesOverlapV65(rect, other, 6))) continue;
-    occupied.push(rect);
-    return rect;
   }
-  return null;
+
+  candidates.sort((a, b) => a.distance - b.distance);
+  return candidates;
+}
+
+function nearestFreeViewportSlotV69(anchor, width, height, occupied, bounds) {
+  let best = null;
+  const xMin = bounds.left + width / 2;
+  const xMax = bounds.right - width / 2;
+  const yMin = bounds.top + height / 2;
+  const yMax = bounds.bottom - height / 2;
+  const stepX = 8;
+  const stepY = 6;
+
+  if (xMax < xMin || yMax < yMin) return null;
+
+  for (let y = yMin; y <= yMax; y += stepY) {
+    for (let x = xMin; x <= xMax; x += stepX) {
+      const rect = selectionAssistCompactRectV69(x, y, width, height);
+      if (!selectionAssistRectFreeV69(rect, occupied, 5)) continue;
+      const distance = Math.hypot(x - anchor.x, y - anchor.y);
+      if (!best || distance < best.distance) best = { rect, distance };
+    }
+  }
+
+  return best?.rect || null;
+}
+
+function placeCompactSelectionAssistLabelV69(anchor, text, occupied, bounds) {
+  const measuredWidth = selectionAssistLabelWidthV69(text);
+  const heightOptions = [24, 22, 20];
+  const widthOptions = [
+    measuredWidth,
+    Math.min(measuredWidth, 190),
+    Math.min(measuredWidth, 160),
+    Math.min(measuredWidth, 130),
+    Math.min(measuredWidth, 104)
+  ].filter((value, index, values) => values.indexOf(value) === index);
+
+  for (const height of heightOptions) {
+    for (const width of widthOptions) {
+      const localCandidates = localSelectionAssistCandidatesV69(anchor, width, height);
+      for (const candidate of localCandidates) {
+        const rect = selectionAssistCompactRectV69(candidate.x, candidate.y, width, height);
+        if (!selectionAssistRectInsideV69(rect, bounds)) continue;
+        if (!selectionAssistRectFreeV69(rect, occupied, 5)) continue;
+        occupied.push(rect);
+        return rect;
+      }
+
+      const viewportSlot = nearestFreeViewportSlotV69(anchor, width, height, occupied, bounds);
+      if (viewportSlot) {
+        occupied.push(viewportSlot);
+        return viewportSlot;
+      }
+    }
+  }
+
+  // Emergency deterministic packing. This should only run on extremely small
+  // viewports, but still keeps every label instead of omitting one.
+  const width = Math.max(72, Math.min(104, measuredWidth));
+  const height = 19;
+  const columns = Math.max(1, Math.floor((bounds.right - bounds.left) / (width + 5)));
+  const index = occupied.length;
+  const column = index % columns;
+  const row = Math.floor(index / columns);
+  const centreX = Math.min(
+    bounds.right - width / 2,
+    bounds.left + width / 2 + column * (width + 5)
+  );
+  const centreY = Math.min(
+    bounds.bottom - height / 2,
+    bounds.top + height / 2 + row * (height + 5)
+  );
+  const rect = selectionAssistCompactRectV69(centreX, centreY, width, height);
+  occupied.push(rect);
+  return rect;
 }
 
 renderSelectionAssistV65 = function(force = false) {
@@ -113,11 +182,11 @@ renderSelectionAssistV65 = function(force = false) {
   const metrics = selectionAssistCanvasMetricsV65();
   if (!metrics) return;
 
-  const entries = selectionAssistCentralEntriesV68(collectSelectionAssistEntriesV65(), metrics);
+  const entries = selectionAssistCentralEntriesV69(collectSelectionAssistEntriesV65(), metrics);
   selectionAssistOverlayV65.replaceChildren();
 
   const hint = document.createElement('div');
-  hint.className = 'selection-assist-hint-v65 selection-assist-hint-v68';
+  hint.className = 'selection-assist-hint-v65 selection-assist-hint-v69';
   const review = typeof architectureReviewActiveV67 === 'function' && architectureReviewActiveV67();
   hint.textContent = review
     ? 'Central walls, doors and windows · click to select'
@@ -125,27 +194,26 @@ renderSelectionAssistV65 = function(force = false) {
   selectionAssistOverlayV65.appendChild(hint);
 
   const bounds = {
-    left: 8,
-    right: Math.max(8, metrics.viewportRect.width - 8),
-    top: 46,
-    bottom: Math.max(46, metrics.viewportRect.height - 8)
+    left: 7,
+    right: Math.max(7, metrics.viewportRect.width - 7),
+    top: 42,
+    bottom: Math.max(42, metrics.viewportRect.height - 7)
   };
   const occupied = [];
 
   entries.forEach(entry => {
-    const rect = placeCompactSelectionAssistLabelV68(
+    const rect = placeCompactSelectionAssistLabelV69(
       entry.anchor,
       entry.displayName || entry.name,
       occupied,
       bounds
     );
-    if (!rect) return;
 
     addSelectionAssistLineV65(entry.anchor, rect);
 
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `selection-assist-label-v65 selection-assist-${entry.kind}-v65 selection-assist-compact-v68`;
+    button.className = `selection-assist-label-v65 selection-assist-${entry.kind}-v65 selection-assist-compact-v69`;
     button.textContent = entry.displayName || entry.name;
     button.title = `Select ${entry.name}`;
     button.setAttribute('aria-label', `Select ${entry.name}`);
@@ -169,36 +237,36 @@ renderSelectionAssistV65 = function(force = false) {
   if (typeof bindSelectionAssistHoverV67 === 'function') bindSelectionAssistHoverV67();
 };
 
-if (!document.getElementById('layoutSelectionDensityStylesV68')) {
+if (!document.getElementById('layoutSelectionDensityStylesV69')) {
   const style = document.createElement('style');
-  style.id = 'layoutSelectionDensityStylesV68';
+  style.id = 'layoutSelectionDensityStylesV69';
   style.textContent = `
-    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v68{
+    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v69{
       min-width:0!important;
-      min-height:26px!important;
-      max-width:230px!important;
-      padding:3px 7px!important;
-      border-radius:6px!important;
-      font:600 12px/1.05 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+      min-height:19px!important;
+      max-width:220px!important;
+      padding:2px 6px!important;
+      border-radius:5px!important;
+      font:600 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
       letter-spacing:0!important;
       box-sizing:border-box!important;
       white-space:nowrap!important;
       overflow:hidden!important;
       text-overflow:ellipsis!important;
-      box-shadow:0 4px 13px rgba(0,0,0,.30)!important;
+      box-shadow:0 3px 11px rgba(0,0,0,.28)!important;
     }
-    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v68:hover,
-    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v68:focus-visible{
+    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v69:hover,
+    #selectionAssistOverlayV65 .selection-assist-label-v65.selection-assist-compact-v69:focus-visible{
       transform:translate(-50%,-50%) scale(1.04)!important;
     }
-    #selectionAssistOverlayV65 .selection-assist-hint-v68{
-      top:9px!important;
-      padding:5px 9px!important;
+    #selectionAssistOverlayV65 .selection-assist-hint-v69{
+      top:8px!important;
+      padding:4px 8px!important;
       font-size:10px!important;
-      line-height:1.15!important;
+      line-height:1.1!important;
     }
     #selectionAssistOverlayV65 .selection-assist-line-v65{
-      opacity:.65;
+      opacity:.62;
     }
   `;
   document.head.appendChild(style);
