@@ -1,4 +1,28 @@
-      function setViewButton(id){['viewTop','viewBird','viewEye'].forEach(x=>$(x).classList.toggle('active',x===id)); $('fovField').value=Math.round(camera.fov); $('cameraHeight').value=Math.round(camera.position.y/MM); $('depthField').value=Math.round(camera.fov);}
+      function normaliseEyeLevelHeightV63(value,fallback=1300){
+        const parsed=Number(value),safeFallback=Number.isFinite(Number(fallback))?Number(fallback):1300;
+        return Math.round(Math.max(500,Math.min(12000,Number.isFinite(parsed)?parsed:safeFallback)));
+      }
+      function currentEyeLevelHeightV63(){
+        project.settings=project.settings||{};
+        const input=$('cameraHeight'),stored=normaliseEyeLevelHeightV63(project.settings.eyeLevelHeightMm,1300);
+        const raw=input&&input.value.trim()!==''?Number(input.value):stored;
+        const height=normaliseEyeLevelHeightV63(raw,stored);
+        project.settings.eyeLevelHeightMm=height;
+        return height;
+      }
+      function setViewButton(id){
+        ['viewTop','viewBird','viewEye'].forEach(x=>$(x).classList.toggle('active',x===id));
+        $('fovField').value=Math.round(camera.fov);
+        if(id==='viewEye'){
+          const height=normaliseEyeLevelHeightV63(camera.position.y/MM,project.settings?.eyeLevelHeightMm||1300);
+          project.settings=project.settings||{};
+          project.settings.eyeLevelHeightMm=height;
+          $('cameraHeight').value=height;
+        }else{
+          $('cameraHeight').value=normaliseEyeLevelHeightV63(project.settings?.eyeLevelHeightMm,1300);
+        }
+        $('depthField').value=Math.round(camera.fov);
+      }
       function resize(){ const w=viewport.clientWidth,h=viewport.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
       let lastFrame=0,lastLabelCheck=0;
       function animate(time=0){ requestAnimationFrame(animate);if(document.hidden||time-lastFrame<40)return;lastFrame=time;orbit.update();if(time-lastLabelCheck>250){updateLabelOcclusion();lastLabelCheck=time;}renderer.render(scene,camera); }
@@ -10,6 +34,10 @@
       function normalizeProject(){
         project.rooms=project.rooms||[];project.walls=project.walls||[];project.openings=project.openings||[];project.shell=project.shell||[];project.clearances=project.clearances||[];project.furniture=project.furniture||[];
         project.settings=project.settings||{};if(project.settings.ceilingVisible===undefined)project.settings.ceilingVisible=false;project.settings.ceilingHeight=Math.max(2100,Math.min(5000,+project.settings.ceilingHeight||2600));
+        const savedCameraY=Number(project.camera?.position?.[1]),savedTargetY=Number(project.camera?.target?.[1]);
+        const savedHorizontalEyeHeight=Number.isFinite(savedCameraY)&&Number.isFinite(savedTargetY)&&Math.abs(savedCameraY-savedTargetY)<0.01?savedCameraY/MM:1300;
+        project.settings.eyeLevelHeightMm=normaliseEyeLevelHeightV63(project.settings.eyeLevelHeightMm,savedHorizontalEyeHeight);
+        if($('cameraHeight'))$('cameraHeight').value=project.settings.eyeLevelHeightMm;
         project.walls.forEach((w,i)=>{w.id=w.id||`wall-imported-${i}`;const e=wallEndpoints(w);if(![w.x1,w.y1,w.x2,w.y2].every(Number.isFinite)){w.x1=e.x1;w.y1=e.y1;w.x2=e.x2;w.y2=e.y2;}w.thickness=wallThickness(w);syncWallLegacyBounds(w);});project.openings.forEach((o,i)=>o.id=o.id||`opening-imported-${i}`);project.furniture.forEach((item,i)=>{item.id=item.id||`item-imported-${i}`;item.category=item.category||'furniture';});
         if(project.basemap){project.basemap.width=project.basemap.width||PLAN_W;project.basemap.depth=project.basemap.depth||PLAN_H;project.basemap.offsetX=project.basemap.offsetX||0;project.basemap.offsetY=project.basemap.offsetY||0;project.basemap.crop=project.basemap.crop||{left:0,top:0,right:1,bottom:1};if(project.basemap.lockRatio===undefined)project.basemap.lockRatio=true;}
       }
@@ -84,6 +112,28 @@
       window.addEventListener('resize',resize);
       ['nameField','xField','yField','wField','dField','hField','rField'].forEach(id=>$(id).addEventListener('change',rebuildSelected));
       ['archName','archThickness','archHeight','archX1','archY1','archX2','archY2','archLength','archRotation','openingWidth','openingOffset'].forEach(id=>$(id).addEventListener('change',rebuildArchitecture));
+
+      // Eye-level keeps the camera and OrbitControls target at the same height.
+      // Users can therefore type any height from 500–12,000 mm without unlocking pitch.
+      viewEye=function(){
+        const focus=currentViewFocusV60();
+        const horizontalBefore=rememberViewHeadingV60();
+        const currentDistance=Math.max(1,camera.position.distanceTo(orbit.target));
+        const horizontal=Math.max(1.8,Math.min(5.5,horizontalBefore>0.25?horizontalBefore:currentDistance*0.32));
+        const eyeHeight=mm(currentEyeLevelHeightV63());
+        camera.up.set(0,1,0);
+        camera.fov=52;
+        camera.updateProjectionMatrix();
+        orbit.target.set(focus.x,eyeHeight,focus.z);
+        camera.position.set(focus.x+preservedViewHeadingV60.x*horizontal,eyeHeight,focus.z+preservedViewHeadingV60.z*horizontal);
+        applyEyeHorizontalLockV62();
+        orbit.enabled=true;
+        orbit.enableRotate=true;
+        orbit.enablePan=true;
+        orbit.enableZoom=true;
+        finishViewPresetV60('viewEye');
+      };
+
       $('viewTop').onclick=viewTop;$('viewBird').onclick=viewBird;$('viewEye').onclick=viewEye;
       $('modeMove').onclick=()=>{transform.setMode('translate');$('modeMove').classList.add('active');$('modeRotate').classList.remove('active');};
       $('modeRotate').onclick=()=>{transform.setMode('rotate');$('modeRotate').classList.add('active');$('modeMove').classList.remove('active');};
@@ -98,7 +148,24 @@
       $('saveJson').onclick=saveProject;$('loadJson').onclick=()=>$('jsonFile').click();$('jsonFile').onchange=e=>e.target.files[0]&&loadProject(e.target.files[0]);
       $('fovField').onchange=()=>{camera.fov=+$('fovField').value;camera.updateProjectionMatrix();$('depthField').value=camera.fov;};
       $('depthField').oninput=()=>{camera.fov=+$('depthField').value;camera.updateProjectionMatrix();$('fovField').value=camera.fov;};
-      $('cameraHeight').onchange=()=>{camera.position.y=mm(+$('cameraHeight').value);orbit.update();};
+      const applyCameraHeightV63=commit=>{
+        const input=$('cameraHeight');if(!input||input.value.trim()==='')return;
+        const raw=Number(input.value);if(!Number.isFinite(raw))return;
+        const height=normaliseEyeLevelHeightV63(raw,project.settings?.eyeLevelHeightMm||1300);
+        project.settings=project.settings||{};project.settings.eyeLevelHeightMm=height;
+        if(commit)input.value=height;
+        if(!$('viewEye').classList.contains('active'))return;
+        const worldHeight=mm(height);
+        camera.position.y=worldHeight;
+        orbit.target.y=worldHeight;
+        applyEyeHorizontalLockV62();
+        orbit.update();
+        if(typeof scheduleCameraCutaway==='function')scheduleCameraCutaway();
+        if(typeof scheduleCameraFurnitureVisibilityV42==='function')scheduleCameraFurnitureVisibilityV42();
+        if(typeof scheduleEyeLabelCleanup==='function')scheduleEyeLabelCleanup();
+      };
+      $('cameraHeight').oninput=()=>applyCameraHeightV63(false);
+      $('cameraHeight').onchange=()=>applyCameraHeightV63(true);
       $('capture').onclick=()=>$('captureModal').classList.add('open');$('captureCancel').onclick=()=>$('captureModal').classList.remove('open');$('captureConfirm').onclick=capturePng;
 
       $('undo').onclick=undoAction;$('redo').onclick=redoAction;$('undo').disabled=true;$('redo').disabled=true;
