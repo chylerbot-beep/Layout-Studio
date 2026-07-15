@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260715-central-packed-labels-v69';
+  const moduleVersion = '20260715-photo-door-hidden-selection-minimap-v70';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
@@ -34,6 +34,7 @@
     'app-parts/33.js',
     'app-parts/34.js',
     'app-parts/35.js',
+    'app-parts/36.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];
