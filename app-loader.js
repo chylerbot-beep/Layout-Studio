@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260715-central-compact-labels-v68';
+  const moduleVersion = '20260715-central-packed-labels-v69';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
