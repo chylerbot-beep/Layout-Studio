@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260715-eye-height-horizontal-v63';
+  const moduleVersion = '20260715-basemap-camera-validation-v64';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
@@ -29,6 +29,7 @@
     'app-parts/28.js',
     'app-parts/29.js',
     'app-parts/30.js',
+    'app-parts/31.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];
