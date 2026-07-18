@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260715-dedicated-photo-surfaces-v72';
+  const moduleVersion = '20260718-preserve-hidden-export-labels-v73';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
