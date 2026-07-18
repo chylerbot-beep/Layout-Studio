@@ -187,10 +187,16 @@
         const [w,h]=$('capturePreset').value.split('x').map(Number),oldSize=new THREE.Vector2();renderer.getSize(oldSize);
         const oldBg=scene.background,oldGrid=grid.visible,oldClear=clearanceGroup.visible,oldTransform=transform.visible,oldOverlay=selectionOverlayGroup.visible;
         const oldResize=typeof carpentryResizeGroup!=='undefined'?carpentryResizeGroup.visible:null;
+        // Export must respect the exact label visibility already established in the
+        // viewport. The resolution-specific cleanup below may hide more labels, but
+        // it must never revive a label hidden by Photo mode, furniture cutaway or
+        // the current decluttering pass.
+        const labels=[...labelGroup.children,...architectureLabelGroup.children];
+        const hiddenLabels=new Set(labels.filter(label=>label.visible===false));
         if($('captureBackground').value==='transparent')scene.background=null;
         grid.visible=false;clearanceGroup.visible=false;transform.visible=false;selectionOverlayGroup.visible=false;if(oldResize!==null)carpentryResizeGroup.visible=false;
         renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
-        if(typeof applyCameraCutaway==='function')applyCameraCutaway();updateEyeLevelLabelCleanup();renderer.render(scene,camera);
+        if(typeof applyCameraCutaway==='function')applyCameraCutaway();updateEyeLevelLabelCleanup();hiddenLabels.forEach(label=>label.visible=false);renderer.render(scene,camera);
         renderer.domElement.toBlob(blob=>{
           if(blob)downloadBlob(blob,projectDownloadName('png'));
           renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=oldSize.x/oldSize.y;camera.updateProjectionMatrix();scene.background=oldBg;grid.visible=oldGrid;clearanceGroup.visible=oldClear;transform.visible=oldTransform;selectionOverlayGroup.visible=oldOverlay;if(oldResize!==null)carpentryResizeGroup.visible=oldResize;
