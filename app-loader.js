@@ -37,6 +37,7 @@
     'app-parts/36.js',
     'app-parts/37.js',
     'app-parts/38.js',
+    'app-parts/39.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];

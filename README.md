@@ -102,9 +102,10 @@ older files. JSON-only review mode is stored as
 
 - Top, Bird's-eye and Eye-level views
 - 52° default perspective lens and 1,300 mm default eye height
+- Camera shots: optional named, predetermined views (`project.cameraShots`, millimetres), selectable from the Camera section or stepped with Prev/Next. Applying one sets position, target, lens and eye height together and re-runs cutaway, furniture-visibility and label cleanup. Users can also save the current view as a shot. The selector appears in Photo mode too. See `schema/project-schema.md`.
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
-- project-name-based PNG filenames
+- project-name-based PNG filenames, suffixed with the active shot's label when one is applied
 
 Hidden walls and furniture remain in project data and validation.
 

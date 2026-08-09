@@ -27,6 +27,7 @@
     }
   },
   "camera": null,
+  "cameraShots": [],
   "plan": {
     "width": 14775,
     "depth": 9500,
