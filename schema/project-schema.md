@@ -19,6 +19,7 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
   "furniture": [],
   "settings": {},
   "camera": null,
+  "cameraShots": [],
   "plan": { "width": 14775, "depth": 9500, "unit": "mm" }
 }
 ```
@@ -33,7 +34,8 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
 - `clearances`: rectangular advisory zones
 - `furniture`: furniture, carpentry and decorative objects
 - `settings`: ceiling, camera cutaway, validation and review state
-- `camera`: Three.js position, target and FOV
+- `camera`: Three.js position, target and FOV (last manually-set view; metres)
+- `cameraShots`: named, predetermined camera views in millimetres (see below)
 - `plan`: overall millimetre dimensions
 
 ## Rectangular zones and fixed shell
@@ -267,7 +269,38 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
 }
 ```
 
-Camera vectors use Three.js world units in metres; project geometry remains millimetres. `fov` is vertical field of view in degrees.
+Camera vectors use Three.js world units in metres; project geometry remains millimetres. `fov` is vertical field of view in degrees. `camera` stores only the single, last-applied view.
+
+## Camera shots
+
+`cameraShots` stores zero or more named, predetermined views, each independently selectable in the app without manual re-aiming:
+
+```json
+{
+  "cameraShots": [
+    {
+      "id": "shot-living-hero",
+      "label": "Living – sofa and shelving",
+      "roomId": "room-living",
+      "type": "eye",
+      "positionMm": [11200, 1500, 8500],
+      "targetMm": [9000, 1500, 3200],
+      "fov": 40,
+      "notes": "Frame the sofa and shelving wall; keep the dining table visible at the right edge."
+    }
+  ]
+}
+```
+
+- `id`: stable, unique, kebab-case.
+- `label`: shown in the app's shot selector; keep it short and room-first.
+- `roomId`: optional matching `rooms[].id`.
+- `type`: `eye` (default), `bird` or `top`. Only `eye` locks the view to a level horizontal orbit.
+- `positionMm` / `targetMm`: `[x, y, z]` in millimetres, unlike `camera` which uses metres. `y` is height above the floor. For a level `eye` shot, `positionMm[1]` and `targetMm[1]` should match — that shared value is the eye height.
+- `fov`: vertical field of view in degrees, 20–100. 35–45 reads closest to a real interior-photography lens; the app-wide default of 52 is wider than typical editorial framing.
+- `notes`: optional one-line framing intent, shown next to the shot in the app.
+
+Unlike `camera`, `cameraShots` is a list: the app can step through it (Prev/Next) or jump to any entry, and a user can add their own alongside generated ones. Invalid entries (missing/non-numeric `positionMm` or `targetMm`) are dropped silently on load. `cameraShots` is optional; its absence or an empty array leaves existing behaviour unchanged.
 
 ## Validation checklist
 
