@@ -1,4 +1,4 @@
-# Layout Studio project schema v2.7
+# Layout Studio project schema v2.8
 
 Projects are UTF-8 JSON. All plan coordinates and dimensions are millimetres. Plan origin is top-left: X increases right and Y increases down.
 
@@ -20,6 +20,8 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
   "settings": {},
   "camera": null,
   "cameraShots": [],
+  "workflow": {},
+  "design": {},
   "plan": { "width": 14775, "depth": 9500, "unit": "mm" }
 }
 ```
@@ -36,6 +38,8 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
 - `settings`: ceiling, camera cutaway, validation and review state
 - `camera`: Three.js position, target and FOV (last manually-set view; metres)
 - `cameraShots`: named, predetermined camera views in millimetres (see below)
+- `workflow`: two-gate approval state, fingerprints and locks
+- `design`: approved style-board, furniture-archetype, material, lighting, styling and shot-render metadata
 - `plan`: overall millimetre dimensions
 
 ## Rectangular zones and fixed shell
@@ -302,6 +306,117 @@ Camera vectors use Three.js world units in metres; project geometry remains mill
 
 Unlike `camera`, `cameraShots` is a list: the app can step through it (Prev/Next) or jump to any entry, and a user can add their own alongside generated ones. Invalid entries (missing/non-numeric `positionMm` or `targetMm`) are dropped silently on load. `cameraShots` is optional; its absence or an empty array leaves existing behaviour unchanged.
 
+## Workflow approvals and locks
+
+`workflow` records the two approval gates. Layout Studio derives the locks from current approvals and invalidates them when a fingerprint changes.
+
+```json
+{
+  "workflow": {
+    "schemaVersion": 1,
+    "stage": "design-approved",
+    "approvals": {
+      "layout": {
+        "status": "approved",
+        "approvedAt": "2026-08-10T12:00:00.000Z",
+        "fingerprint": "fnv1a32:1234abcd"
+      },
+      "design": {
+        "status": "approved",
+        "approvedAt": "2026-08-10T13:00:00.000Z",
+        "fingerprint": "fnv1a32:5678ef90"
+      }
+    },
+    "locks": {
+      "layout": true,
+      "design": true,
+      "cameraShots": true
+    }
+  }
+}
+```
+
+Allowed `stage` values:
+
+- `layout-planning`: Step 1 is not approved or spatial changes require approval again.
+- `design-development`: Gate 1 is current; Step 2 is pending or changed.
+- `design-approved`: both gates are current; the complete Step 2 ZIP and isolated Step 3 handoff may be exported.
+
+Allowed approval `status` values are `pending`, `approved` and `changes-required`.
+
+Gate 1 fingerprints the spatial contract: plan, rooms, architecture, fixed shell, clearances and furniture/built-in footprints. Gate 2 fingerprints Gate 1 plus approved design metadata, references, object appearance, camera shots and camera visibility settings. A changed Gate 1 fingerprint invalidates both approvals. A changed Gate 2 fingerprint invalidates Gate 2 only.
+
+`settings.architectureReviewConfirmed` remains an import-verification state, not a third approval gate.
+
+## Approved design metadata
+
+```json
+{
+  "design": {
+    "styleBoard": {
+      "referenceIds": ["reference-style-board"],
+      "notes": "Warm, restrained natural palette with low visual density."
+    },
+    "furnitureArchetypes": [
+      "Low-profile oatmeal sofa with slim arms",
+      "Rounded solid-oak dining table"
+    ],
+    "materials": [
+      "Floor: light warm oak, matte finish",
+      "Built-ins: natural oak veneer with warm-grey laminate accents"
+    ],
+    "lighting": [
+      "3000 K ambient lighting with concealed cove light at the living room",
+      "Small opal pendant centred over the dining table"
+    ],
+    "styling": [
+      "One large artwork above the sofa and a restrained ceramic grouping on the console"
+    ],
+    "shotRenderSpecs": []
+  }
+}
+```
+
+- `styleBoard.referenceIds` must reference `references[].id`; the corresponding assets must be present in the approved Step 2 ZIP.
+- The four metadata arrays contain concise approved statements, one decision per string. They are design intent, not instructions to source or invent products.
+- `shotRenderSpecs` must contain exactly one current entry for every locked camera shot before Gate 2 approval.
+
+### Shot-specific render spec
+
+```json
+{
+  "id": "render-shot-living-hero",
+  "shotId": "shot-living-hero",
+  "intent": "Produce a natural editorial interior image while preserving the exact approved composition.",
+  "mustInclude": [
+    "Sofa, shelving wall and the dining-table edge shown in the Layout Studio PNG"
+  ],
+  "allowedInterpretation": [
+    "Resolve exact fabric weave and wood grain within the approved style board"
+  ],
+  "negativeConstraints": [
+    "Do not introduce books, plants or lamps that are absent from the approved scene"
+  ],
+  "lockedInputs": [
+    "Use the Layout Studio PNG as the spatial and compositional source of truth."
+  ],
+  "policy": {
+    "canModifyLayout": false,
+    "canModifyDesign": false,
+    "canAddObjects": false,
+    "canSourceProducts": false
+  }
+}
+```
+
+The Step 3 render handoff is intentionally not a Layout Studio project package. For one shot it contains only:
+
+- `layout-studio-export.png` from the exact locked camera
+- the selected approved assets under `style-board/`
+- `render-spec.json` with `stage: "image-generation-only"` and `projectZipAllowed: false`
+
+The renderer must never receive or modify `project.json` or the Step 2 Layout Studio ZIP. If a render reveals a project problem, update Layout Studio in Step 1 or Step 2, reapprove invalidated gates and create a new handoff.
+
 ## Validation checklist
 
 - IDs are unique.
@@ -314,5 +429,11 @@ Unlike `camera`, `cameraShots` is a list: the app can step through it (Prev/Next
 - Categories, placement modes and custom models are valid.
 - Ceiling height defaults to 2600 mm.
 - `architectureReviewConfirmed`, when supplied, is boolean.
+- Workflow approval statuses and stages use the documented values.
+- A design approval is invalid unless layout approval is current.
+- Approved style-board IDs reference available project assets.
+- Every camera shot has exactly one shot render spec before Gate 2 approval.
+- Every shot render policy forbids layout changes, design changes, new objects and sourcing.
+- A Step 3 handoff contains no project JSON or Layout Studio ZIP.
 
 For generated projects, start from `project-template.json`, validate the JSON, and test the exported ZIP by reopening its root `project.json`.

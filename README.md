@@ -31,18 +31,11 @@ Open `http://localhost:8000` in a desktop browser.
 
 ## Main workflow
 
-1. Start blank or open a JSON/ZIP project.
-2. Upload or load a floor-plan image.
-3. Choose one route:
-   - **Set scale** to register the basemap and compare it with the JSON; or
-   - **Use JSON only** to skip basemap detection for an existing measured project.
-4. Review mismatches one at a time.
-5. Choose **Keep JSON** or **Apply suggestion** for each item.
-6. Confirm architecture to reveal and conservatively align furniture.
-7. Validate, set a camera and export PNG or project files.
+1. **Step 1 — Layout planning:** reconstruct and verify architecture, room use, furniture/built-in footprints and circulation. Gate 1 approves the complete spatial plan.
+2. **Step 2 — Design + Layout Studio ZIP:** add the approved style board, furniture archetypes, material/lighting/styling metadata, locked camera shots and one render spec per shot. Gate 2 locks the design and enables the complete project ZIP export.
+3. **Step 3 — Image generation only:** as a separate post-approval action, export a per-shot handoff containing only the exact Layout Studio PNG, approved style-board assets and that shot's render spec.
 
-When unresolved suggestions remain, confirmation asks whether to keep the
-current JSON geometry for those items.
+No image generation occurs during Step 1 or Step 2. The Step 3 handoff contains no `project.json` and cannot modify the project. If an approved layout or design changes, Layout Studio invalidates the applicable gate before another ZIP or render handoff can be exported.
 
 ## Calibration and architecture review
 
@@ -77,6 +70,8 @@ the root. Packages may also contain:
 - project notes
 - a basemap under `assets/`
 - reference images under `references/`
+- approved design metadata under `design/`
+- one locked-shot render spec under `render-specs/` for every camera shot
 
 The importer also accepts older `.btozip` archives, nested project JSON,
 standalone Layout Studio JSON and supported wrapper objects.
@@ -106,6 +101,7 @@ older files. JSON-only review mode is stored as
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
+- approval-aware render handoffs that reapply the locked camera before exporting the PNG
 
 Hidden walls and furniture remain in project data and validation.
 
@@ -120,6 +116,7 @@ one shared IIFE. Later files intentionally refine earlier functions.
 - `app-parts/28.js` — Photo-mode controls
 - `app-parts/29.js` — non-destructive suggestions, authority status and
   JSON-only route
+- `app-parts/40.js` — Gate 1/Gate 2 integrity locks and isolated Step 3 handoff
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.
@@ -129,12 +126,14 @@ Keep this order intact.
 ```bash
 node scripts/check-bundle.mjs
 node scripts/check-architecture-review.mjs
+node scripts/check-workflow-contract.mjs
 ```
 
 The bundle check validates the concatenated JavaScript syntax. The architecture
 review check verifies that the non-destructive module is loaded before startup
 and contains the required registration guard, suggestion actions and unresolved
-review warning.
+review warning. The workflow contract check verifies the two-gate schema, loader
+order, Step 2 package contents and Step 3 isolation rules.
 
 ## Custom GPT files
 

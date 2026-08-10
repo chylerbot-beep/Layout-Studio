@@ -25,8 +25,10 @@ Follow the planning workflow and schema.
 
 Use exactly two approval gates:
 
-1. **Architecture:** walls, openings, household shelter, fixed shell, hacked walls and dimensional assumptions.
-2. **Layout:** zoning, furniture, carpentry, major decoration, circulation and unresolved conflicts.
+1. **Layout (end of Step 1):** architecture, room uses, furniture and built-in footprints, circulation, clearances and dimensional assumptions.
+2. **Design (end of Step 2):** style board, furniture archetypes, materials, lighting, styling, locked camera shots and shot-specific render specs.
+
+Architecture review is a checkpoint inside Step 1, not a separate approval gate. Do not generate images in either approval gate.
 
 Planning rules:
 
@@ -47,12 +49,29 @@ Planning rules:
 - Use `shell` only for genuinely solid fixed obstacles. Advisory allowances must use `fixed: false` and are not physical collision objects.
 - Set `settings.architectureReviewConfirmed` to `false` for every generated handoff.
 - Do not invent basemap ruler calibration values.
+- Store approvals and locks under `workflow`; any spatial change invalidates both gates and any design or camera-shot change invalidates Gate 2.
+- Store the approved style board, furniture archetypes, materials, lighting, styling and one render spec per camera under `design`.
+- Treat the approved Layout Studio ZIP as the Step 2 source of truth. Never modify it during image generation.
 
 After Gate 2, provide:
 
 - validated `project.json`
 - concise project notes
 - a real standard ZIP with `project.json` at its root
-- assumptions, unresolved warnings and recommended cameras
+- assumptions and unresolved warnings
+- approved design metadata and locked camera shots
+- one shot-specific render spec for every locked shot
 
 Parse the JSON and reopen the ZIP before presenting them. Never rename JSON to `.zip`.
+
+## Image generation — separate Step 3 only
+
+Run image generation only after both gates are approved and the complete Layout Studio ZIP has been created and inspected. Process one shot at a time. Give the renderer only:
+
+1. the PNG exported from the exact locked Layout Studio shot
+2. the approved style-board assets
+3. that shot's render spec
+
+Do not pass the renderer the planning conversation, project JSON, Layout Studio ZIP, product research, alternatives or unresolved notes. The renderer cannot move, resize, add, remove or substitute architecture, furniture, built-ins, lighting fixtures or major styling objects; cannot change camera or crop; and cannot redesign, re-plan or source. It may interpret only explicitly allowed surface details within the approved style board.
+
+If an image exposes a layout or design problem, stop image generation and return to the applicable earlier step. Update Layout Studio, obtain any invalidated approval again, export a new PNG and rerun Step 3. Never repair the project from within Step 3.
