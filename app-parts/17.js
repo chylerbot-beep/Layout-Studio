@@ -41,7 +41,9 @@
       }
 
       function isEyeLevelLabelMode(){
-        return !!$('viewEye')?.classList.contains('active')&&camera.position.y/MM<4200;
+        const eyeLevelView=!!$('viewEye')?.classList.contains('active')&&camera.position.y/MM<4200;
+        const photoMode=typeof photoModeActiveV31!=='undefined'&&photoModeActiveV31;
+        return eyeLevelView||photoMode;
       }
 
       function syncEyeLabelControls(){
@@ -145,7 +147,7 @@
 
         const status=$('eyeLabelCleanupStatus');
         if(status){
-          status.textContent=!eyeMode?'Eye-level cleanup activates automatically in Eye level view.':`${visibleCount} label${visibleCount===1?'':'s'} visible · ${hiddenOccluded} occluded · ${hiddenOverlap} overlapping${hiddenCutaway?` · ${hiddenCutaway} on cutaway walls`:''}.`;
+          status.textContent=!eyeMode?'Label cleanup activates automatically in Eye level view and Photo mode.':`${visibleCount} label${visibleCount===1?'':'s'} visible · ${hiddenOccluded} occluded · ${hiddenOverlap} overlapping${hiddenCutaway?` · ${hiddenCutaway} on cutaway walls`:''}.`;
         }
       }
 

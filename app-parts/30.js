@@ -638,8 +638,11 @@ applyCameraFurnitureVisibilityV42 = function() {
 
 const updateLabelOcclusionBeforeV60 = updateLabelOcclusion;
 updateLabelOcclusion = function() {
-  updateLabelOcclusionBeforeV60();
+  // Occlusion must use the label's current object position. In particular,
+  // furniture can move while Photo mode is active, so synchronise first rather
+  // than allowing the cleanup pass to raycast from a stale label position.
   syncFurnitureLabelsV60();
+  updateLabelOcclusionBeforeV60();
 };
 
 const syncSelectedFromMeshBeforeV60 = syncSelectedFromMesh;
@@ -675,7 +678,7 @@ applyPhotoVisibilityV31 = function() {
   if (!photoModeActiveV31) return;
   labelGroup.visible = labelVisible;
   architectureLabelGroup.visible = labelVisible;
-  syncFurnitureLabelsV60();
+  updateLabelOcclusion();
 };
 
 const enterPhotoModeBeforeV60 = enterPhotoModeV31;
@@ -683,7 +686,7 @@ enterPhotoModeV31 = function() {
   enterPhotoModeBeforeV60();
   labelGroup.visible = labelVisible;
   architectureLabelGroup.visible = labelVisible;
-  syncFurnitureLabelsV60();
+  updateLabelOcclusion();
 };
 
 if (photoModeButtonV31) {
