@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260718-preserve-hidden-export-labels-v73';
+  const moduleVersion = '20260810-photo-label-occlusion-v74';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
