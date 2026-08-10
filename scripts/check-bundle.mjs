@@ -14,4 +14,16 @@ if(missing.length)throw new Error(`Missing app parts: ${missing.join(', ')}`);
 const source = parts.map(path => fs.readFileSync(path, 'utf8')).join('\n');
 new vm.Script(source, {filename:'layout-studio.bundle.js'});
 
+const markup = fs.readFileSync('index.html', 'utf8');
+const retiredImageHandoffTokens = [
+  'headerRenderHandoff',
+  'workflowRenderHandoff',
+  'Image handoff'
+];
+for(const token of retiredImageHandoffTokens){
+  if(markup.includes(token) || loader.includes(token) || source.includes(token)){
+    throw new Error(`Retired image handoff control is still bundled: ${token}`);
+  }
+}
+
 console.log(`Bundle syntax OK: ${parts.length} parts, ${source.length} characters.`);
