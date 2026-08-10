@@ -146,29 +146,6 @@
     .package-status.busy { color: #f0d49b; border-color: rgba(216,173,99,.5); }
     .package-status.ok { color: #c8e0c1; border-color: rgba(146,165,139,.55); }
     .package-status.error { color: #ffc0b8; border-color: rgba(223,116,104,.55); }
-    .workflow-panel { background: rgba(146,165,139,.025); }
-    .workflow-step { margin-top: 9px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,.1); }
-    .workflow-step:first-of-type { margin-top: 0; }
-    .workflow-step.complete { border-color: rgba(146,165,139,.65); background: rgba(146,165,139,.08); }
-    .workflow-step-heading { display: flex; align-items: baseline; gap: 8px; }
-    .workflow-step-heading span { color: #bfcdb9; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-    .workflow-step-heading strong { font-size: 11px; }
-    .workflow-step p { margin: 6px 0 9px; color: var(--muted); font-size: 10px; line-height: 1.45; }
-    .workflow-status { margin: 8px 0; padding: 7px 8px; border-radius: 7px; background: rgba(255,255,255,.035); color: var(--muted); font-size: 9px; line-height: 1.35; }
-    .workflow-step.complete .workflow-status { color: #c8e0c1; }
-    .workflow-details { margin: 8px 0; border: 1px solid #383932; border-radius: 8px; overflow: hidden; }
-    .workflow-details > summary { cursor: pointer; padding: 8px; color: #d9ddd5; font-size: 10px; }
-    .workflow-detail-body { display: grid; gap: 9px; padding: 9px; border-top: 1px solid #383932; }
-    .workflow-detail-body textarea { min-height: 58px; }
-    .workflow-reference-choices { display: grid; gap: 6px; }
-    .workflow-reference-choice { grid-template-columns: auto 36px minmax(0,1fr); align-items: center; gap: 7px; padding: 5px; border: 1px solid #383932; border-radius: 7px; }
-    .workflow-reference-choice input { accent-color: var(--sage); }
-    .workflow-reference-choice img { width: 36px; height: 28px; border-radius: 4px; object-fit: cover; background: #1c1d1a; }
-    .workflow-reference-choice span { overflow: hidden; color: var(--text); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-    .workflow-empty { color: var(--muted); font-size: 9px; }
-    .render-handoff-dialog label { margin-top: 12px; }
-    .render-lock-note { display: grid; grid-template-columns: auto 1fr; gap: 9px; margin-top: 12px; padding: 9px; border: 1px solid rgba(216,173,99,.45); border-radius: 8px; background: rgba(216,173,99,.07); font-size: 10px; line-height: 1.4; }
-    .render-lock-note span { color: var(--muted); }
     .reference-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .reference-empty { grid-column: 1 / -1; color: var(--muted); font-size: 10px; padding: 4px; }
     .reference-card { position: relative; min-width: 0; border: 1px solid #3b3c35; border-radius: 8px; overflow: hidden; background: #292a25; }

@@ -29,20 +29,12 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000` in a desktop browser.
 
-## Main workflow
-
-1. **Step 1 — Layout planning:** reconstruct and verify architecture, room use, furniture/built-in footprints and circulation. Gate 1 approves the complete spatial plan.
-2. **Step 2 — Design + Layout Studio ZIP:** add the approved style board, furniture archetypes, material/lighting/styling metadata, locked camera shots and one render spec per shot. Gate 2 locks the design and enables the complete project ZIP export.
-3. **Step 3 — Image generation only:** as a separate post-approval action, export a per-shot handoff containing only the exact Layout Studio PNG, approved style-board assets and that shot's render spec.
-
-No image generation occurs during Step 1 or Step 2. The Step 3 handoff contains no `project.json` and cannot modify the project. If an approved layout or design changes, Layout Studio invalidates the applicable gate before another ZIP or render handoff can be exported.
-
 ## Calibration and architecture review
 
 Scale calibration:
 
 - uses a horizontal ruler with a known printed millimetre dimension;
-- detects and stores a normalized drawing crop;
+- preserves the current normalized drawing crop (the full image by default);
 - stores millimetres per pixel and ruler endpoints;
 - updates the basemap registration;
 - preserves `project.plan` extents when the imported project already contains
@@ -60,6 +52,9 @@ Architecture detection:
 
 Manual **Align selected**, add and delete tools remain available because they
 are explicit user actions.
+
+**Auto-fit drawing β** remains available as an explicit, separate crop action.
+Applying ruler scale never crops the uploaded source image.
 
 ## Project compatibility
 
@@ -101,7 +96,6 @@ older files. JSON-only review mode is stored as
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
-- approval-aware render handoffs that reapply the locked camera before exporting the PNG
 
 Hidden walls and furniture remain in project data and validation.
 
@@ -116,7 +110,6 @@ one shared IIFE. Later files intentionally refine earlier functions.
 - `app-parts/28.js` — Photo-mode controls
 - `app-parts/29.js` — non-destructive suggestions, authority status and
   JSON-only route
-- `app-parts/40.js` — Gate 1/Gate 2 integrity locks and isolated Step 3 handoff
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.
@@ -126,14 +119,13 @@ Keep this order intact.
 ```bash
 node scripts/check-bundle.mjs
 node scripts/check-architecture-review.mjs
-node scripts/check-workflow-contract.mjs
+node scripts/check-basemap-scale.mjs
 ```
 
 The bundle check validates the concatenated JavaScript syntax. The architecture
 review check verifies that the non-destructive module is loaded before startup
 and contains the required registration guard, suggestion actions and unresolved
-review warning. The workflow contract check verifies the two-gate schema, loader
-order, Step 2 package contents and Step 3 isolation rules.
+review warning.
 
 ## Custom GPT files
 
