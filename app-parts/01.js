@@ -3,7 +3,7 @@
       const MM = 0.001;
       const PLAN_W = 14775;
       const PLAN_H = 9500;
-      const APP_VERSION = '2.7';
+      const APP_VERSION = '2.8';
       const PROJECT_PACKAGE_FORMAT = 'bto-layout-package';
       const PROJECT_LIBRARY_URL = 'projects/index.json';
       const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';

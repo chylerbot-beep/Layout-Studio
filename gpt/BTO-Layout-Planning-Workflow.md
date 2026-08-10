@@ -1,6 +1,12 @@
 # Layout Studio Planning Workflow
 
-Use this workflow for new plans, project corrections and layout validation.
+Use this workflow for new plans, project corrections and layout validation. It has exactly two approval gates and three clearly separated steps:
+
+1. **Layout planning** → Gate 1 layout approval.
+2. **Design development and complete Layout Studio ZIP** → Gate 2 design approval.
+3. **Image generation only**, as a separate post-approval action.
+
+Never generate an image during Step 1 or Step 2. Never let Step 3 reopen or modify the layout or design.
 
 ## 1. Gather only essential inputs
 
@@ -17,7 +23,9 @@ Use printed dimensions and project data. Do not derive authoritative millimetres
 
 Do not assume the home's property type. Clarify it when it materially affects the plan. If an HDB ceiling height is not documented, use 2,600 mm as the working default and state that assumption; confirm the height for other property types.
 
-## 2. Reconstruct architecture
+## Step 1 — Layout planning and approval
+
+### Reconstruct architecture
 
 1. Confirm orientation and scale. If Layout Studio will calibrate a new basemap, identify one clear horizontal printed dimension for its ruler.
 2. Reconstruct walls in millimetres.
@@ -27,9 +35,9 @@ Do not assume the home's property type. Clarify it when it materially affects th
 6. Check endpoints, thicknesses, opening offsets and room adjacency.
 7. Present one top-down architecture review.
 
-### Gate 1 — Architecture approval
+### Architecture checkpoint — not an approval gate
 
-Obtain approval for walls, openings, fixed shell, proposed hacked walls and dimensional assumptions. Do not add another gate before layout planning.
+Present the reconstructed architecture and resolve walls, openings, fixed shell, proposed hacked walls and dimensional assumptions as part of Step 1. Continue into furniture planning before requesting Gate 1 approval. Do not create a separate architecture approval gate.
 
 ### Layout Studio import review
 
@@ -51,7 +59,7 @@ When imported, Layout Studio:
 
 Never invent `basemap.scaleMmPerPixel` or `basemap.scaleCalibration`. Those values must come from the actual source image and ruler.
 
-## 3. Plan the layout
+### Complete the spatial layout
 
 Use inspiration images for design language—materials, colour, furniture character, lighting and visual density—without forcing objects into unsuitable spaces.
 
@@ -155,11 +163,32 @@ Typical use:
 upper elevation = support elevation + support height
 ```
 
-### Gate 2 — Layout approval
+### Gate 1 — Layout approval
 
-Obtain approval for zoning, furniture, carpentry, major decoration, circulation and unresolved assumptions.
+Obtain approval for the complete spatial plan:
 
-## 4. Cameras
+- walls, openings, retained and hacked architecture
+- room uses and zoning
+- furniture and built-in footprints, sizes and orientations
+- circulation, door access and clearances
+- all dimensional assumptions and unresolved spatial warnings
+
+Gate 1 approves layout only. Do not render, source products or develop new visual concepts in this gate. Store the approval in `workflow.approvals.layout`; record a layout fingerprint when tools support it. A later spatial change invalidates Gate 1 and Gate 2.
+
+## Step 2 — Design development and complete Layout Studio ZIP
+
+Starting from the approved Step 1 layout, resolve the design without moving or resizing approved spatial elements. Define and store:
+
+- the approved style board using `design.styleBoard.referenceIds`
+- furniture archetypes, without claiming exact products unless supplied by the user
+- material palette and finish intent
+- lighting direction and fixture metadata
+- major styling objects and styling density
+- one shot-specific render spec for every camera shot
+
+If design development reveals a spatial problem, return to Step 1, change the layout and obtain Gate 1 approval again. Do not silently redesign the approved layout inside Step 2.
+
+### Lock camera shots
 
 Recommend:
 
@@ -167,20 +196,34 @@ Recommend:
 - Bird's-eye for spatial understanding
 - Eye level for spatial previews and exported camera screenshots
 
-Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation.
+Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation. Save every final camera in `cameraShots`; Gate 2 locks the shot list, position, target, lens and framing. Manual camera movement is not a substitute for a locked shot.
 
 Photo mode keeps a floating Camera panel available. Nearby furniture can be hidden automatically by camera distance, or selected furniture can be hidden and shown manually. Camera visibility settings never delete or resize project objects.
 
-## 5. Create the handoff
+Each `design.shotRenderSpecs[]` entry must reference one `cameraShots[].id`, state the shot's render intent and allowed surface-level interpretation, and carry a policy that forbids layout changes, design changes, new objects and sourcing.
 
-After Gate 2, create:
+### Gate 2 — Design approval
+
+Obtain approval for the style board, furniture archetypes, materials, lighting, styling, shot contents, camera shots and shot-specific render specs. On approval:
+
+- set `workflow.approvals.design.status` to `approved`
+- set `workflow.stage` to `design-approved`
+- lock layout, design and camera shots
+- invalidate Gate 2 if any approved design metadata, object appearance, visibility setting or camera shot later changes
+
+### Create the complete Layout Studio handoff
+
+Only after Gate 2, create:
 
 - `project.json`
 - concise notes
 - standard ZIP with `project.json` at the root
 - layout rationale, assumptions and warnings
 - a list of custom elements, their source images and assumed dimensions
-- recommended camera views
+- approved style-board references
+- furniture-archetype, material, lighting and styling metadata
+- locked `cameraShots`
+- one render spec per camera shot
 
 Validate before delivery:
 
@@ -190,5 +233,25 @@ Validate before delivery:
 - valid categories, models and placement modes
 - non-negative elevations
 - `settings.architectureReviewConfirmed: false`
+- both workflow approvals are present and current
+- `workflow.locks.layout`, `workflow.locks.design` and `workflow.locks.cameraShots` are `true`
+- every selected style-board reference exists in the ZIP
+- every camera shot has a matching `design.shotRenderSpecs` entry
 
 When file tools are available, parse `project.json`, create the ZIP, reopen it and parse its root `project.json`. Provide the JSON separately as well.
+
+The Step 2 ZIP is Layout Studio's source of truth. If inspection reveals a spatial or design issue, return to the applicable earlier step, update the project, reapprove the invalidated gate and export a new ZIP.
+
+## Step 3 — Image generation only
+
+Run image generation as a completely separate post-approval action. For one camera shot at a time, give the image generator only:
+
+1. the PNG exported from that exact locked Layout Studio camera
+2. the approved style-board image assets
+3. that shot's isolated render spec
+
+Do not give the image generator the planning conversation, Layout Studio ZIP, project JSON, sourcing notes, alternatives or unresolved design discussion.
+
+The renderer may interpret only surface detail explicitly allowed by the shot spec, such as exact fabric weave or wood grain within the approved style board. It must not change the camera, crop, architecture, openings, floor zones, ceiling, furniture, built-ins, lighting-fixture positions or major styling-object positions. It must not add or remove objects, source products, re-plan or redesign.
+
+If the render exposes a problem, do not repair it inside Step 3. Return to Step 1 or Step 2, update Layout Studio, obtain any invalidated approval again, export a new camera PNG and rerun Step 3.
