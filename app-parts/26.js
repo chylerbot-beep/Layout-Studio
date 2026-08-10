@@ -353,11 +353,11 @@
           a: {...scaleStateV33.a},
           b: {...scaleStateV33.b}
         };
-        // Calibrate the detected plan drawing, not the white page margins. Applying
-        // mm/pixel to the full source image enlarged and shifted later wall scans.
-        project.basemap.crop = typeof detectedBasemapCropV42 === 'function'
-          ? (detectedBasemapCropV42() || {left:0, top:0, right:1, bottom:1})
-          : {left:0, top:0, right:1, bottom:1};
+        // Scale calibration must not change which part of the source image is
+        // visible. Automatic drawing detection can mistake one connected wall
+        // group for the complete plan and crop away most of a valid basemap.
+        // Cropping remains an explicit Auto-fit action, while ruler calibration
+        // uses the crop the user already reviewed (the full image by default).
         project.settings = project.settings || {};
         project.settings.scaleCalibrationRequired = false;
         applyCalibratedBasemapSizeV33();
