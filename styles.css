@@ -97,6 +97,8 @@
     .wide { grid-column: 1 / -1; }
     .button-row { display: flex; flex-wrap: wrap; gap: 7px; }
     .button-row button { font-size: 11px; }
+    .rotation-step-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .rotation-step-controls button { font-size: 11px; }
     .project-action-row { display: grid; grid-template-columns: .65fr 1.2fr 1.2fr; gap: 7px; }
     .project-action-row button { min-width: 0; padding-inline: 6px; font-size: 10px; }
     .basemap-primary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
