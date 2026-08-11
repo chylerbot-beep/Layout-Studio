@@ -93,6 +93,8 @@ older files. JSON-only review mode is stored as
 - Top, Bird's-eye and Eye-level views
 - 52° default perspective lens and 1,300 mm default eye height
 - Camera shots: optional named, predetermined views (`project.cameraShots`, millimetres), selectable from the Camera section or stepped with Prev/Next. Applying one sets position, target, lens and eye height together and re-runs cutaway, furniture-visibility and label cleanup. Users can also save the current view as a shot. The selector appears in Photo mode too. See `schema/project-schema.md`.
+- After architecture review is confirmed, projects with named camera shots automatically jump to the first authored shot so technical review flows directly into the intended hero views.
+- **Export all shots** creates one ZIP containing a numbered PNG for every named camera shot plus `camera-shots.json`. It uses the current PNG format/background settings and restores the user's previous camera and scene state after export.
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
@@ -110,6 +112,8 @@ one shared IIFE. Later files intentionally refine earlier functions.
 - `app-parts/28.js` — Photo-mode controls
 - `app-parts/29.js` — non-destructive suggestions, authority status and
   JSON-only route
+- `app-parts/39.js` — named camera-shot selection and capture
+- `app-parts/40.js` — post-review first-shot handoff and batch camera-shot PNG ZIP export
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.
