@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Layout Studio</title>
-  <link rel="stylesheet" href="styles.css?v=20260810-basemap-scale-v76" />
+  <link rel="stylesheet" href="styles.css?v=20260811-sidebar-toggles-v79" />
 </head>
 <body>
   <div class="app">
@@ -28,7 +28,8 @@
       <input id="referenceFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple />
     </header>
 
-    <aside class="panel left">
+    <aside class="panel left" id="leftSidebar">
+      <button class="sidebar-collapse-toggle" id="toggleLeftSidebar" type="button" aria-controls="leftSidebar" aria-expanded="true" title="Collapse left sidebar"><span aria-hidden="true">&#9664;</span><span class="sidebar-toggle-label">Collapse left sidebar</span></button>
       <div class="section project-workspace">
         <h2>Project workspace</h2>
         <div class="field-grid">
@@ -160,6 +161,7 @@
     </main>
 
     <aside class="panel right" id="precisionPanel">
+      <button class="sidebar-collapse-toggle" id="toggleRightSidebar" type="button" aria-controls="precisionPanel" aria-expanded="true" title="Collapse right sidebar"><span aria-hidden="true">&#9654;</span><span class="sidebar-toggle-label">Collapse right sidebar</span></button>
       <div class="section">
         <h2>Selected furniture</h2>
         <div id="selectionEmpty" class="empty">Select a furniture item in the scene.</div>
@@ -320,6 +322,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app-loader.js?v=20260811-camera-visibility-v77"></script>
+  <script src="app-loader.js?v=20260811-sidebar-toggles-v79"></script>
 </body>
 </html>
