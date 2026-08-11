@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260810-basemap-scale-v76';
+  const moduleVersion = '20260811-camera-visibility-v77';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
