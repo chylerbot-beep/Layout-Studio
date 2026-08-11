@@ -12,7 +12,7 @@
         if(settings.hideBehindWalls===undefined)settings.hideBehindWalls=legacyHideOccluded===undefined?true:!!legacyHideOccluded;
         if(settings.hideBehindObjects===undefined)settings.hideBehindObjects=legacyHideOccluded===undefined?true:!!legacyHideOccluded;
         if(settings.declutter===undefined)settings.declutter=true;
-        settings.sizePx=Math.max(12,Math.min(30,+settings.sizePx||18));
+        settings.sizePx=Math.max(12,Math.min(50,+settings.sizePx||35));
         settings.maxVisible=Math.max(4,Math.min(40,+settings.maxVisible||16));
         return settings;
       }
@@ -36,7 +36,7 @@
             <label class="inline-check wide"><input id="hideEyeLabelsBehindWalls" type="checkbox" checked /> Hide labels behind walls</label>
             <label class="inline-check wide"><input id="hideEyeLabelsBehindObjects" type="checkbox" checked /> Hide labels behind objects</label>
             <label class="inline-check wide"><input id="declutterEyeLabels" type="checkbox" checked /> Hide overlapping labels</label>
-            <label>Label size (px)<input id="eyeLabelSize" type="number" min="12" max="30" step="1" value="18" /></label>
+            <label>Label size (px)<input id="eyeLabelSize" type="number" min="12" max="50" step="1" value="35" /></label>
             <label>Maximum visible<input id="eyeLabelMax" type="number" min="4" max="40" step="1" value="16" /></label>
           </div>
           <p class="small" id="eyeLabelCleanupStatus">Eye-level cleanup keeps nearby, unobstructed labels and removes overlaps for cleaner screenshots.</p>`;
@@ -130,7 +130,7 @@
             if(label.material.color.getHex()!==wanted)label.material.color.setHex(wanted);
             return;
           }
-          label.material.color.setHex(label.userData.normalColor);
+          label.material.color.setHex(0xff8c00);
           setEyeLabelScreenScale(label,settings.sizePx);
           const rect=labelScreenRect(label);
           if(!rect){label.visible=false;return;}
@@ -172,7 +172,7 @@
       if($('hideEyeLabelsBehindWalls'))$('hideEyeLabelsBehindWalls').onchange=()=>updateEyeLabelSetting('toggle labels behind walls',settings=>settings.hideBehindWalls=$('hideEyeLabelsBehindWalls').checked);
       if($('hideEyeLabelsBehindObjects'))$('hideEyeLabelsBehindObjects').onchange=()=>updateEyeLabelSetting('toggle labels behind objects',settings=>settings.hideBehindObjects=$('hideEyeLabelsBehindObjects').checked);
       if($('declutterEyeLabels'))$('declutterEyeLabels').onchange=()=>updateEyeLabelSetting('toggle eye-level label declutter',settings=>settings.declutter=$('declutterEyeLabels').checked);
-      if($('eyeLabelSize'))$('eyeLabelSize').onchange=()=>updateEyeLabelSetting('change eye-level label size',settings=>settings.sizePx=Math.max(12,Math.min(30,+$('eyeLabelSize').value||18)));
+      if($('eyeLabelSize'))$('eyeLabelSize').onchange=()=>updateEyeLabelSetting('change eye-level label size',settings=>settings.sizePx=Math.max(12,Math.min(50,+$('eyeLabelSize').value||35)));
       if($('eyeLabelMax'))$('eyeLabelMax').onchange=()=>updateEyeLabelSetting('change eye-level label limit',settings=>settings.maxVisible=Math.max(4,Math.min(40,+$('eyeLabelMax').value||16)));
 
       const viewTopBeforeEyeLabels=viewTop,viewBirdBeforeEyeLabels=viewBird,viewEyeBeforeEyeLabels=viewEye;
