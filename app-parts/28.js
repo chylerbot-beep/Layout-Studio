@@ -18,7 +18,7 @@
         project.settings.cameraFurniture=project.settings.cameraFurniture||{};
         const settings=project.settings.cameraFurniture;
         if(settings.enabled===undefined)settings.enabled=false;
-        settings.depth=Math.max(100,Math.min(6000,+settings.depth||1200));
+        settings.depth=Math.max(100,Math.min(6000,+settings.depth||1500));
         settings.hiddenIds=Array.isArray(settings.hiddenIds)?[...new Set(settings.hiddenIds.filter(Boolean))]:[];
         settings.shownIds=Array.isArray(settings.shownIds)?[...new Set(settings.shownIds.filter(Boolean))]:[];
         return settings;
@@ -97,7 +97,7 @@
           <h2>Furniture visibility</h2>
           <div class="field-grid">
             <label class="inline-check wide"><input id="autoHideFurniture" type="checkbox" /> Auto-hide nearby furniture</label>
-            <label class="wide">Hide distance (mm)<input id="furnitureHideDistance" type="number" min="100" max="6000" step="100" value="1200" /></label>
+            <label class="wide">Hide distance (mm)<input id="furnitureHideDistance" type="number" min="100" max="6000" step="100" value="1500" /></label>
           </div>
           <div class="button-row" style="margin-top:10px"><button id="showAllFurniture">Show all furniture</button></div>
           <p class="small" id="cameraFurnitureStatus">All furniture is visible.</p>`;
@@ -115,7 +115,7 @@
       }
 
       $('autoHideFurniture').onchange=()=>updateCameraFurnitureSettingV42('toggle automatic furniture hiding',settings=>settings.enabled=$('autoHideFurniture').checked);
-      $('furnitureHideDistance').onchange=()=>updateCameraFurnitureSettingV42('change furniture hide distance',settings=>settings.depth=Math.max(100,Math.min(6000,+$('furnitureHideDistance').value||1200)));
+      $('furnitureHideDistance').onchange=()=>updateCameraFurnitureSettingV42('change furniture hide distance',settings=>settings.depth=Math.max(100,Math.min(6000,+$('furnitureHideDistance').value||1500)));
       $('hideSelectedFurniture').onclick=()=>{
         const id=selected?.userData?.id;if(!id)return;
         updateCameraFurnitureSettingV42('hide furniture for camera',settings=>{if(!settings.hiddenIds.includes(id))settings.hiddenIds.push(id);settings.shownIds=settings.shownIds.filter(item=>item!==id);});

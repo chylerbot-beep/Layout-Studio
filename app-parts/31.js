@@ -52,7 +52,7 @@ function applyEyeVisibilityDefaultsV64() {
 
   project.settings.cameraFurniture = project.settings.cameraFurniture || {};
   project.settings.cameraFurniture.enabled = true;
-  project.settings.cameraFurniture.depth = 3000;
+  project.settings.cameraFurniture.depth = 1500;
   project.settings.cameraFurniture.hiddenIds = Array.isArray(project.settings.cameraFurniture.hiddenIds)
     ? project.settings.cameraFurniture.hiddenIds
     : [];

@@ -252,6 +252,16 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
       "style": "hide",
       "depth": 1200,
       "hiddenWallIds": []
+    },
+    "cameraFurniture": {
+      "enabled": true,
+      "depth": 1500,
+      "hiddenIds": [],
+      "shownIds": []
+    },
+    "eyeLevelLabels": {
+      "hideBehindWalls": true,
+      "hideBehindObjects": true
     }
   }
 }
@@ -260,6 +270,8 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
 - `architectureReviewConfirmed` is optional for old projects. Use `false` for generated handoffs.
 - Camera cutaway changes only display and PNG output; hidden walls remain in data and validation.
 - Use cutaway style `hide`. Legacy `fade` values remain import-compatible and are treated as hidden.
+- Camera furniture auto-hide defaults to 1,500 mm; hidden furniture remains in data and validation.
+- Eye-level wall and object label occlusion are independent and both default to enabled.
 
 ## Camera
 

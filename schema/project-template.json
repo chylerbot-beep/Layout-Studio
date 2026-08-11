@@ -24,6 +24,16 @@
       "style": "hide",
       "depth": 1200,
       "hiddenWallIds": []
+    },
+    "cameraFurniture": {
+      "enabled": true,
+      "depth": 1500,
+      "hiddenIds": [],
+      "shownIds": []
+    },
+    "eyeLevelLabels": {
+      "hideBehindWalls": true,
+      "hideBehindObjects": true
     }
   },
   "camera": null,
