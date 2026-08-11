@@ -35,6 +35,19 @@
     .panel { background: var(--panel); min-height: 0; overflow: auto; }
     .left { border-right: 1px solid var(--line); }
     .right { border-left: 1px solid var(--line); }
+    .sidebar-collapse-toggle { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 7px; width: 100%; min-height: 36px; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; color: var(--muted); background: #1d1e1a; font-size: 10px; }
+    .left .sidebar-collapse-toggle { justify-content: flex-end; }
+    .right .sidebar-collapse-toggle { justify-content: flex-start; }
+    .sidebar-collapse-toggle:hover { color: var(--text); background: #292a25; }
+    .app.left-sidebar-collapsed { grid-template-columns: 40px minmax(0,1fr) 300px; }
+    .app.right-sidebar-collapsed { grid-template-columns: 300px minmax(0,1fr) 40px; }
+    .app.left-sidebar-collapsed.right-sidebar-collapsed { grid-template-columns: 40px minmax(0,1fr) 40px; }
+    .app.left-sidebar-collapsed .panel.left > :not(.sidebar-collapse-toggle),
+    .app.right-sidebar-collapsed .panel.right > :not(.sidebar-collapse-toggle) { display: none !important; }
+    .app.left-sidebar-collapsed .sidebar-toggle-label,
+    .app.right-sidebar-collapsed .sidebar-toggle-label { display: none; }
+    .app.left-sidebar-collapsed .left .sidebar-collapse-toggle,
+    .app.right-sidebar-collapsed .right .sidebar-collapse-toggle { justify-content: center; padding-inline: 0; }
     .section { padding: 15px; border-bottom: 1px solid var(--line); }
     .section h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 12px; }
     .small { font-size: 11px; color: var(--muted); line-height: 1.45; }
@@ -155,6 +168,9 @@
     input[type="file"] { display: none; }
     @media (max-width: 900px) {
       .app { grid-template-columns: 210px 1fr; }
+      .app.left-sidebar-collapsed { grid-template-columns: 40px 1fr; }
+      .app.right-sidebar-collapsed { grid-template-columns: 210px 1fr; }
+      .app.left-sidebar-collapsed.right-sidebar-collapsed { grid-template-columns: 40px 1fr; }
       header { overflow-x: auto; }
       #togglePrecisionPanel { display: inline-block; }
       .right { display: block; position: fixed; top: 58px; right: 0; bottom: 0; z-index: 60; width: min(350px, calc(100vw - 36px)); border-left: 1px solid var(--line); box-shadow: -18px 0 55px rgba(0,0,0,.36); transform: translateX(105%); transition: transform .2s ease; }
