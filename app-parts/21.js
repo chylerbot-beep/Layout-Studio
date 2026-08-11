@@ -83,17 +83,17 @@
         deleteArchitecture(selectedArchitecture.kind,selectedArchitecture.id);
       },true);
 
-      // Eye-level labels: migrate the old 18 px default to 30 px and remove the
+      // Eye-level labels: migrate the old 18/30 px defaults to 35 px and remove the
       // visible-count cap entirely. Occlusion and overlap decluttering still apply.
       const ensureEyeLabelSettingsBeforeV29=ensureEyeLabelSettings;
       ensureEyeLabelSettings=function(){
-        const existing=project.settings?.eyeLevelLabels||{},legacyDefault=existing.sizePx===18&&(existing.maxVisible===16||existing.maxVisible===undefined)&&!existing.default30Migrated;
+        const existing=project.settings?.eyeLevelLabels||{},legacyDefault=(existing.sizePx===18&&(existing.maxVisible===16||existing.maxVisible===undefined)&&!existing.default30Migrated)||(existing.sizePx===30&&existing.default30Migrated&&!existing.default35Migrated);
         const hadSize=Number.isFinite(+existing.sizePx),settings=ensureEyeLabelSettingsBeforeV29();
-        if(!hadSize||legacyDefault)settings.sizePx=30;
-        settings.sizePx=Math.max(12,Math.min(30,+settings.sizePx||30));settings.maxVisible=Number.MAX_SAFE_INTEGER;settings.default30Migrated=true;return settings;
+        if(!hadSize||legacyDefault)settings.sizePx=35;
+        settings.sizePx=Math.max(12,Math.min(50,+settings.sizePx||35));settings.maxVisible=Number.MAX_SAFE_INTEGER;settings.default30Migrated=true;settings.default35Migrated=true;return settings;
       };
       const maxVisibleFieldV29=$('eyeLabelMax');if(maxVisibleFieldV29)maxVisibleFieldV29.closest('label')?.remove();
-      const labelSizeFieldV29=$('eyeLabelSize');if(labelSizeFieldV29){labelSizeFieldV29.value='30';labelSizeFieldV29.max='30';}
+      const labelSizeFieldV29=$('eyeLabelSize');if(labelSizeFieldV29){labelSizeFieldV29.value='35';labelSizeFieldV29.max='50';}
       ensureEyeLabelSettings();syncEyeLabelControls();scheduleEyeLabelCleanup();
 
       // Automatic and manual camera cutaway always fully hide affected walls.
