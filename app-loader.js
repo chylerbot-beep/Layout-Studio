@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260811-camera-visibility-v77';
+  const moduleVersion = '20260811-camera-batch-export-v78';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
@@ -38,6 +38,7 @@
     'app-parts/37.js',
     'app-parts/38.js',
     'app-parts/39.js',
+    'app-parts/40.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];
