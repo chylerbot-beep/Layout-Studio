@@ -1,22 +1,22 @@
-      // Direct carpentry length editing. Straight carpentry gets two end handles;
-      // the L-shaped wardrobe gets one handle at each free end of the L.
+      // Direct furniture length editing. Furniture gets two end handles; the
+      // L-shaped wardrobe gets one handle at each free end of the L.
       let carpentryResizeMode=false,carpentryResizeDrag=null,carpentryResizeLastRender=0;
       const carpentryResizeGroup=new THREE.Group();carpentryResizeGroup.renderOrder=970;scene.add(carpentryResizeGroup);
 
       if(!$('resizeCarpentry')){
-        const button=document.createElement('button');button.id='resizeCarpentry';button.textContent='Resize';button.hidden=true;button.title='Drag the blue end handles to extend or shorten this carpentry lengthwise.';
+        const button=document.createElement('button');button.id='resizeCarpentry';button.textContent='Resize';button.hidden=true;button.title='Drag the blue end handles to extend or shorten this furniture item.';
         $('delete')?.parentElement?.insertBefore(button,$('delete'));
       }
       if(!$('carpentryResizeHint')&&$('selectionFields')){
         const hint=document.createElement('div');hint.id='carpentryResizeHint';hint.className='selected-wall-note';hint.hidden=true;hint.style.marginTop='10px';
-        hint.innerHTML='Resize mode changes only the carpentry length. Drag either blue end handle; the opposite end stays fixed. L-shaped wardrobes have one handle on each free end.';
+        hint.innerHTML='Resize mode changes the furniture length. Drag either blue end handle; the opposite end stays fixed. L-shaped wardrobes have one handle on each free end.';
         $('selectionFields').appendChild(hint);
       }
 
       carpentryCatalog.push({category:'carpentry',name:'L-shaped wardrobe',w:2400,d:1800,h:2700,armDepth:600,model:'l-wardrobe',color:0xa99f94});
 
       function carpentryPlanAxes(rotation){const r=THREE.MathUtils.degToRad(rotation||0);return{u:{x:Math.cos(r),y:-Math.sin(r)},v:{x:Math.sin(r),y:Math.cos(r)}};}
-      function carpentryItem(){if(!selected)return null;return project.furniture.find(item=>item.id===selected.userData.id&&item.category==='carpentry')||null;}
+      function carpentryItem(){if(!selected)return null;return project.furniture.find(item=>item.id===selected.userData.id)||null;}
       function createLWardrobeObject(item){
         const group=new THREE.Group(),w=Math.max(800,+item.w||2400),d=Math.max(800,+item.d||1800),h=Math.max(100,+item.h||2700),arm=Math.max(250,Math.min(+item.armDepth||600,w-200,d-200)),material=new THREE.MeshStandardMaterial({color:item.color||0xa99f94,roughness:.86,metalness:.02});
         const horizontal=new THREE.Mesh(new THREE.BoxGeometry(mm(w),mm(h),mm(arm)),material.clone());horizontal.position.set(0,mm(h)/2,mm(-d/2+arm/2));horizontal.userData={lWardrobePart:'horizontal',baseW:w,baseD:arm};group.add(horizontal);
@@ -58,6 +58,15 @@
         $('resizeCarpentry')?.classList.toggle('active',carpentryResizeMode);if($('carpentryResizeHint'))$('carpentryResizeHint').hidden=!carpentryResizeMode;renderCarpentryResizeHandles();
       }
       $('resizeCarpentry').onclick=()=>setCarpentryResizeMode(!carpentryResizeMode);
+
+      function rotateSelectedFurnitureBy90(direction){
+        if(!selected)return;const id=selected.userData.id,item=project.furniture.find(entry=>entry.id===id);if(!item)return;
+        pushHistory(direction<0?'rotate furniture left 90 degrees':'rotate furniture right 90 degrees');
+        item.rotation=((+(item.rotation||0)+direction*90)%360+360)%360;
+        buildScene();selectById(id);$('selectionStatus').textContent=`${item.name} rotated ${direction<0?'left':'right'} 90°.`;
+      }
+      $('rotateLeft90').onclick=()=>rotateSelectedFurnitureBy90(-1);
+      $('rotateRight90').onclick=()=>rotateSelectedFurnitureBy90(1);
 
       const updateSelectionPanelBeforeCarpentryResize=updateSelectionPanel;
       updateSelectionPanel=function(){

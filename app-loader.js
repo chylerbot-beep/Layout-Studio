@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260811-sidebar-toggles-v79';
+  const moduleVersion = '20260811-horizontal-rotate-resize-v80';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',

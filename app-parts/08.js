@@ -135,8 +135,8 @@
       };
 
       $('viewTop').onclick=viewTop;$('viewBird').onclick=viewBird;$('viewEye').onclick=viewEye;
-      $('modeMove').onclick=()=>{transform.setMode('translate');$('modeMove').classList.add('active');$('modeRotate').classList.remove('active');};
-      $('modeRotate').onclick=()=>{transform.setMode('rotate');$('modeRotate').classList.add('active');$('modeMove').classList.remove('active');};
+      $('modeMove').onclick=()=>{transform.showX=true;transform.showY=true;transform.showZ=true;transform.setMode('translate');$('modeMove').classList.add('active');$('modeRotate').classList.remove('active');};
+      $('modeRotate').onclick=()=>{transform.showX=false;transform.showY=true;transform.showZ=false;transform.setMode('rotate');$('modeRotate').classList.add('active');$('modeMove').classList.remove('active');};
       $('toggleGrid').onclick=()=>{grid.visible=!grid.visible;$('toggleGrid').classList.toggle('active',grid.visible);};
       $('toggleClearance').onclick=()=>{clearanceGroup.visible=!clearanceGroup.visible;$('toggleClearance').classList.toggle('active',clearanceGroup.visible);};
       $('toggleShell').onclick=()=>{shellGroup.visible=!shellGroup.visible;$('toggleShell').classList.toggle('active',shellGroup.visible);};
