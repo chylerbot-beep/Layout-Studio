@@ -6,7 +6,7 @@
       // window glass and door-swing guides are excluded.
       // -----------------------------------------------------------------------------
 
-      const renderControlVersionV81 = '20260812-architecture-depth-v81';
+      const renderControlVersionV81 = '20260812-shot-visibility-depth-v83';
       let renderControlExportingV81 = false;
 
       function renderControlSizeV81() {
@@ -51,6 +51,7 @@
           overrideMaterial: scene.overrideMaterial,
           outputEncoding: renderer.outputEncoding,
           groups: trackedRenderGroupsV81().map(group => [group, group.visible]),
+          shellChildren: shellGroup.children.map(child => [child, child.visible]),
           openingChildren: openingGroup.children.map(child => [child, child.visible]),
           furnitureChildren: furnitureGroup.children.map(child => [child, child.visible]),
           gridVisible: grid?.visible,
@@ -64,6 +65,7 @@
         scene.overrideMaterial = snapshot.overrideMaterial;
         renderer.outputEncoding = snapshot.outputEncoding;
         snapshot.groups.forEach(([group, visible]) => { group.visible = visible; });
+        snapshot.shellChildren.forEach(([child, visible]) => { child.visible = visible; });
         snapshot.openingChildren.forEach(([child, visible]) => { child.visible = visible; });
         snapshot.furnitureChildren.forEach(([child, visible]) => { child.visible = visible; });
         if (grid && snapshot.gridVisible !== undefined) grid.visible = snapshot.gridVisible;
@@ -98,7 +100,11 @@
       }
 
       function includeCeilingInDepthV81() {
-        return activeCameraTypeV81() === 'eye';
+        if (activeCameraTypeV81() !== 'eye') return false;
+        const ceilingHeightM = mm(Math.max(2100, Math.min(5000, +(project.settings?.ceilingHeight || 2600))));
+        // A saved custom camera can be placed at or above the ceiling. In that case
+        // forcing the ceiling into either export would put the camera inside the slab.
+        return camera.position.y < ceilingHeightM - 0.05;
       }
 
       function isFixedSpatialDividerV81(item) {
@@ -138,12 +144,34 @@
         scene.background = new THREE.Color(0x000000);
         openingGroup.visible = false;
         shellGroup.visible = true;
+        // Reuse the wall cutaway already calculated for this exact camera. Hidden
+        // walls stay hidden; legacy faded cutaways become omitted in depth because
+        // an opaque depth surface would otherwise block the same view.
+        const cutawayIds = typeof cameraCutawayWallIds !== 'undefined'
+          ? cameraCutawayWallIds
+          : new Set();
+        shellGroup.children.forEach(mesh => {
+          if (mesh.userData?.wall && cutawayIds.has(mesh.userData.id)) mesh.visible = false;
+        });
         ceilingGroup.visible = includeCeilingInDepthV81();
         furnitureGroup.visible = true;
         furnitureGroup.children.forEach(mesh => {
           const item = (project.furniture || []).find(candidate => candidate.id === mesh.userData?.id);
-          mesh.visible = isFixedSpatialDividerV81(item);
+          // Loose furniture never enters architecture depth. Fixed spatial dividers
+          // do, but only when the shot's furniture visibility pass kept them visible.
+          mesh.visible = mesh.visible && isFixedSpatialDividerV81(item);
         });
+      }
+
+      async function settleCameraVisibilityV82() {
+        // Applying a named/custom shot schedules these passes. Run them immediately
+        // as well so both exported PNGs use one settled visibility state even when a
+        // browser is throttling requestAnimationFrame during a batch download.
+        if (typeof applyCameraCutaway === 'function') applyCameraCutaway();
+        if (typeof applyCameraFurnitureVisibilityV42 === 'function') applyCameraFurnitureVisibilityV42();
+        await waitCameraFramesV78(2);
+        if (typeof applyCameraCutaway === 'function') applyCameraCutaway();
+        if (typeof applyCameraFurnitureVisibilityV42 === 'function') applyCameraFurnitureVisibilityV42();
       }
 
       function visibleArchitectureBoundsV81() {
@@ -222,7 +250,10 @@
               gl_FragColor = vec4(vec3(value), 1.0);
             }
           `,
-          side: THREE.DoubleSide,
+          // Match the normal camera layout's solid-surface culling. Double-sided
+          // depth made a camera placed just inside a cutaway wall/ceiling see that
+          // back face at near-zero distance, saturating the entire PNG white.
+          side: THREE.FrontSide,
           depthTest: true,
           depthWrite: true,
           blending: THREE.NoBlending
@@ -271,9 +302,7 @@
           renderer.setSize(width, height, false);
           camera.aspect = width / height;
           camera.updateProjectionMatrix();
-          if (typeof applyCameraCutaway === 'function') applyCameraCutaway();
-          if (typeof applyCameraFurnitureVisibilityV42 === 'function') applyCameraFurnitureVisibilityV42();
-          await waitCameraFramesV78(3);
+          await settleCameraVisibilityV82();
 
           prepareCameraLayoutPassV81(background);
           renderer.render(scene, camera);
@@ -351,7 +380,7 @@
             applyCameraShotV70(shot);
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            await waitCameraFramesV78(3);
+            await settleCameraVisibilityV82();
 
             prepareCameraLayoutPassV81(background);
             renderer.render(scene, camera);
