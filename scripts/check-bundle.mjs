@@ -36,7 +36,7 @@ for(const token of retiredImageHandoffTokens){
 
 const boundarySource = fs.readFileSync(boundaryPart, 'utf8');
 for(const token of [
-  "project.settings.photoBoundaryLines = false",
+  "project.settings.photoBoundaryLines = true",
   "setPhotoBoundaryVisibilityV85(ensurePhotoBoundarySettingsV85())",
   "setPhotoBoundaryVisibilityV85(false)"
 ]){

@@ -7,7 +7,7 @@
       function ensurePhotoBoundarySettingsV85() {
         project.settings = project.settings || {};
         if (typeof project.settings.photoBoundaryLines !== 'boolean') {
-          project.settings.photoBoundaryLines = false;
+          project.settings.photoBoundaryLines = true;
         }
         return project.settings.photoBoundaryLines;
       }
@@ -116,7 +116,7 @@
         const button = document.createElement('button');
         button.id = 'photoBoundaryLines';
         button.type = 'button';
-        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('aria-pressed', 'true');
         button.title = 'Show faint architecture boundaries in Photo mode and camera-layout exports. The depth map stays clean.';
         const captureButton = $('capture');
         captureButton?.parentNode?.insertBefore(button, captureButton);
