@@ -6,7 +6,7 @@
       // window glass and door-swing guides are excluded.
       // -----------------------------------------------------------------------------
 
-      const renderControlVersionV81 = '20260812-camera-object-labels-v84';
+      const renderControlVersionV81 = '20260812-photo-boundary-lines-v85';
       let renderControlExportingV81 = false;
 
       function renderControlSizeV81() {
@@ -378,6 +378,9 @@
           exportVersion: renderControlVersionV81,
           preset: `${width}x${height}`,
           background,
+          cameraLayout: {
+            boundaryLines: ensurePhotoBoundarySettingsV85()
+          },
           depth: {
             scope: 'architecture-only',
             convention: 'near-white-far-dark',

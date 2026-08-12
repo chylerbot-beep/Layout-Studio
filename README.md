@@ -99,6 +99,7 @@ older files. JSON-only review mode is stored as
 - Architecture-depth pixels use near-white/far-dark linear view depth, with pure black reserved for excluded/background pixels. Each shot first settles its automatic/manual blocking-wall and furniture-visibility settings; depth preserves that wall cutaway and applies furniture visibility to any fixed spatial divider it includes. Both images use the current PNG dimensions, exact camera, lens and framing, and the exporter restores the user's previous camera and scene state afterwards.
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
+- Optional **Boundary lines** toggle in Photo mode. Faint depth-tested edges follow the floor, walls, ceiling, fixed shell and glass-block spatial dividers without changing surface colours. When enabled, the guides carry into `camera-layout.png` and remain excluded from `architecture-depth.png`.
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
 
 Hidden walls and furniture remain in project data and validation.
@@ -117,6 +118,7 @@ one shared IIFE. Later files intentionally refine earlier functions.
 - `app-parts/39.js` — named camera-shot selection and capture
 - `app-parts/40.js` — post-review first-shot handoff and batch camera-shot PNG ZIP export
 - `app-parts/42.js` — paired clean camera-layout and architecture-only depth-map export
+- `app-parts/43.js` — optional Photo-mode and camera-layout architecture boundary guides
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.

@@ -19,6 +19,7 @@
     "scaleCalibrationRequired": false,
     "ceilingVisible": false,
     "ceilingHeight": 2600,
+    "photoBoundaryLines": false,
     "cameraCutaway": {
       "enabled": false,
       "style": "hide",

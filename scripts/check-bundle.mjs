@@ -11,6 +11,14 @@ if(!parts.length)throw new Error('No app parts were found in app-loader.js');
 const missing = parts.filter(path => !fs.existsSync(path));
 if(missing.length)throw new Error(`Missing app parts: ${missing.join(', ')}`);
 
+const boundaryPart = 'app-parts/43.js';
+const boundaryIndex = parts.indexOf(boundaryPart);
+const exportIndex = parts.indexOf('app-parts/42.js');
+const startupIndex = parts.indexOf('app-parts/08.js');
+if(boundaryIndex < 0 || boundaryIndex <= exportIndex || boundaryIndex >= startupIndex){
+  throw new Error(`${boundaryPart} must load after camera/depth export and before startup`);
+}
+
 const source = parts.map(path => fs.readFileSync(path, 'utf8')).join('\n');
 new vm.Script(source, {filename:'layout-studio.bundle.js'});
 
@@ -23,6 +31,17 @@ const retiredImageHandoffTokens = [
 for(const token of retiredImageHandoffTokens){
   if(markup.includes(token) || loader.includes(token) || source.includes(token)){
     throw new Error(`Retired image handoff control is still bundled: ${token}`);
+  }
+}
+
+const boundarySource = fs.readFileSync(boundaryPart, 'utf8');
+for(const token of [
+  "project.settings.photoBoundaryLines = false",
+  "setPhotoBoundaryVisibilityV85(ensurePhotoBoundarySettingsV85())",
+  "setPhotoBoundaryVisibilityV85(false)"
+]){
+  if(!boundarySource.includes(token)){
+    throw new Error(`Photo boundary export invariant is missing: ${token}`);
   }
 }
 
