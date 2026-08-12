@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260812-architecture-depth-v81';
+  const moduleVersion = '20260812-shot-visibility-depth-v83';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',

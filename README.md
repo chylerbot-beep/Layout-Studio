@@ -96,7 +96,7 @@ older files. JSON-only review mode is stored as
 - After architecture review is confirmed, projects with named camera shots automatically jump to the first authored shot so technical review flows directly into the intended hero views.
 - **Export camera + depth** downloads a ZIP with two pixel-aligned PNGs for the current view: a clean camera-layout image and an architecture-only depth map.
 - **Export camera + depth** for named shots creates one ZIP containing the same two-image pair for every shot plus `camera-shots.json`. The depth pass keeps the visible floor, walls, eye-view ceiling, fixed shell, door/window apertures and glass-block spatial dividers while excluding furniture, decor, labels, editor overlays, window glass and door-swing guides.
-- Architecture-depth pixels use near-white/far-dark linear view depth, with pure black reserved for excluded/background pixels. Both images use the current PNG dimensions, exact camera, lens and framing, and the exporter restores the user's previous camera and scene state afterwards.
+- Architecture-depth pixels use near-white/far-dark linear view depth, with pure black reserved for excluded/background pixels. Each shot first settles its automatic/manual blocking-wall and furniture-visibility settings; depth preserves that wall cutaway and applies furniture visibility to any fixed spatial divider it includes. Both images use the current PNG dimensions, exact camera, lens and framing, and the exporter restores the user's previous camera and scene state afterwards.
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
