@@ -94,7 +94,9 @@ older files. JSON-only review mode is stored as
 - 52° default perspective lens and 1,300 mm default eye height
 - Camera shots: optional named, predetermined views (`project.cameraShots`, millimetres), selectable from the Camera section or stepped with Prev/Next. Applying one sets position, target, lens and eye height together and re-runs cutaway, furniture-visibility and label cleanup. Users can also save the current view as a shot. The selector appears in Photo mode too. See `schema/project-schema.md`.
 - After architecture review is confirmed, projects with named camera shots automatically jump to the first authored shot so technical review flows directly into the intended hero views.
-- **Export all shots** creates one ZIP containing a numbered PNG for every named camera shot plus `camera-shots.json`. It uses the current PNG format/background settings and restores the user's previous camera and scene state after export.
+- **Export camera + depth** downloads a ZIP with two pixel-aligned PNGs for the current view: a clean camera-layout image and an architecture-only depth map.
+- **Export camera + depth** for named shots creates one ZIP containing the same two-image pair for every shot plus `camera-shots.json`. The depth pass keeps the visible floor, walls, eye-view ceiling, fixed shell, door/window apertures and glass-block spatial dividers while excluding furniture, decor, labels, editor overlays, window glass and door-swing guides.
+- Architecture-depth pixels use near-white/far-dark linear view depth, with pure black reserved for excluded/background pixels. Both images use the current PNG dimensions, exact camera, lens and framing, and the exporter restores the user's previous camera and scene state afterwards.
 - blocking-wall hiding without deleting geometry
 - Photo mode with camera and furniture-visibility controls
 - project-name-based PNG filenames, suffixed with the active shot's label when one is applied
@@ -114,6 +116,7 @@ one shared IIFE. Later files intentionally refine earlier functions.
   JSON-only route
 - `app-parts/39.js` — named camera-shot selection and capture
 - `app-parts/40.js` — post-review first-shot handoff and batch camera-shot PNG ZIP export
+- `app-parts/42.js` — paired clean camera-layout and architecture-only depth-map export
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.
