@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260812-shot-visibility-depth-v83';
+  const moduleVersion = '20260812-camera-object-labels-v84';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
