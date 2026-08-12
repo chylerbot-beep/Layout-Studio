@@ -6,7 +6,7 @@
       // window glass and door-swing guides are excluded.
       // -----------------------------------------------------------------------------
 
-      const renderControlVersionV81 = '20260812-shot-visibility-depth-v83';
+      const renderControlVersionV81 = '20260812-camera-object-labels-v84';
       let renderControlExportingV81 = false;
 
       function renderControlSizeV81() {
@@ -54,6 +54,13 @@
           shellChildren: shellGroup.children.map(child => [child, child.visible]),
           openingChildren: openingGroup.children.map(child => [child, child.visible]),
           furnitureChildren: furnitureGroup.children.map(child => [child, child.visible]),
+          labelVisibleSetting: labelVisible,
+          labelChildren: labelGroup.children.map(label => ({
+            label,
+            visible: label.visible,
+            scale: label.scale.clone(),
+            color: label.material?.color?.getHex?.()
+          })),
           gridVisible: grid?.visible,
           transformVisible: transform.visible,
           resizeVisible: typeof carpentryResizeGroup !== 'undefined' ? carpentryResizeGroup.visible : null
@@ -68,6 +75,12 @@
         snapshot.shellChildren.forEach(([child, visible]) => { child.visible = visible; });
         snapshot.openingChildren.forEach(([child, visible]) => { child.visible = visible; });
         snapshot.furnitureChildren.forEach(([child, visible]) => { child.visible = visible; });
+        labelVisible = snapshot.labelVisibleSetting;
+        snapshot.labelChildren.forEach(({ label, visible, scale, color }) => {
+          label.visible = visible;
+          label.scale.copy(scale);
+          if (color !== undefined && label.material?.color) label.material.color.setHex(color);
+        });
         if (grid && snapshot.gridVisible !== undefined) grid.visible = snapshot.gridVisible;
         transform.visible = snapshot.transformVisible;
         if (snapshot.resizeVisible !== null && typeof carpentryResizeGroup !== 'undefined') {
@@ -137,6 +150,16 @@
           child.visible = child.userData?.type === 'window';
         });
         ceilingGroup.visible = includeCeilingInDepthV81();
+        // Camera-layout PNGs are identification references for image generation.
+        // Show furniture/object labels, while retaining the existing eye-level
+        // declutter, occlusion and hidden-furniture rules. Architecture labels stay
+        // off so they do not compete with the objects the renderer must replace.
+        labelVisible = true;
+        labelGroup.visible = true;
+        architectureLabelGroup.visible = false;
+        if (typeof syncFurnitureLabelsV60 === 'function') syncFurnitureLabelsV60();
+        if (typeof updateEyeLevelLabelCleanup === 'function') updateEyeLevelLabelCleanup();
+        if (typeof enforceHiddenFurnitureLabelsV65 === 'function') enforceHiddenFurnitureLabelsV65();
       }
 
       function prepareArchitectureDepthPassV81() {
