@@ -245,7 +245,7 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
   "settings": {
     "ceilingVisible": false,
     "ceilingHeight": 2600,
-    "photoBoundaryLines": false,
+    "photoBoundaryLines": true,
     "validationEnabled": true,
     "architectureReviewConfirmed": false,
     "cameraCutaway": {
@@ -273,7 +273,7 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
 - Use cutaway style `hide`. Legacy `fade` values remain import-compatible and are treated as hidden.
 - Camera furniture auto-hide defaults to 1,500 mm; hidden furniture remains in data and validation.
 - Eye-level wall and object label occlusion are independent and both default to enabled.
-- `photoBoundaryLines` defaults to `false`. When enabled, faint geometry edges appear in Photo mode and `camera-layout.png`; `architecture-depth.png` always excludes them.
+- `photoBoundaryLines` defaults to `true`. Faint geometry edges appear in Photo mode and `camera-layout.png` unless toggled off; `architecture-depth.png` always excludes them.
 
 ## Camera
 
