@@ -91,13 +91,22 @@
       function snapshotRenderWorkspaceV81() {
         return {
           camera: snapshotCameraStateV78(),
-          pass: snapshotRenderPassV81()
+          pass: snapshotRenderPassV81(),
+          visibility: JSON.parse(JSON.stringify({
+            cameraCutaway: project.settings?.cameraCutaway || null,
+            cameraFurniture: project.settings?.cameraFurniture || null
+          }))
         };
       }
 
       function restoreRenderWorkspaceV81(snapshot) {
         restoreCameraStateV78(snapshot.camera);
+        project.settings = project.settings || {};
+        if (snapshot.visibility?.cameraCutaway) project.settings.cameraCutaway = snapshot.visibility.cameraCutaway;
+        if (snapshot.visibility?.cameraFurniture) project.settings.cameraFurniture = snapshot.visibility.cameraFurniture;
         restoreRenderPassV81(snapshot.pass);
+        if (typeof applyCameraCutaway === 'function') applyCameraCutaway();
+        if (typeof applyCameraFurnitureVisibilityV42 === 'function') applyCameraFurnitureVisibilityV42();
         renderer.render(scene, camera);
       }
 
@@ -381,6 +390,13 @@
           cameraLayout: {
             boundaryLines: ensurePhotoBoundarySettingsV85()
           },
+          cameraComposition: project.cameraPlan ? {
+            version: project.cameraPlan.version || 3,
+            candidateCount: project.cameraPlan.candidateCount || 12,
+            finalShotCount: project.cameraPlan.finalShotCount || 8,
+            profile: project.cameraPlan.compositionProfile || 'editorial-residential',
+            rankingVersion: project.cameraPlan.rankingVersion || null
+          } : null,
           depth: {
             scope: 'architecture-only',
             convention: 'near-white-far-dark',
@@ -426,7 +442,11 @@
               label: shot.label,
               roomId: shot.roomId || null,
               type: shot.type,
+              role: shot.role || null,
               fov: shot.fov,
+              compositionRank: shot.compositionRank || null,
+              compositionScore: Number.isFinite(shot.compositionScore) ? shot.compositionScore : null,
+              visibility: shot.visibility || null,
               cameraFilename,
               architectureDepthFilename: depthFilename,
               depthNearM: depth.nearM,

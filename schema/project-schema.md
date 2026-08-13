@@ -1,4 +1,4 @@
-# Layout Studio project schema v2.8
+# Layout Studio project schema v3.0
 
 Projects are UTF-8 JSON. All plan coordinates and dimensions are millimetres. Plan origin is top-left: X increases right and Y increases down.
 
@@ -19,6 +19,7 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
   "furniture": [],
   "settings": {},
   "camera": null,
+  "cameraPlan": null,
   "cameraShots": [],
   "workflow": {},
   "design": {},
@@ -37,6 +38,7 @@ Existing JSON, ZIP and `.btozip` projects remain compatible. Do not rename exist
 - `furniture`: furniture, carpentry and decorative objects
 - `settings`: ceiling, camera cutaway, validation and review state
 - `camera`: Three.js position, target and FOV (last manually-set view; metres)
+- `cameraPlan`: Layout Planner V3's exact 12 camera candidates, visibility ranges and local ranking results
 - `cameraShots`: named, predetermined camera views in millimetres (see below)
 - `workflow`: two-gate approval state, fingerprints and locks
 - `design`: approved style-board, furniture-archetype, material, lighting, styling and shot-render metadata
@@ -249,9 +251,9 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
     "validationEnabled": true,
     "architectureReviewConfirmed": false,
     "cameraCutaway": {
-      "enabled": false,
+      "enabled": true,
       "style": "hide",
-      "depth": 1200,
+      "depth": 3000,
       "hiddenWallIds": []
     },
     "cameraFurniture": {
@@ -269,7 +271,7 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
 ```
 
 - `architectureReviewConfirmed` is optional for old projects. Use `false` for generated handoffs.
-- Camera cutaway changes only display and PNG output; hidden walls remain in data and validation.
+- Camera cutaway defaults to 3,000 mm and changes only display and PNG output; hidden walls remain in data and validation.
 - Use cutaway style `hide`. Legacy `fade` values remain import-compatible and are treated as hidden.
 - Camera furniture auto-hide defaults to 1,500 mm; hidden furniture remains in data and validation.
 - Eye-level wall and object label occlusion are independent and both default to enabled.
@@ -289,6 +291,60 @@ Older projects need only `basemap.width` and `basemap.depth`. Ruler fields are o
 
 Camera vectors use Three.js world units in metres; project geometry remains millimetres. `fov` is vertical field of view in degrees. `camera` stores only the single, last-applied view.
 
+## Layout Planner V3 camera plan
+
+Planner V3 must author exactly 12 valid candidates. Layout Studio evaluates all 12 locally and writes exactly the best 8 into `cameraShots`. Candidates are provisional and must not be treated as Gate 2-locked photographs.
+
+```json
+{
+  "cameraPlan": {
+    "version": 3,
+    "status": "candidates",
+    "candidateCount": 12,
+    "finalShotCount": 8,
+    "compositionProfile": "editorial-residential",
+    "visibility": {
+      "wall": { "preferredMm": 3000, "minMm": 1800, "maxMm": 4500 },
+      "furniture": { "preferredMm": 1500, "minMm": 750, "maxMm": 2500 }
+    },
+    "candidates": [
+      {
+        "id": "candidate-living-hero-01",
+        "label": "Living hero",
+        "roomId": "room-living",
+        "type": "eye",
+        "role": "hero",
+        "positionMm": [11200, 1500, 8500],
+        "targetMm": [9000, 1500, 3200],
+        "fov": 40,
+        "heroObjectIds": ["living-sofa", "living-tv-console"],
+        "allowCameraInHiddenWall": true,
+        "allowCameraInHiddenFurniture": true,
+        "notes": "Layer the living grouping with dining context at the edge.",
+        "renderSpec": {
+          "id": "render-candidate-living-hero-01",
+          "shotId": "candidate-living-hero-01",
+          "intent": "Natural editorial living-room photograph preserving the exact layout.",
+          "policy": {
+            "canModifyLayout": false,
+            "canModifyDesign": false,
+            "canAddObjects": false,
+            "canSourceProducts": false
+          }
+        }
+      }
+    ],
+    "results": []
+  }
+}
+```
+
+The example shows one candidate for brevity; a valid V3 plan contains exactly 12 unique entries. Candidate roles are `hero`, `layered`, `architectural`, `transition` or `detail`. Use a level 1,350–1,550 mm eye height and normally 35–45° vertical FOV. Candidates should be meaningfully different and identify the intended hero objects.
+
+Layout Studio tests wall hiding from 1,800–4,500 mm around the 3,000 mm preference and furniture hiding from 750–2,500 mm around the 1,500 mm preference. It may place a camera within or behind a wall only when that wall is removed by the shot's cutaway. A camera may also sit within or behind nearby furniture when that exact object is hidden for the shot; this is allowed by default and can be prohibited per candidate with `allowCameraInHiddenFurniture: false`. The smallest effective hiding receives preference.
+
+After ranking, `cameraPlan.status` becomes `ranked`, `cameraPlan.results` records all selected scores and visibility decisions, and Gate 2 becomes `changes-required` until the user reviews the eight final shots.
+
 ## Camera shots
 
 `cameraShots` stores zero or more named, predetermined views, each independently selectable in the app without manual re-aiming:
@@ -301,9 +357,19 @@ Camera vectors use Three.js world units in metres; project geometry remains mill
       "label": "Living – sofa and shelving",
       "roomId": "room-living",
       "type": "eye",
+      "role": "hero",
       "positionMm": [11200, 1500, 8500],
       "targetMm": [9000, 1500, 3200],
       "fov": 40,
+      "heroObjectIds": ["living-sofa", "living-tv-console"],
+      "visibility": {
+        "wall": { "enabled": true, "depthMm": 3250, "hiddenWallIds": ["wall-living-south"] },
+        "furniture": { "enabled": true, "depthMm": 1420, "hiddenIds": ["lounge-chair"], "shownIds": [] }
+      },
+      "compositionScore": 88.4,
+      "compositionRank": 1,
+      "locked": false,
+      "plannerCandidateId": "candidate-living-hero-01",
       "notes": "Frame the sofa and shelving wall; keep the dining table visible at the right edge."
     }
   ]
@@ -317,6 +383,12 @@ Camera vectors use Three.js world units in metres; project geometry remains mill
 - `positionMm` / `targetMm`: `[x, y, z]` in millimetres, unlike `camera` which uses metres. `y` is height above the floor. For a level `eye` shot, `positionMm[1]` and `targetMm[1]` should match — that shared value is the eye height.
 - `fov`: vertical field of view in degrees, 20–100. 35–45 reads closest to a real interior-photography lens; the app-wide default of 52 is wider than typical editorial framing.
 - `notes`: optional one-line framing intent, shown next to the shot in the app.
+- `role`: final photographic role inherited from the V3 candidate.
+- `heroObjectIds`: object IDs that should remain legible in the composition.
+- `visibility`: exact per-shot wall/furniture auto-hide distances and resolved hidden IDs. Applying or batch-exporting the shot restores these values.
+- `compositionScore` / `compositionRank`: deterministic local ranking result. Rank 1 is strongest.
+- `locked`: manual approval state. Ranking writes `false`; Gate 2 approval locks the reviewed eight.
+- `plannerCandidateId`: source V3 candidate ID.
 
 Unlike `camera`, `cameraShots` is a list: the app can step through it (Prev/Next) or jump to any entry, and a user can add their own alongside generated ones. Invalid entries (missing/non-numeric `positionMm` or `targetMm`) are dropped silently on load. `cameraShots` is optional; its absence or an empty array leaves existing behaviour unchanged.
 
@@ -447,6 +519,8 @@ The renderer must never receive or modify `project.json` or the Step 2 Layout St
 - A design approval is invalid unless layout approval is current.
 - Approved style-board IDs reference available project assets.
 - Every camera shot has exactly one shot render spec before Gate 2 approval.
+- A Planner V3 camera plan has exactly 12 unique valid candidates and `finalShotCount: 8`.
+- A ranked Planner V3 project has exactly 8 camera shots with per-shot visibility and ranks 1–8.
 - Every shot render policy forbids layout changes, design changes, new objects and sourcing.
 - A Step 3 handoff contains no project JSON or Layout Studio ZIP.
 

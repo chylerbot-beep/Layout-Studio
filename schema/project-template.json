@@ -4,7 +4,7 @@
     "brief": "",
     "createdAt": "2026-01-01T00:00:00.000Z",
     "updatedAt": "2026-01-01T00:00:00.000Z",
-    "appVersion": "2.8"
+    "appVersion": "3.0"
   },
   "references": [],
   "basemap": null,
@@ -21,9 +21,9 @@
     "ceilingHeight": 2600,
     "photoBoundaryLines": true,
     "cameraCutaway": {
-      "enabled": false,
+      "enabled": true,
       "style": "hide",
-      "depth": 1200,
+      "depth": 3000,
       "hiddenWallIds": []
     },
     "cameraFurniture": {
@@ -38,6 +38,19 @@
     }
   },
   "camera": null,
+  "cameraPlan": {
+    "version": 3,
+    "status": "candidates",
+    "candidateCount": 12,
+    "finalShotCount": 8,
+    "compositionProfile": "editorial-residential",
+    "visibility": {
+      "wall": { "preferredMm": 3000, "minMm": 1800, "maxMm": 4500 },
+      "furniture": { "preferredMm": 1500, "minMm": 750, "maxMm": 2500 }
+    },
+    "candidates": [],
+    "results": []
+  },
   "cameraShots": [],
   "workflow": {
     "schemaVersion": 1,

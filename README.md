@@ -93,6 +93,9 @@ older files. JSON-only review mode is stored as
 - Top, Bird's-eye and Eye-level views
 - 52° default perspective lens and 1,300 mm default eye height
 - Camera shots: optional named, predetermined views (`project.cameraShots`, millimetres), selectable from the Camera section or stepped with Prev/Next. Applying one sets position, target, lens and eye height together and re-runs cutaway, furniture-visibility and label cleanup. Users can also save the current view as a shot. The selector appears in Photo mode too. See `schema/project-schema.md`.
+- **Planner V3 composition** accepts exactly 12 provisional `cameraPlan.candidates`, evaluates their projected subject visibility, crop, depth layers, balance, negative space, lens/height, room intent, hidden geometry and one small local WebGL preview, then keeps exactly the best 8 distinct shots. Ranking uses no AI, API or network call.
+- Planner V3 starts wall hiding at 3,000 mm within 1,800–4,500 mm and furniture hiding at 1,500 mm within 750–2,500 mm. Studio selects a per-shot value and stores the exact resolved hidden IDs. A camera may sit within a cutaway wall or within/behind nearby furniture that is hidden for that shot. Furniture penetration is allowed by default but still receives a stronger ranking penalty.
+- Selecting or batch-exporting a ranked shot restores its exact wall/furniture visibility. Ranking invalidates Gate 2 until the eight final shots are reviewed and locked.
 - After architecture review is confirmed, projects with named camera shots automatically jump to the first authored shot so technical review flows directly into the intended hero views.
 - **Export camera + depth** downloads a ZIP with two pixel-aligned PNGs for the current view: a camera-layout image with visible furniture/object labels and an architecture-only depth map.
 - **Export camera + depth** for named shots creates one ZIP containing the same two-image pair for every shot plus `camera-shots.json`. The depth pass keeps the visible floor, walls, eye-view ceiling, fixed shell, door/window apertures and glass-block spatial dividers while excluding furniture, decor, labels, editor overlays, window glass and door-swing guides.
@@ -119,6 +122,7 @@ one shared IIFE. Later files intentionally refine earlier functions.
 - `app-parts/40.js` — post-review first-shot handoff and batch camera-shot PNG ZIP export
 - `app-parts/42.js` — paired clean camera-layout and architecture-only depth-map export
 - `app-parts/43.js` — optional Photo-mode and camera-layout architecture boundary guides
+- `app-parts/44.js` — Planner V3 12-candidate local composition ranking and eight-shot selection
 - `app-parts/08.js` — starts the app after every override loads
 
 Keep this order intact.
@@ -129,6 +133,7 @@ Keep this order intact.
 node scripts/check-bundle.mjs
 node scripts/check-architecture-review.mjs
 node scripts/check-basemap-scale.mjs
+node scripts/check-camera-composition.mjs
 ```
 
 The bundle check validates the concatenated JavaScript syntax. The architecture

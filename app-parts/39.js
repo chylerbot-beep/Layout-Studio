@@ -7,6 +7,26 @@
 
       let activeCameraShotIdV70 = null;
 
+      function normaliseShotVisibilityV90(visibility) {
+        if (!visibility || typeof visibility !== 'object') return null;
+        const wall = visibility.wall && typeof visibility.wall === 'object' ? visibility.wall : {};
+        const furniture = visibility.furniture && typeof visibility.furniture === 'object' ? visibility.furniture : {};
+        const uniqueIds = value => Array.isArray(value) ? [...new Set(value.filter(id => typeof id === 'string' && id))] : [];
+        return {
+          wall: {
+            enabled: wall.enabled !== false,
+            depthMm: Math.max(100, Math.min(6000, +(wall.depthMm ?? wall.depth ?? 3000) || 3000)),
+            hiddenWallIds: uniqueIds(wall.hiddenWallIds)
+          },
+          furniture: {
+            enabled: furniture.enabled !== false,
+            depthMm: Math.max(100, Math.min(6000, +(furniture.depthMm ?? furniture.depth ?? 1500) || 1500)),
+            hiddenIds: uniqueIds(furniture.hiddenIds),
+            shownIds: uniqueIds(furniture.shownIds)
+          }
+        };
+      }
+
       function ensureCameraShotsV70() {
         const source = Array.isArray(project.cameraShots) ? project.cameraShots : [];
         const seen = new Set();
@@ -30,7 +50,14 @@
               positionMm,
               targetMm,
               fov: Number.isFinite(+shot.fov) ? Math.max(20, Math.min(100, +shot.fov)) : 50,
-              notes: typeof shot.notes === 'string' ? shot.notes : ''
+              notes: typeof shot.notes === 'string' ? shot.notes : '',
+              role: ['hero', 'layered', 'architectural', 'transition', 'detail'].includes(shot.role) ? shot.role : null,
+              heroObjectIds: Array.isArray(shot.heroObjectIds) ? [...new Set(shot.heroObjectIds.filter(Boolean))] : [],
+              visibility: normaliseShotVisibilityV90(shot.visibility),
+              compositionScore: Number.isFinite(+shot.compositionScore) ? Math.max(0, Math.min(100, +shot.compositionScore)) : null,
+              compositionRank: Number.isInteger(+shot.compositionRank) && +shot.compositionRank > 0 ? +shot.compositionRank : null,
+              locked: shot.locked === true,
+              plannerCandidateId: typeof shot.plannerCandidateId === 'string' ? shot.plannerCandidateId : null
             };
           })
           .filter(Boolean);
@@ -44,6 +71,23 @@
 
       function applyCameraShotV70(shot) {
         if (!shot) return;
+        const visibility = normaliseShotVisibilityV90(shot.visibility);
+        if (visibility) {
+          project.settings = project.settings || {};
+          project.settings.cameraCutaway = project.settings.cameraCutaway || {};
+          project.settings.cameraCutaway.enabled = visibility.wall.enabled;
+          project.settings.cameraCutaway.style = 'hide';
+          project.settings.cameraCutaway.opacity = 0;
+          project.settings.cameraCutaway.depth = visibility.wall.depthMm;
+          project.settings.cameraCutaway.hiddenWallIds = [...visibility.wall.hiddenWallIds];
+          project.settings.cameraFurniture = project.settings.cameraFurniture || {};
+          project.settings.cameraFurniture.enabled = visibility.furniture.enabled;
+          project.settings.cameraFurniture.depth = visibility.furniture.depthMm;
+          project.settings.cameraFurniture.hiddenIds = [...visibility.furniture.hiddenIds];
+          project.settings.cameraFurniture.shownIds = [...visibility.furniture.shownIds];
+          if (typeof syncCameraCutawayControls === 'function') syncCameraCutawayControls();
+          if (typeof syncCameraFurnitureControlsV42 === 'function') syncCameraFurnitureControlsV42();
+        }
         const isEye = shot.type === 'eye';
         camera.up.set(0, 1, 0);
         camera.fov = shot.fov || 50;
@@ -84,6 +128,14 @@
         ensureCameraShotsV70();
         pushHistory('add camera shot');
         const isEyeLevel = Math.abs(camera.position.y - orbit.target.y) < 0.01;
+        const wallSettings = typeof ensureCameraCutawaySettings === 'function' ? ensureCameraCutawaySettings() : {};
+        const furnitureSettings = typeof ensureCameraFurnitureSettingsV42 === 'function' ? ensureCameraFurnitureSettingsV42() : {};
+        const resolvedWalls = typeof cameraCutawayWallIds !== 'undefined'
+          ? [...cameraCutawayWallIds]
+          : [...(wallSettings.hiddenWallIds || [])];
+        const resolvedFurniture = typeof hiddenFurnitureIdsV42 === 'function'
+          ? [...hiddenFurnitureIdsV42()]
+          : [...(furnitureSettings.hiddenIds || [])];
         const shot = {
           id: 'shot-' + Date.now(),
           label: `Custom view ${project.cameraShots.length + 1}`,
@@ -92,7 +144,26 @@
           positionMm: [camera.position.x, camera.position.y, camera.position.z].map(v => Math.round(v / MM)),
           targetMm: [orbit.target.x, orbit.target.y, orbit.target.z].map(v => Math.round(v / MM)),
           fov: Math.round(camera.fov),
-          notes: ''
+          notes: '',
+          role: null,
+          heroObjectIds: [],
+          visibility: {
+            wall: {
+              enabled: wallSettings.enabled !== false,
+              depthMm: Math.round(+wallSettings.depth || 3000),
+              hiddenWallIds: resolvedWalls
+            },
+            furniture: {
+              enabled: furnitureSettings.enabled !== false,
+              depthMm: Math.round(+furnitureSettings.depth || 1500),
+              hiddenIds: resolvedFurniture,
+              shownIds: [...(furnitureSettings.shownIds || [])]
+            }
+          },
+          compositionScore: null,
+          compositionRank: null,
+          locked: false,
+          plannerCandidateId: null
         };
         project.cameraShots.push(shot);
         activeCameraShotIdV70 = shot.id;
@@ -119,7 +190,9 @@
         shots.forEach(shot => {
           const option = document.createElement('option');
           option.value = shot.id;
-          option.textContent = shot.roomId ? `${shot.label} (${shot.roomId})` : shot.label;
+          const rank = shot.compositionRank ? `#${shot.compositionRank} ` : '';
+          const score = Number.isFinite(shot.compositionScore) ? ` · ${Math.round(shot.compositionScore)}` : '';
+          option.textContent = `${rank}${shot.label}${shot.roomId ? ` (${shot.roomId})` : ''}${score}`;
           select.appendChild(option);
         });
         const stillExists = shots.some(shot => shot.id === activeCameraShotIdV70);
@@ -129,7 +202,15 @@
         const note = $('cameraShotNote');
         if (note) {
           const active = shots.find(shot => shot.id === activeCameraShotIdV70);
-          if (active && active.notes) note.textContent = active.notes;
+          if (active) {
+            const visibility = normaliseShotVisibilityV90(active.visibility);
+            const score = Number.isFinite(active.compositionScore) ? `Score ${Math.round(active.compositionScore)} · ` : '';
+            const role = active.role ? `${active.role[0].toUpperCase()}${active.role.slice(1)} · ` : '';
+            const hides = visibility
+              ? `Walls ${Math.round(visibility.wall.depthMm)} mm · Furniture ${Math.round(visibility.furniture.depthMm)} mm`
+              : '';
+            note.textContent = [score + role + hides, active.notes].filter(Boolean).join(' — ');
+          }
           else if (shots.length) note.textContent = `${shots.length} preset shot${shots.length === 1 ? '' : 's'} on this project. Selecting one sets position, target, lens and height together.`;
           else note.textContent = 'No preset camera shots on this project yet. Use “Save current as shot” to build your own list, or generate shots in the planner GPT.';
         }
