@@ -13,10 +13,15 @@ if(missing.length)throw new Error(`Missing app parts: ${missing.join(', ')}`);
 
 const boundaryPart = 'app-parts/43.js';
 const boundaryIndex = parts.indexOf(boundaryPart);
+const compositionPart = 'app-parts/44.js';
+const compositionIndex = parts.indexOf(compositionPart);
 const exportIndex = parts.indexOf('app-parts/42.js');
 const startupIndex = parts.indexOf('app-parts/08.js');
 if(boundaryIndex < 0 || boundaryIndex <= exportIndex || boundaryIndex >= startupIndex){
   throw new Error(`${boundaryPart} must load after camera/depth export and before startup`);
+}
+if(compositionIndex < 0 || compositionIndex <= boundaryIndex || compositionIndex >= startupIndex){
+  throw new Error(`${compositionPart} must load after photo boundary guides and before startup`);
 }
 
 const source = parts.map(path => fs.readFileSync(path, 'utf8')).join('\n');
@@ -42,6 +47,18 @@ for(const token of [
 ]){
   if(!boundarySource.includes(token)){
     throw new Error(`Photo boundary export invariant is missing: ${token}`);
+  }
+}
+
+const compositionSource = fs.readFileSync(compositionPart, 'utf8');
+for(const token of [
+  'const cameraCandidateCountV90 = 12',
+  'const cameraFinalShotCountV90 = 8',
+  'Rank 12 → Keep best 8',
+  'project.cameraShots = selected.map'
+]){
+  if(!compositionSource.includes(token)){
+    throw new Error(`Planner V3 camera composition invariant is missing: ${token}`);
   }
 }
 

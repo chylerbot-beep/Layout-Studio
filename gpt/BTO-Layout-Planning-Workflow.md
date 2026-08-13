@@ -188,19 +188,25 @@ Starting from the approved Step 1 layout, resolve the design without moving or r
 
 If design development reveals a spatial problem, return to Step 1, change the layout and obtain Gate 1 approval again. Do not silently redesign the approved layout inside Step 2.
 
-### Lock camera shots
+### Generate 12 candidates and select the best 8
 
-Recommend:
+Planner V3 must first create exactly 12 unique camera candidates under `cameraPlan.candidates`. Recommend:
 
 - Top for plan checking
 - Bird's-eye for spatial understanding
 - Eye level for spatial previews and exported camera screenshots
 
-Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation. Save every final camera in `cameraShots`; Gate 2 locks the shot list, position, target, lens and framing. Manual camera movement is not a substitute for a locked shot.
+Use blocking-wall hiding only for photography. Hidden walls remain part of the model and validation. Set wall hiding to a preferred 3,000 mm within 1,800–4,500 mm, and furniture hiding to a preferred 1,500 mm within 750–2,500 mm.
+
+The candidate set must contain meaningful hero, layered, architectural, transition and useful detail alternatives rather than near-duplicates. Normally use a level 1,350–1,550 mm eye height and 35–45° vertical FOV. Every candidate identifies its hero objects, photographic role, framing intent, wall/furniture penetration permissions and candidate-specific render spec. Camera placement within or behind nearby furniture is allowed by default when Studio's selected furniture-hide distance removes that exact object; set `allowCameraInHiddenFurniture: false` only for an object that must never be penetrated.
+
+Create an interim V3 candidate ZIP while `workflow.stage` is `design-development`; this is the one permitted pre-Gate-2 project package. Layout Studio evaluates all 12 candidates locally using projected geometry, visibility, occlusion, depth, balance, negative space, perspective, hiding penalties and a small browser-rendered preview. It writes exactly the best 8 into `cameraShots`, including each shot's exact auto-hide distances, resolved hidden IDs, composition score and rank.
+
+Review those eight shots in Layout Studio. Save every approved final camera in `cameraShots`; Gate 2 locks the exact eight-shot list, position, target, lens, framing and per-shot visibility. Manual camera movement is not a substitute for a locked shot. Ranking or editing a camera invalidates Gate 2.
 
 Photo mode keeps a floating Camera panel available. Nearby furniture can be hidden automatically by camera distance, or selected furniture can be hidden and shown manually. Camera visibility settings never delete or resize project objects.
 
-Each `design.shotRenderSpecs[]` entry must reference one `cameraShots[].id`, state the shot's render intent and allowed surface-level interpretation, and carry a policy that forbids layout changes, design changes, new objects and sourcing.
+Each candidate carries its provisional render spec. When Studio selects the best eight, it copies only those eight specs into `design.shotRenderSpecs[]`. Every final entry must reference one `cameraShots[].id`, state the shot's render intent and allowed surface-level interpretation, and carry a policy that forbids layout changes, design changes, new objects and sourcing.
 
 ### Gate 2 — Design approval
 
@@ -222,7 +228,7 @@ Only after Gate 2, create:
 - a list of custom elements, their source images and assumed dimensions
 - approved style-board references
 - furniture-archetype, material, lighting and styling metadata
-- locked `cameraShots`
+- ranked and locked `cameraShots` containing exactly the best 8 of the 12 Planner candidates
 - one render spec per camera shot
 
 Validate before delivery:
@@ -237,6 +243,8 @@ Validate before delivery:
 - `workflow.locks.layout`, `workflow.locks.design` and `workflow.locks.cameraShots` are `true`
 - every selected style-board reference exists in the ZIP
 - every camera shot has a matching `design.shotRenderSpecs` entry
+- `cameraPlan.candidates` contains exactly 12 valid unique candidates
+- `cameraPlan.results` and `cameraShots` contain exactly 8 ranked final shots before Gate 2 is approved
 
 When file tools are available, parse `project.json`, create the ZIP, reopen it and parse its root `project.json`. Provide the JSON separately as well.
 

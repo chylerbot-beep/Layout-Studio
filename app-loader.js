@@ -1,5 +1,5 @@
 (() => {
-  const moduleVersion = '20260812-photo-boundary-lines-v85';
+  const moduleVersion = '20260814-layout-planner-v3-camera-composition-v90';
   const parts = [
     'app-parts/01.js',
     'app-parts/02.js',
@@ -42,6 +42,7 @@
     'app-parts/41.js',
     'app-parts/42.js',
     'app-parts/43.js',
+    'app-parts/44.js',
     // app-parts/08.js starts the app after every override above has loaded.
     'app-parts/08.js'
   ];
